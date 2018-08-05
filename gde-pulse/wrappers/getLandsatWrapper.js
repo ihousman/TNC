@@ -6,7 +6,7 @@ var geometry = /* color: #98ff00 */ee.Geometry.Polygon(
           [-107.57914696634225, 39.18649132261251]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Module imports
-var getImageLib = require('users/ianhousman:TNC/gde-pulse/modules/getImagesLib.js');
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
 ////////////////////////////////////////////////////////////////////////////////
 // Define user parameters:
 
