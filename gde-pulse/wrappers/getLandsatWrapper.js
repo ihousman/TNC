@@ -212,10 +212,10 @@ if (correctIllumination){
 
 
 // Export composite collection
-var exportBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'temp'];
-getImageLib.exportCollection(exportPathRoot,outputName,studyArea,crs,transform,scale,
-ts,startYear,endYear,startJulian,endJulian,compositingMethod,timebuffer,exportBands,toaOrSR,weights,
-              applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFmaskSnowMask,includeSLCOffL7,correctIllumination);
+// var exportBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'temp'];
+// getImageLib.exportCollection(exportPathRoot,outputName,studyArea,crs,transform,scale,
+// ts,startYear,endYear,startJulian,endJulian,compositingMethod,timebuffer,exportBands,toaOrSR,weights,
+//               applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFmaskSnowMask,includeSLCOffL7,correctIllumination);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load the study region, with a blue outline.
