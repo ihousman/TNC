@@ -14,14 +14,14 @@ var studyArea = igdes.bounds();
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
 // endJulian: Ending Julian date
-var startJulian = 190;
-var endJulian = 250; 
+var startJulian = 1;
+var endJulian = 365; 
 
 // 3. Specify start and end years for all analyses
 // More than a 3 year span should be provided for time series methods to work 
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
-var startYear = 2010;
+var startYear = 1985;
 var endYear = 2018;
 
 // 4. Specify an annual buffer to include imagery from the same season 
@@ -72,11 +72,11 @@ var defringeL5 = false;
 //always have a high cloudScore to reduce comission errors- this takes some time
 //and needs a longer time series (>5 years or so)
 //TDOM also looks at the time series and will need a longer time series
-var applyCloudScore = true;
-var applyFmaskCloudMask = false;
+var applyCloudScore = false;
+var applyFmaskCloudMask = true;
 
-var applyTDOM = true;
-var applyFmaskCloudShadowMask = false;
+var applyTDOM = false;
+var applyFmaskCloudShadowMask = true;
 
 var applyFmaskSnowMask = false;
 
@@ -193,6 +193,8 @@ if (correctIllumination){
 //or simpleAddIndices for only common indices
 ls = ls.map(getImageLib.simpleAddIndices);
 
+
+Map.addLayer(ls.select(['NBR']))
 // Create composite time series
 var ts = getImageLib.compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuffer,weights,compositingMethod);
 
