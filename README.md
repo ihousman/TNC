@@ -1,27 +1,25 @@
-# GTAC GEE Modules
+# Work for The Nature Conservancy 
 > A repository of GEE code modules for general data processing and analysis
 
-> [Can be accessed in the GEE Playground](https://earthengine.googlesource.com/users/USFS_GTAC/modules)
+> [Can be accessed in the GEE Playground](https://earthengine.googlesource.com/users/ianhousman/TNC)
 
-> [Or withing the FS GitHub instance](https://code.fs.usda.gov/Geospatial/GEE-modules.git)
+> [Or gitHub](https://github.com/ihousman/TNC.git)
 ## Primary POCs
 
-Ian Housman- ihousman@fs.fed.us
+Ian Housman- ian.housman@gmail.com
 
-Karis Tenneson- krtenneson@fs.fed.us
-
-Bonnie Ruefenacht- bruefenacht@fs.fed.us
+Tanushree Biswas- tanushree.biswas@tnc.org
 
 ## Using
 1. Become a trusted Google Earth Engine (GEE) tester (<https://signup.earthengine.google.com/#!/>)
-2. If only reading this repository, enter this URL in your browser (<https://code.earthengine.google.com/?accept_repo=users/USFS_GTAC/modules>)
+2. If only reading this repository, enter this URL in your browser (<https://code.earthengine.google.com/?accept_repo=users/ianhousman/TNC>)
 
 3. If contributing, contact a POC
-4. Install git locally (<https://git-scm.com/download/win>)
-3. Clone this repository (`git clone https://earthengine.googlesource.com/users/USFS_GTAC/modules`)
+4. Install git locally (<https://git-scm.com/download>)
+3. Clone this repository (`git clone git clone https://earthengine.googlesource.com/users/ianhousman/TNC`)
 4. To stay up to date, pull the latest commit (`git pull origin master`)
-5. This repository is also available within the FS gitHub instance (<https://code.fs.usda.gov/Geospatial/GEE-modules.git>)
-   * To add this instance to your local git instance execute `remote add github https://code.fs.usda.gov/Geospatial/GEE-modules.git` in a git bash
+5. This repository is also available within gitHub (<https://github.com/ihousman/TNC.git>)
+   * To add this instance to your local git instance execute `remote add github https://github.com/ihousman/TNC.git` in a git bash
    * Now you can pull the latest from your origin (`git pull origin master`) or gee (`git pull github master`)
 
 ## Contributing
