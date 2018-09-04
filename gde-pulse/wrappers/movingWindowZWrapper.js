@@ -119,9 +119,8 @@ var outputName = 'Test_Z_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'users/iwhousman/test/ChangeCollection';
+var exportPathRoot = 'projects/igde-work/raster-data/z-score-collection';
 
-// var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
 //Common crs codes: Web mercator is EPSG:4326, USGS Albers is EPSG:5070, 
 //WGS84 UTM N hemisphere is EPSG:326+ zone number (zone 12 N would be EPSG:32612) and S hemisphere is EPSG:327+ zone number
