@@ -140,16 +140,18 @@ var depths = ee.List.sequence(0,50,1);
 
 //Reformat the igdes to have a unique feature per year
 var reformatted = years.map(function(yz){
-  var fieldName ='Depth'+ yz.toString();
+  yz = ee.Number(yz);
+  var fieldName =ee.String('Depth').cat(ee.String(yz));
   var t = f.select([fieldName], ['AvgAnnD'])
           .map(function(ft){return ft.set('year',yz)});
   return t;
 });
+
 reformatted = ee.FeatureCollection(reformatted).flatten();
 Map.addLayer(f);
 
 //Convert each year-feature to a raster by iterating across the depths
-var igdeyr = yearsInt.map(function(yr){
+var igdeyr = years.map(function(yr){
     yr = ee.Number(yr);
     var t = reformatted.filter(ee.Filter.equals('year',yr));
     var depthC = depths.map(function(d){
