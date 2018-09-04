@@ -123,7 +123,7 @@ var correctScale = 250;//Choose a scale to reduce on- 250 generally works well
 var exportComposites = true;
 
 //Set up Names for the export
-var outputName = 'Medoid-Landsat_';
+var outputName = 'Landsat_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
