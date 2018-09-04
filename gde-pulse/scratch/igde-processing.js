@@ -123,24 +123,26 @@ function pad(n, width, z) {
 }
 
 //Bring in igdes
-var f = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1_joined_ndvi_annDepth')
+// var f = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1_joined_ndvi_annDepth')
+var f = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg')
+
 
 //Set up the years to filter on- this is hard-coded since its set up oddly
-var years1 = ee.List.sequence(85,99);
-var yearsOddballs = ee.List.sequence(20,20);
-var years2 = ee.List.sequence(1,18);
-var years = years1.cat(yearsOddballs).cat(years2);
-var yearsInt = ee.List.sequence(1985,2018);
-var yearsZ = years.zip(yearsInt).getInfo();
+var years = ee.List.sequence(1985,2018);
+// var yearsOddballs = ee.List.sequence(20,20);
+// var years2 = ee.List.sequence(1,18);
+// var years = years1.cat(yearsOddballs).cat(years2);
+// var yearsInt = ee.List.sequence(1985,2018);
+// var yearsZ = years.zip(yearsInt).getInfo();
 
 //Specify which depths to look at
 var depths = ee.List.sequence(0,50,1);
 
 //Reformat the igdes to have a unique feature per year
-var reformatted = yearsZ.map(function(yz){
-  var fieldName ='AvgAnnD_'+ pad(yz[0],2).toString();
+var reformatted = years.map(function(yz){
+  var fieldName ='Depth'+ yz.toString();
   var t = f.select([fieldName], ['AvgAnnD'])
-          .map(function(ft){return ft.set('year',yz[1])});
+          .map(function(ft){return ft.set('year',yz)});
   return t;
 });
 reformatted = ee.FeatureCollection(reformatted).flatten();
