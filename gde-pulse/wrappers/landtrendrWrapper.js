@@ -38,8 +38,7 @@ var indexListString = getImageLib.listToString(indexList.getInfo(),'_');
 // var ltDirection = ee.List([-1,    1]);
 var ltDirection =ee.List([1,-1,1,-1,    1,      1,   -1, -1,    -1,   -1,           -1,        1,          -1]);
 
-var composites = ee.ImageCollection(paramDict[studyAreaName][1])
-        .filter(ee.Filter.equals('applyFmaskCloudMask','true'))
+var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
         .map(getImageLib.simpleAddIndices)
         .map(getImageLib.getTasseledCap)
