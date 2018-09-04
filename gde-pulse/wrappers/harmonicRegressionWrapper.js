@@ -1,10 +1,6 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-113.802110070818, 48.31180331809498],
-          [-114.00261055909925, 48.182859332491994],
-          [-113.88862740480238, 48.055426046147986],
-          [-113.66066109620863, 48.28896461867863]]]),
-    plotPoint = /* color: #98ff00 */ee.Geometry.Point([-113.93618740088061, 48.20724979387412]);
+var geometry = /* color: #d63000 */ee.Geometry.MultiPoint(),
+    plotPoint = /* color: #98ff00 */ee.Geometry.Point([-120.58291591650561, 39.44145338178471]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Wrapper for running harmonic regression across a moving window of years
 
@@ -18,7 +14,12 @@ var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var studyArea = geometry;
+var studyArea = ee.Feature(ee.FeatureCollection('TIGER/2016/States')
+            .filter(ee.Filter.eq('NAME','California'))
+            .first())
+            .convexHull(10000)
+            .buffer(10000)
+            .geometry();
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
@@ -119,7 +120,7 @@ var outputName = 'Harmonic_Coefficients_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'users/iwhousman/test/ChangeCollection';
+var exportPathRoot = 'projects/igde-work/raster-data/harmonic-coefficients-collection';
 
 // var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
