@@ -15,9 +15,80 @@ var vizParamsTrue = {
 };
 
 
-
-/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS
+/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////
+//Function to set null value for export or conversion to arrays
+function setNoData(image,noDataValue){
+  var m = image.mask();
+  image = image.mask(ee.Image(1));
+  image = image.where(m.not(),noDataValue);
+  return image;
+}
+/////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+//Functions to perform basic clump and elim
+function sieve(image,mmu){
+  var connected = image.connectedPixelCount(mmu+20);
+  Map.addLayer(connected,{'min':1,'max':mmu},'connected')
+  var elim = connected.gt(mmu);
+  var mode = image.focal_mode(mmu/2,'circle');
+  mode = mode.mask(image.mask());
+  var filled = image.where(elim.not(),mode);
+  return filled;
+}
+
+//Written by Yang Z.
+//------ L8 to L7 HARMONIZATION FUNCTION -----
+// slope and intercept citation: Roy, D.P., Kovalskyy, V., Zhang, H.K., Vermote, E.F., Yan, L., Kumar, S.S, Egorov, A., 2016, Characterization of Landsat-7 to Landsat-8 reflective wavelength and normalized difference vegetation index continuity, Remote Sensing of Environment, 185, 57-70.(http://dx.doi.org/10.1016/j.rse.2015.12.024); Table 2 - reduced major axis (RMA) regression coefficients
+var harmonizationRoy = function(oli) {
+  var slopes = ee.Image.constant([0.9785, 0.9542, 0.9825, 1.0073, 1.0171, 0.9949]);        // create an image of slopes per band for L8 TO L7 regression line - David Roy
+  var itcp = ee.Image.constant([-0.0095, -0.0016, -0.0022, -0.0021, -0.0030, 0.0029]);     // create an image of y-intercepts per band for L8 TO L7 regression line - David Roy
+  var y = oli.select(['B2','B3','B4','B5','B6','B7'],['B1', 'B2', 'B3', 'B4', 'B5', 'B7']) // select OLI bands 2-7 and rename them to match L7 band names
+             .resample('bicubic')                                                          // ...resample the L8 bands using bicubic
+             .subtract(itcp.multiply(10000)).divide(slopes)                                // ...multiply the y-intercept bands by 10000 to match the scale of the L7 bands then apply the line equation - subtract the intercept and divide by the slope
+             .set('system:time_start', oli.get('system:time_start'));                      // ...set the output system:time_start metadata to the input image time_start otherwise it is null
+  return y.toShort();                                                                       // return the image as short to match the type of the other data
+};
+///////////////////////////////////////////////////////////
+//Function to create a multiband image from a collection
+function collectionToImage(collection){
+  var stack = ee.Image(collection.iterate(function(img, prev) {
+    return ee.Image(prev).addBands(img);
+  }, ee.Image(1)));
+
+  stack = stack.select(ee.List.sequence(1, stack.bandNames().size().subtract(1)));
+  return stack;
+} 
+//Function to handle empty collections that will cause subsequent processes to fail
+//If the collection is empty, will fill it with an empty image
+function fillEmptyCollections(inCollection,dummyImage){                       
+  var dummyCollection = ee.ImageCollection([dummyImage.mask(ee.Image(0))]);
+  var imageCount = inCollection.toList(1).length();
+  return ee.ImageCollection(ee.Algorithms.If(imageCount.gt(0),inCollection,dummyCollection));
+
+}
+//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
+//Adds the float year with julian proportion to image
+function addDateBand(img){
+  var d = ee.Date(img.get('system:time_start'));
+  var y = d.get('year');
+  d = y.add(d.getFraction('year'));
+  var db = ee.Image.constant(d).rename(['year']).float();
+  db = db.updateMask(img.select([0]).mask())
+  return img.addBands(db);
+}
+function addYearBand(img){
+  var d = ee.Date(img.get('system:time_start'));
+  var y = d.get('year');
+  
+  var db = ee.Image.constant(y).rename(['year']).float();
+  db = db.updateMask(img.select([0]).mask())
+  return img.addBands(db);
+}
+////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 var fringeCountThreshold = 279;//Define number of non null observations for pixel to not be classified as a fringe
 ///////////////////////////////////////////////////
@@ -72,13 +143,13 @@ function defringeLandsat(img){
   var m = img.mask().reduce(ee.Reducer.min());
   
   //Apply kernel
-  var sum = m.reduceNeighborhood(ee.Reducer.sum(), k, 'kernel')
+  var sum = m.reduceNeighborhood(ee.Reducer.sum(), k, 'kernel');
   // Map.addLayer(img,vizParams,'with fringes')
   // Map.addLayer(sum,{'min':20,'max':241},'sum41',false)
   
   //Mask pixels w/o sufficient obs
-  sum = sum.gte(fringeCountThreshold)
-  img = img.mask(sum)
+  sum = sum.gte(fringeCountThreshold);
+  img = img.mask(sum);
   // Map.addLayer(img,vizParams,'defringed')
   return img;
 }
@@ -495,10 +566,19 @@ function exportToAssetWrapper(imageForExport,assetName,assetPath,
   Export.image.toAsset(imageForExport, assetName, assetPath, 
     {'.default': pyramidingPolicy}, null, roi, scale, crs, transform, 1e13);
 }
-
+function exportToAssetWrapper2(imageForExport,assetName,assetPath,
+  pyramidingPolicyObject,roi,scale,crs,transform){
+  //Make sure image is clipped to roi in case it's a multi-part polygon
+  imageForExport = imageForExport.clip(roi);
+  assetName = assetName.replace(/\s+/g,'-');//Get rid of any spaces
+  
+  Export.image.toAsset(imageForExport, assetName, assetPath, 
+    pyramidingPolicyObject, null, roi, scale, crs, transform, 1e13);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Create composites for each year within startYear and endYear range
 function compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuffer,weights,compositingMethod){
+  var dummyImage = ee.Image(ls.first());
   var ts = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo()
     .map(function(year){
     // Set up dates
@@ -510,6 +590,9 @@ function compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuff
     // Filter images for given date range
     var lsT = ls.filterDate(startDateT,endDateT);
     
+    //Fill empty collections
+    lsT = fillEmptyCollections(lsT,dummyImage);
+    
     var yearsT = ee.List.sequence(startYearT,endYearT);
     
     var z = yearsT.zip(weights);
@@ -517,13 +600,14 @@ function compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuff
       i = ee.List(i);
       return ee.List.repeat(i.get(0),i.get(1));
     }).flatten();
-    print('Weighted composite years for year:',year,yearsTT);
+    // print('Weighted composite years for year:',year,yearsTT);
     var images = yearsTT.map(function(yr){
       
       // Filter images for given date range
       var lsT = ls.filter(ee.Filter.calendarRange(yr,yr,'year'))
                 .filter(ee.Filter.calendarRange(startJulian,endJulian));//.toList(10000,0);
-    return lsT;
+      lsT = fillEmptyCollections(lsT,dummyImage);
+      return lsT;
     });
     lsT = ee.ImageCollection(ee.FeatureCollection(images).flatten());
    
@@ -821,7 +905,8 @@ var modisCDict = {
 };
 /////////////////////////////////////////////////
 //Helper function to join two collections- Source: code.earthengine.google.com
-    function joinCollections(c1,c2){
+    function joinCollections(c1,c2, maskAnyNullValues){
+      if(maskAnyNullValues === undefined || maskAnyNullValues === null){maskAnyNullValues = true}
       var MergeBands = function(element) {
         // A function to merge the bands together.
         // After a join, results are in 'primary' and 'secondary' properties.
@@ -833,7 +918,9 @@ var modisCDict = {
       var joined = ee.ImageCollection(join.apply(c1, c2, filter));
      
       joined = ee.ImageCollection(joined.map(MergeBands));
-      joined = joined.map(function(img){return img.mask(img.mask().and(img.reduce(ee.Reducer.min()).neq(0)))});
+      if(maskAnyNullValues){
+        joined = joined.map(function(img){return img.mask(img.mask().and(img.reduce(ee.Reducer.min()).neq(0)))});
+      }
       return joined;
     }
 //////////////////////////////////////////////////////
@@ -1072,9 +1159,13 @@ function getModisData(startYear,endYear,startJulian,endJulian,daily,maskWQA,zeni
   
 ////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
+function exportCollection(exportPathRoot,outputName,studyArea, crs,transform,scale,
+collection){
+  
+}
 
 // Function to export composite collection
-function exportCollection(exportPathRoot,outputName,studyArea, crs,transform,scale,
+function exportCompositeCollection(exportPathRoot,outputName,studyArea, crs,transform,scale,
 collection,startYear,endYear,startJulian,endJulian,compositingMethod,timebuffer,exportBands,toaOrSR,weights,
 applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFmaskSnowMask,includeSLCOffL7,correctIllumination){
   collection = collection.select(exportBands);
@@ -1134,10 +1225,489 @@ applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFm
       studyArea,null,crs,transform);
     });
 }
+/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+//Wrapper function for getting Landsat imagery
+function getLandsatWrapper(studyArea,startYear,endYear,startJulian,endJulian,
+  timebuffer,weights,compositingMethod,
+  toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
+  applyFmaskCloudShadowMask,applyFmaskSnowMask,
+  cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels,
+  correctIllumination,correctScale,
+  exportComposites,outputName,exportPathRoot,crs,transform,scale){
+  
+  // Prepare dates
+  //Wrap the dates if needed
+  if (startJulian > endJulian) {
+    endJulian = endJulian + 365;
+  }
+  var startDate = ee.Date.fromYMD(startYear,1,1).advance(startJulian-1,'day');
+  var endDate = ee.Date.fromYMD(endYear,1,1).advance(endJulian-1,'day');
+  print('Start and end dates:', startDate, endDate);
 
+  //Do some error checking
+  toaOrSR = toaOrSR.toUpperCase();
+  if(toaOrSR === 'TOA'){
+      applyFmaskCloudMask = false;
+  
+      applyFmaskCloudShadowMask = false;
+  
+      applyFmaskSnowMask = false;
+    }
+  // Get Landsat image collection
+  var ls = getImageCollection(studyArea,startDate,endDate,startJulian,endJulian,
+    toaOrSR,includeSLCOffL7,defringeL5);
+  
+  // Apply relevant cloud masking methods
+  if(applyCloudScore){
+    print('Applying cloudScore');
+    ls = applyCloudScoreAlgorithm(ls,landsatCloudScore,cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels); 
+    
+  }
+  
+  if(applyFmaskCloudMask){
+    print('Applying Fmask cloud mask');
+    ls = ls.map(function(img){return cFmask(img,'cloud')});
+  }
+  
+  if(applyTDOM){
+    print('Applying TDOM');
+    //Find and mask out dark outliers
+    ls = simpleTDOM2(ls,zScoreThresh,shadowSumThresh,contractPixels,dilatePixels);
+  }
+  if(applyFmaskCloudShadowMask){
+    print('Applying Fmask shadow mask');
+    ls = ls.map(function(img){return cFmask(img,'shadow')});
+  }
+  if(applyFmaskSnowMask){
+    print('Applying Fmask snow mask');
+    ls = ls.map(function(img){return cFmask(img,'snow')});
+  }
+  
+  
+  // Add zenith and azimuth
+  if (correctIllumination){
+    ls = ls.map(function(img){
+      return addZenithAzimuth(img,toaOrSR);
+    });
+  }
+  
+  // Add common indices- can use addIndices for comprehensive indices 
+  //or simpleAddIndices for only common indices
+  ls = ls.map(simpleAddIndices)
+          .map(getTasseledCap)
+          .map(simpleAddTCAngles);
+  
+  // Create composite time series
+  var ts = compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuffer,weights,compositingMethod);
+  
+  
+  // Correct illumination
+  if (correctIllumination){
+    var f = ee.Image(ts.first());
+    Map.addLayer(f,vizParamsFalse,'First-non-illuminated',false);
+  
+    print('Correcting illumination');
+    ts = ts.map(illuminationCondition)
+      .map(function(img){
+        return illuminationCorrection(img, correctScale,studyArea);
+      });
+    var f = ee.Image(ts.first());
+    Map.addLayer(f,vizParamsFalse,'First-illuminated',false);
+  }
+  
+  //Export composites
+  if(exportComposites){// Export composite collection
+    var exportBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'temp'];
+    exportCompositeCollection(exportPathRoot,outputName,studyArea,crs,transform,scale,
+    ts,startYear,endYear,startJulian,endJulian,compositingMethod,timebuffer,exportBands,toaOrSR,weights,
+                  applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFmaskSnowMask,includeSLCOffL7,correctIllumination);
+  }
+  
+  return [ls,ts];
+}
+//Wrapper function for getting Landsat imagery
+function getProcessedLandsatScenes(studyArea,startYear,endYear,startJulian,endJulian,
+  toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
+  applyFmaskCloudShadowMask,applyFmaskSnowMask,
+  cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels
+  ){
+  
+  // Prepare dates
+  //Wrap the dates if needed
+  if (startJulian > endJulian) {
+    endJulian = endJulian + 365;
+  }
+  var startDate = ee.Date.fromYMD(startYear,1,1).advance(startJulian-1,'day');
+  var endDate = ee.Date.fromYMD(endYear,1,1).advance(endJulian-1,'day');
+  print('Start and end dates:', startDate, endDate);
+
+  //Do some error checking
+  toaOrSR = toaOrSR.toUpperCase();
+  if(toaOrSR === 'TOA'){
+      applyFmaskCloudMask = false;
+  
+      applyFmaskCloudShadowMask = false;
+  
+      applyFmaskSnowMask = false;
+    }
+  // Get Landsat image collection
+  var ls = getImageCollection(studyArea,startDate,endDate,startJulian,endJulian,
+    toaOrSR,includeSLCOffL7,defringeL5);
+  
+  // Apply relevant cloud masking methods
+  if(applyCloudScore){
+    print('Applying cloudScore');
+    ls = applyCloudScoreAlgorithm(ls,landsatCloudScore,cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels); 
+    
+  }
+  
+  if(applyFmaskCloudMask){
+    print('Applying Fmask cloud mask');
+    ls = ls.map(function(img){return cFmask(img,'cloud')});
+  }
+  
+  if(applyTDOM){
+    print('Applying TDOM');
+    //Find and mask out dark outliers
+    ls = simpleTDOM2(ls,zScoreThresh,shadowSumThresh,contractPixels,dilatePixels);
+  }
+  if(applyFmaskCloudShadowMask){
+    print('Applying Fmask shadow mask');
+    ls = ls.map(function(img){return cFmask(img,'shadow')});
+  }
+  if(applyFmaskSnowMask){
+    print('Applying Fmask snow mask');
+    ls = ls.map(function(img){return cFmask(img,'snow')});
+  }
+  
+  
+  
+  
+  // Add common indices- can use addIndices for comprehensive indices 
+  //or simpleAddIndices for only common indices
+  ls = ls.map(simpleAddIndices)
+          .map(getTasseledCap)
+          .map(simpleAddTCAngles);
+  
+  
+  
+  return ls;
+}
+//////////////////////////////////////////////////////////
+//Harmonic regression
+////////////////////////////////////////////////////////////////////
+//Function to give year.dd image and harmonics list (e.g. [1,2,3,...])
+function getHarmonicList(yearDateImg,transformBandName,harmonicList){
+    var t= yearDateImg.select([transformBandName]);
+    var selectBands = ee.List.sequence(0,harmonicList.length-1);
+    
+    var sinNames = harmonicList.map(function(h){
+      var ht = h*100;
+      return ee.String('sin_').cat(ht.toString()).cat('_').cat(transformBandName);
+    });
+    var cosNames = harmonicList.map(function(h){
+      var ht =h*100;
+      return ee.String('cos_').cat(ht.toString()).cat('_').cat(transformBandName);
+    });
+    
+    // var sinCosNames = harmonicList.map(function(h){
+    //   var ht =h*100
+    //   return ee.String('sin_x_cos_').cat(ht.toString()).cat('_').cat(transformBandName)
+    // })
+    
+    var multipliers = ee.Image(harmonicList).multiply(ee.Number(Math.PI).float()) 
+    var sinInd = (t.multiply(ee.Image(multipliers))).sin().select(selectBands,sinNames).float()
+    var cosInd = (t.multiply(ee.Image(multipliers))).cos().select(selectBands,cosNames).float();
+    // var sinCosInd = sinInd.multiply(cosInd).select(selectBands,sinCosNames);
+    
+    return yearDateImg.addBands(sinInd.addBands(cosInd));//.addBands(sinCosInd)
+  }
+//////////////////////////////////////////////////////
+//Takes a dependent and independent variable and returns the dependent, 
+// sin of ind, and cos of ind
+//Intended for harmonic regression
+function getHarmonics2(collection,transformBandName,harmonicList){
+  var depBandNames = ee.Image(collection.first()).bandNames().remove(transformBandName);
+  var depBandNumbers = depBandNames.map(function(dbn){
+    return depBandNames.indexOf(dbn);
+  });
+  
+  var out = collection.map(function(img){
+    var outT = getHarmonicList(img,transformBandName,harmonicList)
+    .copyProperties(img,['system:time_start','system:time_end']);
+    return outT;
+  });
+ 
+
+  var indBandNames = ee.Image(out.first()).bandNames().removeAll(depBandNames);
+  var indBandNumbers = indBandNames.map(function(ind){
+    return ee.Image(out.first()).bandNames().indexOf(ind);
+  });
+  
+  out = out.set({'indBandNames':indBandNames,'depBandNames':depBandNames,
+                'indBandNumbers':indBandNumbers,'depBandNumbers':depBandNumbers
+  });
+  
+  return out;
+}
+////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+//Simplifies the use of the robust linear regression reducer
+//Assumes the dependent is the first band and all subsequent bands are independents
+function newRobustMultipleLinear2(dependentsIndependents){//,dependentBands,independentBands){
+  //Set up the band names
+
+  var dependentBands = ee.List(dependentsIndependents.get('depBandNumbers'));
+  var independentBands = ee.List(dependentsIndependents.get('indBandNumbers'));
+  var bns = ee.Image(dependentsIndependents.first()).bandNames();
+  var dependents = ee.List(dependentsIndependents.get('depBandNames'));
+  var independents = ee.List(dependentsIndependents.get('indBandNames'));
+  
+  // var dependent = bns.slice(0,1);
+  // var independents = bns.slice(1,null)
+  var noIndependents = independents.length().add(1);
+  var noDependents = dependents.length();
+  
+  var outNames = ee.List(['intercept']).cat(independents);
+ 
+  //Add constant band for intercept and reorder for 
+  //syntax: constant, ind1,ind2,ind3,indn,dependent
+  var forFit = dependentsIndependents.map(function(img){
+    var out = img.addBands(ee.Image(1).select([0],['constant']));
+    out = out.select(ee.List(['constant',independents]).flatten());
+    return out.addBands(img.select(dependents));
+  });
+  
+  //Apply reducer, and convert back to image with respective bandNames
+  var reducerOut = forFit.reduce(ee.Reducer.linearRegression(noIndependents,noDependents));
+  // var test = forFit.reduce(ee.Reducer.robustLinearRegression(noIndependents,noDependents,0.2))
+  // var resids = test
+  // .select([1],['residuals']).arrayFlatten([dependents]);
+  // Map.addLayer(resids,{},'residsImage');
+  // Map.addLayer(reducerOut.select([0]),{},'coefficients');
+  // Map.addLayer(test.select([1]),{},'tresiduals');
+  // Map.addLayer(reducerOut.select([1]),{},'roresiduals');
+  reducerOut = reducerOut
+  .select([0],['coefficients']).arrayTranspose().arrayFlatten([dependents,outNames]);
+  reducerOut = reducerOut
+  .set({'noDependents':ee.Number(noDependents),
+  'modelLength':ee.Number(noIndependents)
+    
+  });
+  
+  return reducerOut;
+};
+
+
+/////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////
+function getPhaseAmplitude(coeffs){
+  //Parse the model
+  var bandNames = coeffs.bandNames();
+  var bandNumber = bandNames.length();
+  var noDependents = ee.Number(coeffs.get('noDependents'));
+  var modelLength = ee.Number(coeffs.get('modelLength'));
+  var interceptBands = ee.List.sequence(0,bandNumber.subtract(1),modelLength);
+  
+  var models = ee.List.sequence(0,noDependents.subtract(1));
+  var parsedModel =models.map(function(mn){
+    mn = ee.Number(mn);
+    return bandNames.slice(mn.multiply(modelLength),mn.multiply(modelLength).add(modelLength));
+  });
+  // print('Parsed harmonic regression model',parsedModel);
+
+  
+  var phaseAmplitude =parsedModel.map(function(pm){
+      pm = ee.List(pm);
+      var modelCoeffs = coeffs.select(pm);
+      var outName = ee.String(ee.String(pm.get(1)).split('_').get(0));
+      var intercept = modelCoeffs.select(modelCoeffs.bandNames().slice(0,1));
+      var others = modelCoeffs.select(modelCoeffs.bandNames().slice(1,null));
+      
+      var regCoeffs = modelCoeffs.select(modelCoeffs.bandNames().slice(2,null));
+      var amplitude = regCoeffs.pow(2).reduce(ee.Reducer.sum()).sqrt().rename([outName.cat('_amplitude')])
+                      .multiply(5);
+      // var amplitude2 = regCoeffs.select([1]).hypot(regCoeffs.select([0])).rename(['amplitude2']);
+      var phase = regCoeffs.select([0]).atan2(regCoeffs.select([1]))
+      .unitScale(-Math.PI, Math.PI)
+      // .divide(2).multiply(365).multiply(0.01)
+      .rename([outName.cat('_phase')]);
+      
+      return amplitude.addBands(phase);
+    
+    });
+    //Convert to an image
+    phaseAmplitude = ee.ImageCollection.fromImages(phaseAmplitude);
+    return collectionToImage(phaseAmplitude);
+
+
+}
+/////////////////////////////////////////////////////
+//Function for applying harmonic regression model to set of predictor sets
+function newPredict(coeffs,harmonics){
+  //Parse the model
+  var bandNames = coeffs.bandNames();
+  var bandNumber = bandNames.length();
+  var noDependents = ee.Number(coeffs.get('noDependents'));
+  var modelLength = ee.Number(coeffs.get('modelLength'));
+  var interceptBands = ee.List.sequence(0,bandNumber.subtract(1),modelLength);
+  var timeBand = ee.List(harmonics.get('indBandNames')).get(0);
+  var actualBands = harmonics.get('depBandNumbers');
+  var indBands = harmonics.get('indBandNumbers');
+  var indBandNames = ee.List(harmonics.get('indBandNames'));
+  var depBandNames = ee.List(harmonics.get('depBandNames'));
+  var predictedBandNames = depBandNames.map(function(depbnms){return ee.String(depbnms).cat('_predicted')});
+  var predictedBandNumbers = ee.List.sequence(0,predictedBandNames.length().subtract(1));
+
+  var models = ee.List.sequence(0,noDependents.subtract(1));
+  var parsedModel =models.map(function(mn){
+    mn = ee.Number(mn);
+    return bandNames.slice(mn.multiply(modelLength),mn.multiply(modelLength).add(modelLength));
+  });
+  // print('Parsed harmonic regression model',parsedModel,predictedBandNames);
+  
+  //Apply parsed model
+  var predicted =harmonics.map(function(img){
+    var time = img.select(timeBand);
+    var actual = img.select(actualBands).float();
+    var predictorBands = img.select(indBandNames);
+    
+    //Iterate across each model for each dependent variable
+    var predictedList =parsedModel.map(function(pm){
+      pm = ee.List(pm);
+      var modelCoeffs = coeffs.select(pm);
+      var outName = ee.String(pm.get(1)).cat('_predicted');
+      var intercept = modelCoeffs.select(modelCoeffs.bandNames().slice(0,1));
+      var others = modelCoeffs.select(modelCoeffs.bandNames().slice(1,null));
+    
+      predicted = predictorBands.multiply(others).reduce(ee.Reducer.sum()).add(intercept).float();
+      return predicted.float();
+    
+    });
+    //Convert to an image
+    predictedList = ee.ImageCollection.fromImages(predictedList);
+    var predictedImage = collectionToImage(predictedList).select(predictedBandNumbers,predictedBandNames);
+    
+    //Set some metadata
+    var out = actual.addBands(predictedImage.float())
+    .copyProperties(img,['system:time_start','system:time_end']);
+    return out;
+    
+  });
+  predicted = ee.ImageCollection(predicted);
+  // var g = Chart.image.series(predicted,plotPoint,ee.Reducer.mean(),90);
+  // print(g);
+  // Map.addLayer(predicted,{},'predicted',false);
+  
+  return predicted;
+}
+//////////////////////////////////////////////////////
+//Function to get a dummy image stack for synthetic time series
+function getDateStack(startYear,endYear,startJulian,endJulian,frequency){
+  var years = ee.List.sequence(startYear,endYear);
+  var dates = ee.List.sequence(startJulian,endJulian,frequency);
+  //print(startYear,endYear,startJulian,endJulian)
+  var dateSets = years.map(function(yr){
+    var ds = dates.map(function(d){
+      return ee.Date.fromYMD(yr,1,1).advance(d,'day');
+    });
+    return ds;
+  });
+  var l = range(1,indexNames.length+1);
+  l = l.map(function(i){return i%i});
+  var c = ee.Image(l).rename(indexNames);
+  c = c.divide(c);
+ 
+  dateSets = dateSets.flatten();
+  var stack = dateSets.map(function(dt){
+    dt = ee.Date(dt);
+    var y = dt.get('year');
+    var d = dt.getFraction('year');
+    var i = ee.Image(y.add(d)).float().select([0],['year']);
+    
+    i = c.addBands(i).float()
+    .set('system:time_start',dt.millis())
+    .set('system:time_end',dt.advance(frequency,'day').millis());
+    return i;
+    
+  });
+  stack = ee.ImageCollection.fromImages(stack);
+  return stack;
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+function getHarmonicCoefficientsAndFit(allImages,indexNames,whichHarmonics){
+  
+  //Select desired bands
+  var allIndices = allImages.select(indexNames);
+  
+  //Add date band
+  allIndices = allIndices.map(addDateBand);
+  
+  //Add independent predictors (harmonics)
+  var withHarmonics = getHarmonics2(allIndices,'year',whichHarmonics);
+  var withHarmonicsBns = ee.Image(withHarmonics.first()).bandNames().slice(indexNames.length+1,null);
+  
+  //Optionally chart the collection with harmonics
+  // var g = Chart.image.series(withHarmonics.select(withHarmonicsBns),plotPoint,ee.Reducer.mean(),30);
+  // print(g);
+  
+  //Fit a linear regression model
+  var coeffs = newRobustMultipleLinear2(withHarmonics);
+  
+  //Can visualize the phase and amplitude if only the first ([2]) harmonic is chosen
+  // if(whichHarmonics == 2){
+  //   var pa = getPhaseAmplitude(coeffs);
+  // // Turn the HSV data into an RGB image and add it to the map.
+  // var seasonality = pa.select([1,0]).addBands(allIndices.select([indexNames[0]]).mean()).hsvToRgb();
+  // // Map.addLayer(seasonality, {}, 'Seasonality');
+  // }
+  
+  
+  
+  // Map.addLayer(coeffs,{},'Harmonic Regression Coefficients',false);
+  var predicted = newPredict(coeffs,withHarmonics);
+  return [coeffs,predicted];
+}
+///////////////////////////////////////////////////////////////
+// function getHarmonicFit(allImages,indexNames,whichHarmonics){
+//   getHarmonicCoefficients(allImages,indexNames,whichHarmonics)
+//   // newPredict(coeffs,withHarmonics)
+  
+// //   var dateStack = getDateStack(startDate.get('year'),endDate.get('year'),startDate.getFraction('year').multiply(365),endDate.getFraction('year').multiply(365),syntheticFrequency);
+// //   var synthHarmonics = getHarmonics2(dateStack,'year',whichHarmonics)
+// //   var predictedBandNames = indexNames.map(function(nm){
+// //     return ee.String(nm).cat('_predicted')
+// //   })
+// //   var syntheticStack = ee.ImageCollection(newPredict(coeffs,synthHarmonics)).select(predictedBandNames,indexNames)
+ 
+// //   //Filter out and visualize synthetic test image
+// //   Map.addLayer(syntheticStack.median(),vizParams,'Synthetic All Images Composite',false);
+// //   var test1ImageSynth = syntheticStack.filterDate(test1Start,test1End);
+// //   Map.addLayer(test1ImageSynth,vizParams,'Synthetic Test 1 Composite',false);
+// //   var test2ImageSynth = syntheticStack.filterDate(test2Start,test2End);
+// //   Map.addLayer(test2ImageSynth,vizParams,'Synthetic Test 2 Composite',false);
+  
+  
+// //   //Export image for download
+// //   var forExport = setNoData(coeffs.clip(sa),outNoData);
+// //   Map.addLayer(forExport,vizParamsCoeffs,'For Export',false);
+// //   Export.image(forExport,exportName,{'crs':crs,'region':regionJSON,'scale':exportRes,'maxPixels':1e13})
+  
+// //   Export.table(ee.FeatureCollection([metaData]),exportName + '_metadata');
+// //   return syntheticStack
+// }
 ////////////////////////////////////////////////////////////////////////////////
 // END FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
+exports.sieve = sieve;
+exports.setNoDate = setNoData;
+exports.addYearBand = addYearBand;
+exports.addDateBand = addDateBand;
+exports.collectionToImage = collectionToImage;
 exports.getImageCollection = getImageCollection;
 exports.vizParamsFalse = vizParamsFalse;
 exports.vizParamsTrue = vizParamsTrue;
@@ -1147,15 +1717,27 @@ exports.cFmask = cFmask;
 exports.simpleTDOM2 = simpleTDOM2;
 exports.addIndices = addIndices;
 exports.simpleAddIndices = simpleAddIndices;
+exports.getTasseledCap = getTasseledCap;
+exports.simpleAddTCAngles = simpleAddTCAngles;
 exports.compositeTimeSeries = compositeTimeSeries;
 exports.addZenithAzimuth = addZenithAzimuth;
 exports.illuminationCorrection = illuminationCorrection;
 exports.illuminationCondition = illuminationCondition;
 exports.addTCAngles = addTCAngles;
 exports.simpleAddTCAngles = simpleAddTCAngles;
-exports.exportCollection = exportCollection;
-
+exports.exportCompositeCollection = exportCompositeCollection;
+exports.getLandsatWrapper = getLandsatWrapper;
+exports.getProcessedLandsatScenes = getProcessedLandsatScenes;
 
 exports.getModisData = getModisData;
 exports.modisCloudScore = modisCloudScore;
 exports.despikeCollection = despikeCollection;
+exports.exportToAssetWrapper = exportToAssetWrapper;
+exports.exportToAssetWrapper2 = exportToAssetWrapper2;
+exports.joinCollections = joinCollections;
+exports.listToString = listToString;
+exports.harmonizationRoy = harmonizationRoy;
+exports.fillEmptyCollections = fillEmptyCollections;
+
+exports.getHarmonicCoefficientsAndFit = getHarmonicCoefficientsAndFit;
+exports.getPhaseAmplitude = getPhaseAmplitude;
