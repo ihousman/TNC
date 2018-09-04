@@ -108,7 +108,12 @@ var addYear = function(image) {
     }
 //////////////////////////////////////////////////////
 //////////
-
+//Helper to multiply image
+function multBands(img,distDir,by){
+    var out = img.multiply(ee.Image(distDir).multiply(by));
+    out  = out.copyProperties(img,['system:time_start']);
+    return out;
+  }
 //Function for zero padding
 //Taken from: https://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
 function pad(n, width, z) {
@@ -169,6 +174,7 @@ var endYear = 2018;
 
 var ls = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var ts = compositeTimeSeries(ls,startYear,endYear,timeBuffer,weights,compositingMethod)
+        .map(function(img){return multBands(img,1,0.0001)})
         .map(simpleAddIndices)
         .map(getTasseledCap)
         .map(simpleAddTCAngles)
