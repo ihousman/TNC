@@ -157,13 +157,14 @@ var igdeyr = years.map(function(yr){
       d = ee.Number(d);
       var tt = t.filter(ee.Filter.gte('AvgAnnD',d));
       var ttFill = ee.Image().paint(tt,1);
-      ttFill = ttFill.where(ttFill.mask(),d).int16();
+      ttFill = ttFill.where(ttFill.mask(),d).float();
       return ttFill.rename(['AvgAnnD']);
       
     });
     depthC  = ee.ImageCollection.fromImages(depthC).max().divide(100)
               .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
               .rename(['Depth-To-Groundwater-divided-by-one-hundred']);
+    depthC = depthC.updateMask(depthC.neq(0.5))
     // Map.addLayer(depthC,{},yr,false)
     return depthC;
    
