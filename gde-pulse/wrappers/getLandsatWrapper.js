@@ -127,8 +127,7 @@ var outputName = 'Medoid-Landsat_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-// var exportPathRoot = 'projects/USFS/LCMS-NFS/R1/FNF/Composites/FNF-Composite-Collection';
-var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Composites/BT-Composite-Collection';
+var exportPathRoot = 'projects/igde-work/raster-data/composite-collection';
 
 
 //CRS- must be provided.  
