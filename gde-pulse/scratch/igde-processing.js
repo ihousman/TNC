@@ -139,11 +139,10 @@ var years = ee.List.sequence(1985,2018);
 var depths = ee.List.sequence(0,50,1);
 
 //Reformat the igdes to have a unique feature per year
-var reformatted = years.map(function(yz){
-  yz = ee.String(yz);
-  var fieldName =ee.String('Depth').cat(ee.String(yz));
+var reformatted = years.getInfo().map(function(yz){
+  var fieldName ='Depth'+ yz.toString();
   var t = f.select([fieldName], ['AvgAnnD'])
-          .map(function(ft){return ft.set('year',ee.Number.parse(yz))});
+          .map(function(ft){return ft.set('year',yz)});
   return t;
 });
 
