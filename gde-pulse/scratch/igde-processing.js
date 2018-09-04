@@ -136,7 +136,9 @@ var years = ee.List.sequence(1985,2018);
 // var yearsZ = years.zip(yearsInt).getInfo();
 
 //Specify which depths to look at
-var depths = ee.List.sequence(0,51,1);
+var minDepth = 0;
+var maxDepth = 100;
+var depths = ee.List.sequence(minDepth,maxDepth,5);
 
 //Reformat the igdes to have a unique feature per year
 var reformatted = years.getInfo().map(function(yz){
@@ -164,7 +166,7 @@ var igdeyr = years.map(function(yr){
     depthC  = ee.ImageCollection.fromImages(depthC).max().divide(100)
               .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
               .rename(['Depth-To-Groundwater-divided-by-one-hundred']);
-    depthC = depthC.updateMask(depthC.neq(0.51))
+    depthC = depthC.updateMask(depthC.neq(maxDepth*0.01))
     // Map.addLayer(depthC,{},yr,false)
     return depthC;
    
