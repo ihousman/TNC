@@ -1,33 +1,31 @@
 //Module imports
-<<<<<<< HEAD
-var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
-///////////////////////////////////////////////////////////////////////////////
-=======
 var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
-var igdes = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1_joined_ndvi_annDepth').geometry();
-
-////////////////////////////////////////////////////////////////////////////////
->>>>>>> ad93cd65bac3b7c5d3aacb3bf961a51afae5cb93
+///////////////////////////////////////////////////////////////////////////////
 // Define user parameters:
 
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var studyArea = igdes.bounds();
+var studyArea = ee.Feature(ee.FeatureCollection('TIGER/2016/States')
+            .filter(ee.Filter.eq('NAME','California'))
+            .first())
+            .convexHull(10000)
+            .buffer(10000)
+            .geometry();
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
 // endJulian: Ending Julian date
-var startJulian = 1;
-var endJulian = 365; 
+var startJulian = 190;
+var endJulian = 250; 
 
 // 3. Specify start and end years for all analyses
 // More than a 3 year span should be provided for time series methods to work 
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
-var startYear = 1985;
-var endYear = 2018;
+var startYear = 1983;
+var endYear = 1985;
 
 // 4. Specify an annual buffer to include imagery from the same season 
 // timeframe from the prior and following year. timeBuffer = 1 will result 
@@ -62,7 +60,7 @@ var includeSLCOffL7 = false;
 //9. Whether to defringe L5
 //Landsat 5 data has fringes on the edges that can introduce anomalies into 
 //the analysis.  This method removes them, but is somewhat computationally expensive
-var defringeL5 = false;
+var defringeL5 = true;
 
 // 10. Choose cloud/cloud shadow masking method
 // Choices are a series of booleans for cloudScore, TDOM, and elements of Fmask
@@ -125,12 +123,12 @@ var correctScale = 250;//Choose a scale to reduce on- 250 generally works well
 var exportComposites = true;
 
 //Set up Names for the export
-var outputName = 'Medoid-Landsat';
+var outputName = 'Medoid-Landsat_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'users/ianhousman/test';
-
+// var exportPathRoot = 'projects/USFS/LCMS-NFS/R1/FNF/Composites/FNF-Composite-Collection';
+var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Composites/BT-Composite-Collection';
 
 
 //CRS- must be provided.  
@@ -151,7 +149,6 @@ var scale = null;
 //Start function calls
 
 ////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
 //Call on master wrapper function to get Landat scenes and composites
 var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJulian,endJulian,
   timebuffer,weights,compositingMethod,
@@ -164,76 +161,6 @@ var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJul
 //Separate into scenes and composites for subsequent analysis
 var processedScenes = lsAndTs[0];
 var processedComposites = lsAndTs[1];
-=======
-// Get Landsat image collection
-var ls = getImageLib.getImageCollection(studyArea,startDate,endDate,startJulian,endJulian,
-  toaOrSR,includeSLCOffL7,defringeL5);
-
-// Apply relevant cloud masking methods
-if(applyCloudScore){
-  print('Applying cloudScore');
-  ls = getImageLib.applyCloudScoreAlgorithm(ls,getImageLib.landsatCloudScore,cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels); 
-  
-}
-
-if(applyFmaskCloudMask){
-  print('Applying Fmask cloud mask');
-  ls = ls.map(function(img){return getImageLib.cFmask(img,'cloud')});
-}
-
-if(applyTDOM){
-  print('Applying TDOM');
-  //Find and mask out dark outliers
-  ls = getImageLib.simpleTDOM2(ls,zScoreThresh,shadowSumThresh,contractPixels,dilatePixels);
-}
-if(applyFmaskCloudShadowMask){
-  print('Applying Fmask shadow mask');
-  ls = ls.map(function(img){return getImageLib.cFmask(img,'shadow')});
-}
-if(applyFmaskSnowMask){
-  print('Applying Fmask snow mask');
-  ls = ls.map(function(img){return getImageLib.cFmask(img,'snow')});
-}
-
-
-
-// Add zenith and azimuth
-if (correctIllumination){
-  ls = ls.map(function(img){
-    return getImageLib.addZenithAzimuth(img,toaOrSR);
-  });
-}
-
-// Add common indices- can use addIndices for comprehensive indices 
-//or simpleAddIndices for only common indices
-ls = ls.map(getImageLib.simpleAddIndices);
-
-
-Map.addLayer(ls.select(['NBR']))
-// Create composite time series
-var ts = getImageLib.compositeTimeSeries(ls,startYear,endYear,startJulian,endJulian,timebuffer,weights,compositingMethod);
-
-var f = ee.Image(ts.first());
-Map.addLayer(f,getImageLib.vizParamsFalse,'First-non-illuminated',false);
-
-// Correct illumination
-if (correctIllumination){
-  print('Correcting illumination');
-  ts = ts.map(getImageLib.illuminationCondition)
-    .map(function(img){
-      return getImageLib.illuminationCorrection(img, correctScale,studyArea);
-    });
-  var f = ee.Image(ts.first());
-  Map.addLayer(f,getImageLib.vizParamsFalse,'First-illuminated',false);
-}
-
-
-// Export composite collection
-// var exportBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'temp'];
-// getImageLib.exportCollection(exportPathRoot,outputName,studyArea,crs,transform,scale,
-// ts,startYear,endYear,startJulian,endJulian,compositingMethod,timebuffer,exportBands,toaOrSR,weights,
-//               applyCloudScore, applyFmaskCloudMask,applyTDOM,applyFmaskCloudShadowMask,applyFmaskSnowMask,includeSLCOffL7,correctIllumination);
->>>>>>> ad93cd65bac3b7c5d3aacb3bf961a51afae5cb93
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load the study region, with a blue outline.
@@ -247,10 +174,6 @@ var outline = empty.paint({
 });
 Map.addLayer(outline, {palette: '0000FF'}, "Study Area", false);
 // Map.centerObject(studyArea, 6);
-<<<<<<< HEAD
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-=======
-Map.addLayer(igdes,{'color':'F00'})
->>>>>>> ad93cd65bac3b7c5d3aacb3bf961a51afae5cb93
