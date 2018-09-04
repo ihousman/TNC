@@ -103,7 +103,7 @@ var years = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo();
     .set('system:time_start',ee.Date.fromYMD(year,6,1).millis());
  
   var exportName = 'LT-Fit_' + year.toString();
-    var exportPath = outputBaseFolder + '/LANDTRENDR-Collection/'+ exportName;
+    var exportPath = outputBaseFolder + '/'+ exportName;
     
     getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
       studyArea,null,crs,transform);
