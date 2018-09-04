@@ -172,8 +172,8 @@ igdeyr = ee.ImageCollection.fromImages(igdeyr);
 var startYear = 1985;
 var endYear = 2018;
 
-var ls = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
-var ts = compositeTimeSeries(ls,startYear,endYear,timeBuffer,weights,compositingMethod)
+var ts = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
+var ts = ts
         .map(function(img){return multBands(img,1,0.0001)})
         .map(simpleAddIndices)
         .map(getTasseledCap)
