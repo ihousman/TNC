@@ -166,12 +166,8 @@ igdeyr = ee.ImageCollection.fromImages(igdeyr);
 
 var startYear = 1985;
 var endYear = 2018;
-var startJulian = 190;
-var endJulian = 250;
-var timeBuffer = 2;
-var weights = [1,1,5,1,1];
-var compositingMethod = 'medoid'
-var ls = getLandsat(startYear,endYear,startJulian,endJulian,eeBoundsPoly);
+
+var ls = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var ts = compositeTimeSeries(ls,startYear,endYear,timeBuffer,weights,compositingMethod)
         .map(simpleAddIndices)
         .map(getTasseledCap)
