@@ -1,28 +1,20 @@
 //Module imports
-var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
-var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
+var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
 
 // Define study area
-var studyAreaName = 'FNF'
-var paramDict = {'FNF': ['projects/USFS/LCMS-NFS/R1/FNF/Landcover/FNF-Landcover-Collection/',
-                        'projects/USFS/LCMS-NFS/R1/FNF/Composites/FNF-Composite-Collection',
-                        'projects/USFS/LCMS-NFS/R1/FNF/TimeSync/FNF_TimeSync_Annualized_Table',
-                         ee.FeatureCollection('projects/USFS/LCMS-NFS/R1/FNF/FNF_GNP_Merge_Admin_BND_1k').geometry(),
-                         'projects/USFS/LCMS-NFS/R1/FNF/Base-Learners'
-                        ],
-                  'BT': ['projects/USFS/LCMS-NFS/R4/BT/Landcover/BT-Landcover-Collection/',
-                        'projects/USFS/LCMS-NFS/R4/BT/Composites/BT-Composite-Collection',
-                        'projects/USFS/LCMS-NFS/R4/BT/TimeSync/BT_TimeSync_Annualized_Table_s',
-                         ee.FeatureCollection('projects/USFS/LCMS-NFS/R4/BT/BT_LCMS_ProjectArea_5km').geometry(),
-                         'projects/USFS/LCMS-NFS/R4/BT/Base-Learners'
-                        ]      
-};
-var studyArea = paramDict[studyAreaName][3];
+var studyAreaName = 'CA'
+var studyArea = ee.Feature(ee.FeatureCollection('TIGER/2016/States')
+            .filter(ee.Filter.eq('NAME','California'))
+            .first())
+            .convexHull(10000)
+            .buffer(10000)
+            .geometry();
+
 var studyAreaBounds = studyArea.bounds();
-var outputBaseFolder = paramDict[studyAreaName][4]
-var trainingData = ee.FeatureCollection(paramDict[studyAreaName][2])
+var outputBaseFolder = 'projects/igde-work/raster-data/LANDTRENDR-collection'
 var startYear = 1983;
 var endYear = 2019;
 var timebuffer = 1;
