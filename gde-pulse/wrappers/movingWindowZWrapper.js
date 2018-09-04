@@ -21,8 +21,9 @@ dLib.getExistingChangeData();
 var studyArea = ee.Feature(ee.FeatureCollection('TIGER/2016/States')
             .filter(ee.Filter.eq('NAME','California'))
             .first())
-            .convexHull(1000)
-            .buffer(10000);
+            .convexHull(10000)
+            .buffer(10000)
+            .geometry();
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
