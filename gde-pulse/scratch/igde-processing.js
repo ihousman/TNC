@@ -146,7 +146,7 @@ var igdeyr = years.getInfo().map(function(yz){
   t = depth;
   t = t.updateMask(t.select([0]).lt(1000))
       .divide(100)
-      .addBands(tID).int64()
+      .addBands(tID.int64())
       .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
       .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
   return t;
@@ -164,9 +164,10 @@ var ts = ts
         .map(addYear)
 var joined = joinCollections(ts.select(['NDVI','NBR']),igdeyr) ;
 joined = joined.map(function(img){
-  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 100)
-  out = out.copyProperties(img,['system:time_start'])
-  return out
+  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 256);
+  // out = out.addBands(img.select([0,1,2]))
+  out = out.copyProperties(img,['system:time_start']);
+  return out;
   
 })
 Map.addLayer(joined,{'min':0,'max':0.5},'igde depth to gw (divided by 100)',false);
