@@ -135,46 +135,23 @@ var years = ee.List.sequence(1985,2018);
 // var yearsInt = ee.List.sequence(1985,2018);
 // var yearsZ = years.zip(yearsInt).getInfo();
 
-//Specify which depths to look at
-var minDepth = 0;
-var maxDepth = 100;
-var depths = ee.List.sequence(minDepth,maxDepth,5);
-
 //Reformat the igdes to have a unique feature per year
-var reformatted = years.getInfo().map(function(yz){
+var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
-  var t = f.select([fieldName], ['AvgAnnD'])
-          .map(function(ft){return ft.set('year',yz)});
+  // var t = f.select([fieldName], ['AvgAnnD'])
+  //         .map(function(ft){return ft.set('year',yz)});
+  var t = f.select([fieldName], ['AvgAnnD']);
+  var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
+  var tID = f.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
+  t = depth;
+  t = t.updateMask(t.select([0]).lt(1000))
+      .divide(100)
+      .addBands(tID).int64()
+      .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
+      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
   return t;
 });
-
-reformatted = ee.FeatureCollection(reformatted).flatten();
-Map.addLayer(f);
-
-//Convert each year-feature to a raster by iterating across the depths
-var igdeyr = years.map(function(yr){
-    yr = ee.Number(yr);
-    var t = reformatted.filter(ee.Filter.equals('year',yr));
-    var depthC = depths.map(function(d){
-      d = ee.Number(d);
-      var tt = t.filter(ee.Filter.gte('AvgAnnD',d));
-      var ttFill = ee.Image().paint(tt,1);
-      ttFill = ttFill.where(ttFill.mask(),d).float();
-      return ttFill.rename(['AvgAnnD']);
-      
-    });
-    depthC  = ee.ImageCollection.fromImages(depthC).max().divide(100)
-              .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
-              .rename(['Depth-To-Groundwater-divided-by-one-hundred']);
-    depthC = depthC.updateMask(depthC.neq(maxDepth*0.01))
-    // Map.addLayer(depthC,{},yr,false)
-    return depthC;
-   
-  });
-//Reformat time series of depth to gw
-igdeyr = ee.ImageCollection.fromImages(igdeyr);
-
-
+igdeyr = ee.ImageCollection(igdeyr);
 var startYear = 1985;
 var endYear = 2018;
 
@@ -186,7 +163,12 @@ var ts = ts
         .map(simpleAddTCAngles)
         .map(addYear)
 var joined = joinCollections(ts.select(['NDVI','NBR']),igdeyr) ;
-
+joined = joined.map(function(img){
+  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 100)
+  out = out.copyProperties(img,['system:time_start'])
+  return out
+  
+})
 Map.addLayer(joined,{'min':0,'max':0.5},'igde depth to gw (divided by 100)',false);
 
 
