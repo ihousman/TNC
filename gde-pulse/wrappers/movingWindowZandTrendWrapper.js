@@ -196,7 +196,7 @@ var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDa
 var dates = zAndTrendCollection[1];
 zAndTrendCollection = zAndTrendCollection[0];
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
-print(zAndTrendCollection)
+
 // dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
 dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
