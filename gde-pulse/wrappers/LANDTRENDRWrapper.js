@@ -93,6 +93,7 @@ var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJul
 
 //Separate into scenes and composites for subsequent analysis
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
+        .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
         .map(getImageLib.simpleAddIndices)
         .map(getImageLib.getTasseledCap)
@@ -100,6 +101,8 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
 Map.addLayer(composites.select(['SAVI','EVI']),{},'savi',false);
+var startYear = ee.Date(ee.Image(composites.first()).get('system:time_start')).get('year').getInfo();
+print(startYear)
 ////////////////////////////////////////////////////////////
 //Landtrendr code
 var indexListString = getImageLib.listToString(indexList,'_');
