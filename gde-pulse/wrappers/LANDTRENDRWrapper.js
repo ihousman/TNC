@@ -22,9 +22,8 @@ dLib.getExistingChangeData();
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
 var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg').geometry()
-Map.addLayer(sa)
 var studyArea =sa.bounds();
-Map.addLayer(studyArea)
+
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
@@ -246,25 +245,25 @@ indexDirList.map(function(indexDir){
 Map.addLayer(outputCollection,{},'LT Fitted IndexNames',false);
 Map.addLayer(outputStack.select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},indexList[0] + ' LT Change Year',false);
   
-// Export each fitted year
-var years = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo();
+// // Export each fitted year
+// var years = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo();
 
-  years.map(function(year){
-    var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
-    .multiply(10000).int16()
-    .set('bandsUsed',indexListString)
-    .set('system:time_start',ee.Date.fromYMD(year,6,1).millis());
+//   years.map(function(year){
+//     var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
+//     .multiply(10000).int16()
+//     .set('bandsUsed',indexListString)
+//     .set('system:time_start',ee.Date.fromYMD(year,6,1).millis());
  
-  var exportName = outputName + year.toString();
-    var exportPath = exportPathRoot + '/'+ exportName;
+//   var exportName = outputName + year.toString();
+//     var exportPath = exportPathRoot + '/'+ exportName;
     
-    getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
-      studyArea,null,crs,transform);
-  });
+//     getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
+//       studyArea,null,crs,transform);
+//   });
   
-//Export thresholded stack
-var exportName = outputName + 'LT_Stack';
-var exportPath = exportPathRoot + '/'+ exportName;
+// //Export thresholded stack
+// var exportName = outputName + 'LT_Stack';
+// var exportPath = exportPathRoot + '/'+ exportName;
     
-getImageLib.exportToAssetWrapper(outputStack,exportName,exportPath,'mean',
-      studyArea,null,crs,transform);
+// getImageLib.exportToAssetWrapper(outputStack,exportName,exportPath,'mean',
+//       studyArea,null,crs,transform);
