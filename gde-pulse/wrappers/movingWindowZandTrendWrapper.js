@@ -174,6 +174,11 @@ var zReducer = ee.Reducer.mean();
 //the years included in the trend analysis would be 1986,1987,1988,1989, and 1990
 var epochLength = 5;
 
+//Whether to reduce the collection to an annual median stack
+//Since linear regression can be leveraged by outliers, this generally
+//improves the trend analysis, but does get rid of a lot of potentially
+//good data
+var useAnnualMedianForTrend
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +199,7 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 
 
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
-          baselineLength,baselineGap,epochLength,zReducer,true,
+          baselineLength,baselineGap,epochLength,zReducer,false,
           false);
           // exportImages,exportPathRoot,studyArea,scale,crs,transform);
 
