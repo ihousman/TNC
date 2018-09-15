@@ -83,13 +83,6 @@ var distParams = {
 ///////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //Call on master wrapper function to get Landat scenes and composites
-var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJulian,endJulian,
-  timebuffer,weights,compositingMethod,
-  toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
-  applyFmaskCloudShadowMask,applyFmaskSnowMask,
-  cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels,
-  correctIllumination,correctScale,
-  exportComposites,outputName,exportPathRoot,crs,transform,scale);
 
 //Separate into scenes and composites for subsequent analysis
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
@@ -101,12 +94,10 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
 Map.addLayer(composites.select(['SAVI','EVI']),{},'savi',false);
+var startYear = ee.Date(ee.Image(composites.first()).get('system:time_start')).get('year').getInfo();
+var endYear = ee.Date(ee.Image(composites.sort('system:time_start',false).first()).get('system:time_start')).get('year').getInfo();
 
-var startYear = 1984;
-var endYear = 2018;
-var startJulian = 190;
-var endJulian = 250;
-
+print(startYear,endYear)
 ////////////////////////////////////////////////////////////
 //Landtrendr code
 var indexListString = getImageLib.listToString(indexList,'_');
