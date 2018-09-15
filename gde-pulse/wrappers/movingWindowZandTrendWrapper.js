@@ -195,7 +195,6 @@ var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDa
           baselineLength,baselineGap,epochLength,zReducer);
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
 
-print(ee.Image(zAndTrendCollection.first()).bandNames())
 // dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
 dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
