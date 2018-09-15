@@ -33,7 +33,7 @@ var endJulian = 121+(64*2)
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
 var startYear = 1984;
-var endYear = 1992;
+var endYear = 2018;
 
 
 
