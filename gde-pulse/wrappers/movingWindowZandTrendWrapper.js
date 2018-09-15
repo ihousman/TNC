@@ -195,7 +195,8 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
           baselineLength,baselineGap,epochLength,zReducer,
-          exportImages,exportPathRoot,studyArea,scale,crs,transform);
+          false);
+          // exportImages,exportPathRoot,studyArea,scale,crs,transform);
 
 
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
