@@ -47,11 +47,10 @@ var scale = null;
 //Can include: 'blue','green','red','nir','swir1','swir2'
 //'NBR','NDVI','wetness','greenness','brightness','tcAngleBG'
 // var indexList = ee.List(['nir','swir1']);
-var indexList = ['NBR','SAVI','EVI'];//['NBR','blue','green','red','nir','swir1','swir2','NDMI','NDVI','wetness','greenness','brightness','tcAngleBG'];
+var indexList = ['blue','green','red','nir','swir1','swir2','NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
 
 //The corresponding direction of forest loss for the given band/index specified above in indexList
-// var ltDirection = ee.List([-1,    1]);
-var ltDirection =[-1,-1,-1];//[-1,1,-1,1,-1,    1,      1,   -1, -1,    -1,   -1,        1,          -1];
+var ltDirection =[1,-1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
 
 //Define landtrendr params
@@ -92,12 +91,12 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.getTasseledCap)
         .map(getImageLib.simpleAddTCAngles)
         .map(getImageLib.addSAVIandEVI)
-        .map(function(img){return img.clip(sa)});
+        // .map(function(img){return img.clip(sa)});
 var startYear = 1984;
 var endYear = 2018;
 var startJulian = 190;
 var endJulian = 190;
-Map.addLayer(ee.Image(composites.first()))
+Map.addLayer(ee.Image(composites.first()),getImageLib.vizParamsFalse,'comp')
 ////////////////////////////////////////////////////////////
 //Landtrendr code
 var indexListString = getImageLib.listToString(indexList,'_');
