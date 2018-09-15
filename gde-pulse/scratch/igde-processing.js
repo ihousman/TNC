@@ -1,147 +1,13 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var eeBoundsPoly = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-120.57117462158203, 36.92793899776678],
-          [-120.42423248291016, 36.93178119236919],
-          [-120.3936767578125, 37.00063338417457],
-          [-120.56636810302734, 36.99843985286533]]]);
+        [[[-123.23710937499999, 36.711100456320416],
+          [-118.66679687499999, 32.29497859165153],
+          [-114.53593749999999, 32.146267499165525],
+          [-113.65703124999999, 34.060348900863126],
+          [-119.36992187499999, 41.9418805699862],
+          [-124.73124999999999, 42.00722213878955]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-// var igde = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1');
-// var f = ee.Feature(igde.first())
-// console.log(f.getInfo())
-var sensorBandDict = {
-    'LC08': [1,2,3,4,5,7,6,'pixel_qa'],
-    'LE07': [0,1,2,3,4,5,6,'pixel_qa'],
-    'LT05': [0,1,2,3,4,5,6,'pixel_qa'],
-    'LT04': [0,1,2,3,4,5,6,'pixel_qa'],
-  };
-var bandNames = ['blue','green','red','nir','swir1','temp', 'swir2','pixel_qa'];
-/////////////////////////////////////////////////////////////////////////////////
-// Functions for applying fmask to SR data
-var fmaskBitDict = {'cloud' : 32, 'shadow': 8,'snow':16,'water':4};
 
-function cFmask(img,fmaskClass){
-  var m = img.select('pixel_qa').bitwiseAnd(fmaskBitDict[fmaskClass]).neq(0);
-  return img.updateMask(m.not());
-}
-
-var getLandsat = function(startYear,endYear,startJulian,endJulian,box,sensors,maskWhat){
-  if(sensors == undefined || sensors == null){
-    sensors = ['LT04','LT05','LE07','LC08']
-  };
-  if(maskWhat == undefined || maskWhat == null){
-    maskWhat = ['cloud','shadow']
-  }
-  
-  var ls =sensors.map(function(sensor){
-    var srCollection = ee.ImageCollection('LANDSAT/' + sensor + '/C01/T1_SR')
-                      .filterBounds(box)
-                      .filter(ee.Filter.calendarRange(startYear, endYear, 'year'))
-                      .filter(ee.Filter.calendarRange(startJulian, endJulian))
-                      .select(sensorBandDict[sensor],bandNames)
-    return srCollection
-  })
-  ls = ee.ImageCollection(ee.FeatureCollection(ls).flatten());
-  
-  
-  maskWhat.map(function(what){
-    print('Using Fmask to mask:',what)
-    ls = ls.map(function(img){return cFmask(img,what)})
-  })  
-  ls = ls.select(['blue','green','red','nir','swir1','temp', 'swir2'])
-  return ls
-  // Map.addLayer(ls.median(),{'min':1000,'max':3500,'bands':'swir1,nir,red'})
-}
-////////////////////////////////////////////////////////////////////
-// Function for computing the mean squared difference medoid from an image 
-// collection
-var  medoidMosaicMSD = function(inCollection,medoidIncludeBands) {
-  if(medoidIncludeBands == null || medoidIncludeBands == undefined){
-    medoidIncludeBands= ['blue','green','red','nir','swir1','swir2'];
-  }
-  // Find band names in first image
-  var f = ee.Image(inCollection.first());
-  var bandNames = f.bandNames();
-  var bandNumbers = ee.List.sequence(1,bandNames.length());
-  
-  
-  // Find the median
-  var median = inCollection.select(medoidIncludeBands).median();
-  
-  // Find the squared difference from the median for each image
-  var medoid = inCollection.map(function(img){
-    var diff = ee.Image(img).select(medoidIncludeBands).subtract(median)
-      .pow(ee.Image.constant(2));
-    return diff.reduce('sum').addBands(img);
-  });
-  
-  // Minimize the distance across all bands
-  medoid = ee.ImageCollection(medoid)
-    .reduce(ee.Reducer.min(bandNames.length().add(1)))
-    .select(bandNumbers,bandNames);
-
-  return medoid;
-}
-
-// Function to properly rescale bands of a composite
-function rescaleBands(composite){
-  var template = composite;
-  var compositeBands = composite.bandNames();
- 
-  var nonDivideBands = ee.List(['temp']);
-  var composite10k = composite.select(compositeBands.removeAll(nonDivideBands))
-    .divide(10000);
-  composite = composite.select(nonDivideBands).addBands(composite10k).select(compositeBands);
- return composite;
-}
-////////////////////////////////////////////////////////////////////////////////
-// Create composites for each year within startYear and endYear range
-function compositeTimeSeries(ls,startYear,endYear,timebuffer,weights,compositingMethod){
-
-  var ts = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo()
-    .map(function(year){
-    
-    // Set up dates
-    var startYearT = year-timebuffer;
-    var endYearT = year+timebuffer;
-    // var startDateT = ee.Date.fromYMD(startYearT,1,1).advance(startJulian-1,'day');
-    // var endDateT = ee.Date.fromYMD(endYearT,1,1).advance(endJulian-1,'day');
-  
-    // Filter images for given date range
-    // var lsT = ls.filterDate(startDateT,endDateT);
-    
-    var yearsT = ee.List.sequence(startYearT,endYearT);
-    
-    var z = yearsT.zip(weights);
-    var yearsTT = z.map(function(i){
-      i = ee.List(i);
-      return ee.List.repeat(i.get(0),i.get(1))
-    }).flatten();
-    // print(yearsTT)
-    var images = yearsTT.map(function(yr){
-      
-      // Filter images for given date range
-      var lsT = ls.filter(ee.Filter.calendarRange(yr,yr,'year'))
-                // .filter(ee.Filter.calendarRange(startJulian,endJulian))//.toList(10000,0);
-    return lsT;
-    })
-    var lsT = ee.ImageCollection(ee.FeatureCollection(images).flatten())
-   
-    // Compute median or medoid
-    var composite;
-    if (compositingMethod.toLowerCase() === 'median') {
-      // print('Computing median');
-      composite = lsT.median();
-    }
-    else {
-      // print('Computing medoid');
-      composite = medoidMosaicMSD(lsT,['blue','green','red','nir','swir1','swir2']);
-    }
-    composite = rescaleBands(composite)
-    // Map.addLayer(composite,{'min':0.1,'max':0.35,'bands':'swir1,nir,red'},year.toString(),false);
-    return composite.set('system:time_start',ee.Date.fromYMD(year,6,1).millis());
-  });
-  return ee.ImageCollection(ts);
-}
 function simpleAddIndices(in_image){
     in_image = in_image.addBands(in_image.normalizedDifference(['nir', 'red']).select([0],['NDVI']));
     in_image = in_image.addBands(in_image.normalizedDifference(['nir', 'swir2']).select([0],['NBR']));
@@ -242,7 +108,12 @@ var addYear = function(image) {
     }
 //////////////////////////////////////////////////////
 //////////
-
+//Helper to multiply image
+function multBands(img,distDir,by){
+    var out = img.multiply(ee.Image(distDir).multiply(by));
+    out  = out.copyProperties(img,['system:time_start']);
+    return out;
+  }
 //Function for zero padding
 //Taken from: https://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
 function pad(n, width, z) {
@@ -252,67 +123,53 @@ function pad(n, width, z) {
 }
 
 //Bring in igdes
-var f = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1_joined_ndvi_annDepth')
+// var f = ee.FeatureCollection('users/Shree1175/iGDE_5_2018_V1_joined_ndvi_annDepth')
+var f = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg')
+
 
 //Set up the years to filter on- this is hard-coded since its set up oddly
-var years1 = ee.List.sequence(85,99);
-var yearsOddballs = ee.List.sequence(20,20);
-var years2 = ee.List.sequence(1,18);
-var years = years1.cat(yearsOddballs).cat(years2);
-var yearsInt = ee.List.sequence(1985,2018);
-var yearsZ = years.zip(yearsInt).getInfo();
-
-//Specify which depths to look at
-var depths = ee.List.sequence(0,50,1);
+var years = ee.List.sequence(1985,2018);
+// var yearsOddballs = ee.List.sequence(20,20);
+// var years2 = ee.List.sequence(1,18);
+// var years = years1.cat(yearsOddballs).cat(years2);
+// var yearsInt = ee.List.sequence(1985,2018);
+// var yearsZ = years.zip(yearsInt).getInfo();
 
 //Reformat the igdes to have a unique feature per year
-var reformatted = yearsZ.map(function(yz){
-  var fieldName ='AvgAnnD_'+ pad(yz[0],2).toString();
-  var t = f.select([fieldName], ['AvgAnnD'])
-          .map(function(ft){return ft.set('year',yz[1])});
+var igdeyr = years.getInfo().map(function(yz){
+  var fieldName ='Depth'+ yz.toString();
+  // var t = f.select([fieldName], ['AvgAnnD'])
+  //         .map(function(ft){return ft.set('year',yz)});
+  var t = f.select([fieldName], ['AvgAnnD']);
+  var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
+  var tID = f.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
+  t = depth;
+  t = t.updateMask(t.select([0]).lt(1000))
+      .divide(100)
+      .addBands(tID.int64())
+      .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
+      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
   return t;
 });
-reformatted = ee.FeatureCollection(reformatted).flatten();
-Map.addLayer(f);
-
-//Convert each year-feature to a raster by iterating across the depths
-var igdeyr = yearsInt.map(function(yr){
-    yr = ee.Number(yr);
-    var t = reformatted.filter(ee.Filter.equals('year',yr));
-    var depthC = depths.map(function(d){
-      d = ee.Number(d);
-      var tt = t.filter(ee.Filter.gte('AvgAnnD',d));
-      var ttFill = ee.Image().paint(tt,1);
-      ttFill = ttFill.where(ttFill.mask(),d).int16();
-      return ttFill.rename(['AvgAnnD']);
-      
-    });
-    depthC  = ee.ImageCollection.fromImages(depthC).max().divide(100)
-              .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
-              .rename(['Depth-To-Groundwater-divided-by-one-hundred']);
-    // Map.addLayer(depthC,{},yr,false)
-    return depthC;
-   
-  });
-//Reformat time series of depth to gw
-igdeyr = ee.ImageCollection.fromImages(igdeyr);
-
-
+igdeyr = ee.ImageCollection(igdeyr);
 var startYear = 1985;
 var endYear = 2018;
-var startJulian = 190;
-var endJulian = 250;
-var timeBuffer = 2;
-var weights = [1,1,5,1,1];
-var compositingMethod = 'medoid'
-var ls = getLandsat(startYear,endYear,startJulian,endJulian,eeBoundsPoly);
-var ts = compositeTimeSeries(ls,startYear,endYear,timeBuffer,weights,compositingMethod)
+
+var ts = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
+var ts = ts
+        .map(function(img){return multBands(img,1,0.0001)})
         .map(simpleAddIndices)
         .map(getTasseledCap)
         .map(simpleAddTCAngles)
         .map(addYear)
 var joined = joinCollections(ts.select(['NDVI','NBR']),igdeyr) ;
-
+joined = joined.map(function(img){
+  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 256);
+  // out = out.addBands(img.select([0,1,2]))
+  out = out.copyProperties(img,['system:time_start']);
+  return out;
+  
+})
 Map.addLayer(joined,{'min':0,'max':0.5},'igde depth to gw (divided by 100)',false);
 
 
