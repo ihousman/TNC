@@ -21,9 +21,10 @@ dLib.getExistingChangeData();
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg')
+var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg').geometry()
 Map.addLayer(sa)
-var studyArea =geometry;
+var studyArea =sa.bounds();
+Map.addLayer(studyArea)
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
@@ -140,7 +141,7 @@ var outputName = 'LT_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'users/ianhousman/test/changeCollection';
+var exportPathRoot = 'projects/igde-work/raster-data/LANDTRENDR-collection';
 
 // var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
@@ -205,7 +206,8 @@ var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJul
 //Separate into scenes and composites for subsequent analysis
 var scenes = lsAndTs[0];
 var composites = lsAndTs[1];
-composites = composites.map(getImageLib.addSAVIandEVI);
+composites = composites.map(getImageLib.addSAVIandEVI)
+            .map(function(img){return img.clip(sa)});
 Map.addLayer(composites.select(['SAVI','EVI']),{},'savi',false);
 ////////////////////////////////////////////////////////////
 //Landtrendr code
