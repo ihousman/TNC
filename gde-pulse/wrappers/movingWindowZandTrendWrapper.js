@@ -178,7 +178,7 @@ var epochLength = 5;
 //Since linear regression can be leveraged by outliers, this generally
 //improves the trend analysis, but does get rid of a lot of potentially
 //good data
-var useAnnualMedianForTrend
+var useAnnualMedianForTrend = true;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
