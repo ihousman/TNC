@@ -3,13 +3,14 @@ var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////
-function thresholdChange(changeCollection,changeThresh){
+function thresholdChange(changeCollection,changeThresh,changeDir){
+  if(changeDir === undefined || changeDir === null){changeDir = 1}
   var bandNames = ee.Image(changeCollection.first()).bandNames();
-  bandNames = bandNames.map(function(bn){return ee.String(bn).cat('_change')})
+  bandNames = bandNames.map(function(bn){return ee.String(bn).cat('_change')});
   var change = changeCollection.map(function(img){
     var yr = ee.Date(img.get('system:time_start')).get('year');
-    var changeYr = img.gt(changeThresh);
-    var yrImage = img.where(img.mask(),yr)
+    var changeYr = img.multiply(changeDir).gt(changeThresh);
+    var yrImage = img.where(img.mask(),yr);
     changeYr = yrImage.updateMask(changeYr).rename(bandNames).int16();
     return img.mask(ee.Image(1)).addBands(changeYr);
   });
@@ -66,10 +67,10 @@ function getExistingChangeData(changeThresh,showLayers){
   if(showLayers){
   Map.addLayer(hansen,{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Hansen Change Year',false);
   }
-  return conusChangeOut
+  return conusChangeOut;
 }
 //########################################################################################################
-
+//Landtrendr code taken from users/emaprlab/public
 //########################################################################################################
 //##### UNPACKING LT-GEE OUTPUT STRUCTURE FUNCTIONS ##### 
 //########################################################################################################
@@ -227,8 +228,9 @@ function landtrendrWrapper(processedComposites,startYear,endYear,indexName,distD
   
   // run the dist extract function
   var distImg = extractDisturbance(lt.select('LandTrendr'), distDir, distParams,mmu);
-  
-  
+  var distImgBandNames = distImg.bandNames();
+  distImgBandNames = distImgBandNames.map(function(bn){return ee.String(indexName).cat('_').cat(bn)})
+  distImg = distImg.rename(distImgBandNames)
   
   
   
@@ -282,7 +284,7 @@ function landtrendrWrapper(processedComposites,startYear,endYear,indexName,distD
  
 
   //Convert to single image
-  var vertStack = getLTvertStack(rawLT,run_params)
+  var vertStack = getLTvertStack(rawLT,run_params);
   return [lt,distImg,ca,vertStack];
   
 }
@@ -309,7 +311,7 @@ function verdetAnnualSlope(tsIndex,indexName,startYear,endYear){
 //////////////////////////////////////////////////////////////////////////
 //Wrapper for applying EWMACD slightly more simply
 function getEWMA(lsIndex,trainingStartYear,trainingEndYear, harmonicCount){
-  if(harmonicCount === null || harmonicCount === undefined){harmonicCount = 2}
+  if(harmonicCount === null || harmonicCount === undefined){harmonicCount = 1}
   
   
   //Run EWMACD 
@@ -318,7 +320,7 @@ function getEWMA(lsIndex,trainingStartYear,trainingEndYear, harmonicCount){
     vegetationThreshold: -1, 
     trainingStartYear: trainingStartYear, 
     trainingEndYear: trainingEndYear, 
-    harmonicCount: 2
+    harmonicCount: harmonicCount
   });
   
   //Extract the ewmac values
@@ -337,7 +339,7 @@ function annualizeEWMA(ewma,indexName,lsYear,startYear,endYear,annualReducer,rem
   
   //Find if 2012 needs replaced
   var replace2012 = ee.Number(ee.List([years.indexOf(2011),years.indexOf(2012),years.indexOf(2013)]).reduce(ee.Reducer.min())).neq(-1).getInfo();
-  print('2012 needs replaced:',replace2012)
+  print('2012 needs replaced:',replace2012);
   
   
   //Remove 2012 if in list and set to true
@@ -398,7 +400,7 @@ function runEWMACD(lsIndex,indexName,startYear,endYear,trainingStartYear,trainin
   var ewma = getEWMA(lsIndex,trainingStartYear,trainingEndYear, harmonicCount);
   
   //Get dates for later reference
-  var lsYear = lsIndex.map(getImageLib.addDateBand).select(['year']).toArray().arrayProject([0]);
+  var lsYear = lsIndex.map(function(img){return getImageLib.addDateBand(img,true)}).select(['year']).toArray().arrayProject([0]);
 
   
   var annualEWMA = annualizeEWMA(ewma,indexName,lsYear,startYear,endYear,annualReducer,remove2012);
@@ -434,6 +436,174 @@ function pairwiseSlope(c){
     });
     return ee.ImageCollection.fromImages(slopeCollection);
   }
+  
+//Function for applying linear fit model
+//Assumes the model has a intercept and slope band prefix to the bands in the model
+//Assumes that the c (collection) has the raw bands in it
+function predictModel(c,model,bandNames){
+  
+  //Parse model
+  var intercepts = model.select('intercept_.*');
+  var slopes = model.select('slope_.*');
+  
+  //Find band names for raw data if not provided
+  if(bandNames === null || bandNames === undefined){
+    bandNames = slopes.bandNames().map(function(bn){return ee.String(bn).split('_').get(1)});
+  }
+  
+  //Set up output band names
+  var predictedBandNames = bandNames.map(function(bn){return ee.String(bn).cat('_trend')});
+  
+  //Predict model
+  var predicted = c.map(function(img){
+    var cActual = img.select(bandNames);
+    var out = img.select(['year']).multiply(slopes).add(img.select(['constant']).multiply(intercepts)).rename(predictedBandNames);
+    return cActual.addBands(out).copyProperties(img,['system:time_start']);
+  });
+  
+  return predicted;
+}
+//////////////////////
+//Function for getting a linear fit of a time series and applying it
+function getLinearFit(c,bandNames){
+  //Find band names for raw data if not provided
+  if(bandNames === null || bandNames === undefined){
+    bandNames = ee.Image(c.first()).bandNames();
+  }
+  else{
+    bandNames = ee.List(bandNames);
+    c = c.select(bandNames);
+  }
+  
+  //Add date and constant independents
+  c = c.map(function(img){return img.addBands(ee.Image(1))});
+  c = c.map(getImageLib.addDateBand);
+  var selectOrder = ee.List([['constant','year'],bandNames]).flatten();
+  
+  //Fit model
+  var model = c.select(selectOrder).reduce(ee.Reducer.linearRegression(2,bandNames.length())).select([0]);
+  
+  //Convert model to image
+  model = model.arrayTranspose().arrayFlatten([bandNames,['intercept','slope']]);
+  
+  //Apply model
+  var predicted = predictModel(c,model,bandNames);
+  
+  //Return both the model and predicted
+  return [model,predicted];
+}
+//Iterate across each time window and do a z-score and trend analysis
+
+function zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
+          baselineLength,baselineGap,epochLength,zReducer){
+  //House-keeping
+var dummyScene = ee.Image(allScenes.first());
+var outNames = indexNames.map(function(bn){return ee.String(bn).cat('_Z')});
+var analysisStartYear = Math.max(startYear+baselineLength+baselineGap,startYear+epochLength-1);
+
+//Iterate across each year and perform analysis
+var zAndTrendCollection = ee.List.sequence(analysisStartYear,endYear,1).map(function(yr){
+  yr = ee.Number(yr);
+  
+  //Set up the baseline years
+  var blStartYear = yr.subtract(baselineLength).subtract(baselineGap);
+  var blEndYear = yr.subtract(1).subtract(baselineGap);
+  
+  //Set up the trend years
+  var trendStartYear = yr.subtract(epochLength).add(1);
+  
+  //Iterate across the julian dates
+  return ee.FeatureCollection(ee.List.sequence(startJulian,endJulian-nDays,nDays).map(function(jd){
+    
+    jd = ee.Number(jd);
+    
+    //Set up the julian date range
+    var jdStart = jd;
+    var jdEnd = jd.add(nDays);
+    
+    //Get the baseline images
+    var blImages = allScenes.filter(ee.Filter.calendarRange(blStartYear,blEndYear,'year'))
+                            .filter(ee.Filter.calendarRange(jdStart,jdEnd));
+    blImages = getImageLib.fillEmptyCollections(blImages,dummyScene);
+    
+    
+    //Get the z analysis images
+    var analysisImages = allScenes.filter(ee.Filter.calendarRange(yr,yr,'year'))
+                            .filter(ee.Filter.calendarRange(jdStart,jdEnd)); 
+    analysisImages = getImageLib.fillEmptyCollections(analysisImages,dummyScene);
+    
+    //Get the images for the trend analysis
+    var trendImages = allScenes.filter(ee.Filter.calendarRange(trendStartYear,yr,'year'))
+                            .filter(ee.Filter.calendarRange(jdStart,jdEnd));
+    trendImages = getImageLib.fillEmptyCollections(trendImages,dummyScene);
+    
+    //Perform the linear trend analysis
+    var linearTrend = getLinearFit(trendImages,indexNames);
+    var linearTrendModel = ee.Image(linearTrend[0]).select(['.*_slope']);
+    
+    //Perform the z analysis
+    var blMean = blImages.mean();
+    var blStd = blImages.reduce(ee.Reducer.stdDev());
+    
+    var analysisImagesZ = analysisImages.map(function(img){
+      return (img.subtract(blMean)).divide(blStd);
+    }).reduce(zReducer).rename(outNames);
+    
+    //Set up the output
+    var outName = ee.String('Z_and_Trend_b').cat(ee.String(blStartYear.int16())).cat(ee.String('_'))
+                                .cat(ee.String(blEndYear.int16())).cat(ee.String('_epoch')).cat(ee.String(ee.Number(epochLength)))
+                                .cat(ee.String('_y')).cat(ee.String(yr.int16())).cat(ee.String('_jd'))
+                                .cat(ee.String(jdStart.int16())).cat(ee.String('_')).cat(ee.String(jdEnd.int16()))
+    
+    var out = analysisImages.reduce(zReducer).rename(indexNames).addBands(analysisImagesZ).addBands(linearTrendModel)
+          .set({'system:time_start':ee.Date.fromYMD(yr,1,1).advance(jdStart,'day').millis(),
+                'system:time_end':ee.Date.fromYMD(yr,1,1).advance(jdEnd,'day').millis(),
+                'baselineYrs': baselineLength,
+                'baselineStartYear':blStartYear,
+                'baselineEndYear':blEndYear,
+                'epochLength':epochLength,
+                'trendStartYear':trendStartYear,
+                'year':yr,
+                'startJulian':jdStart,
+                'endJulian':jdEnd,
+                'system:index':outName
+          });
+    
+    return out;
+    }));
+  });
+  zAndTrendCollection = ee.ImageCollection(ee.FeatureCollection(zAndTrendCollection).flatten());
+  return zAndTrendCollection;
+}
+
+
+function thresholdZAndTrend(zAndTrendCollection,zThresh,slopeThresh,startYear,endYear){
+  var zCollection = zAndTrendCollection.select('.*_Z');
+  var trendCollection = zAndTrendCollection.select('.*_slope');
+  var zChange = thresholdChange(zCollection,-zThresh,-1).select('.*_change');
+  var trendChange = thresholdChange(trendCollection,-slopeThresh,-1).select('.*_change');
+  
+  Map.addLayer(zAndTrendCollection,{},'zAndTrendCollection',false);
+  Map.addLayer(zChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Z Most Recent Change Year',false);
+  Map.addLayer(trendChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Trend Most Recent Change Year',false);
+  
+}
+
+function exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform){
+ var zAndTrendCollectionL = zAndTrendCollection.toList(100);
+  zAndTrendCollection.size().evaluate(function(count){
+  ee.List.sequence(0,count-1).getInfo().map(function(i){
+   
+    var image = ee.Image(zAndTrendCollectionL.get(i));
+  
+    image.id().evaluate(function(id){
+      var outPath = exportPathRoot + '/' + id;
+      getImageLib.exportToAssetWrapper(image,id,outPath,
+        'mean',studyArea,scale,crs,transform);
+    });
+  });
+}); 
+}
 //////////////////////////////////////////////////////////////////////////
 exports.extractDisturbance = extractDisturbance;
 exports.landtrendrWrapper = landtrendrWrapper;
@@ -448,3 +618,10 @@ exports.runEWMACD = runEWMACD;
 
 exports.pairwiseSlope = pairwiseSlope;
 exports.thresholdChange = thresholdChange;
+
+exports.predictModel = predictModel;
+exports.getLinearFit = getLinearFit;
+
+exports.zAndTrendChangeDetection = zAndTrendChangeDetection;
+exports.thresholdZAndTrend = thresholdZAndTrend;
+exports.exportZAndTrend = exportZAndTrend;

@@ -1,43 +1,39 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-111.84507284221758, 41.07234859989189],
-          [-111.92197713909258, 40.19695544874679],
-          [-111.54844198284258, 39.98683877844594],
-          [-111.16392049846758, 40.723568905877514]]]),
-    plotPoint = /* color: #98ff00 */ee.Geometry.Point([-113.81457071908915, 48.069298246118436]);
+        [[[-123.07894045524273, 41.20545062616133],
+          [-123.02400881461773, 40.57425366846473],
+          [-121.66170412711773, 40.52416604285035],
+          [-121.74959475211773, 41.263284164328454]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-//Wrapper for running harmonic regression across a moving window of years
+//Wrapper for running z-score and linear trend across a moving window of years
 
 //Module imports
 var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+dLib.getExistingChangeData();
 // Define user parameters:
 
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var studyArea = geometry;
+var studyArea =geometry;
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
 // endJulian: Ending Julian date
-var startJulian = 1;
-var endJulian = 365; 
+var startJulian = 190;
+var endJulian = 250
 
 // 3. Specify start and end years for all analyses
 // More than a 3 year span should be provided for time series methods to work 
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
-var startYear = 2015;
-var endYear = 2017;
+var startYear = 1984;
+var endYear = 2018;
 
-// 4. Specify an annual buffer to include imagery from the same season 
-// timeframe from the prior and following year. timeBuffer = 1 will result 
-// in a 3 year moving window
-var timebuffer = 1;
 
 
 // 7. Choose Top of Atmospheric (TOA) or Surface Reflectance (SR) 
@@ -52,7 +48,7 @@ var includeSLCOffL7 = false;
 //9. Whether to defringe L5
 //Landsat 5 data has fringes on the edges that can introduce anomalies into 
 //the analysis.  This method removes them, but is somewhat computationally expensive
-var defringeL5 = true;
+var defringeL5 = false;
 
 // 10. Choose cloud/cloud shadow masking method
 // Choices are a series of booleans for cloudScore, TDOM, and elements of Fmask
@@ -115,7 +111,7 @@ var correctScale = 250;//Choose a scale to reduce on- 250 generally works well
 var exportComposites = false;
 
 //Set up Names for the export
-var outputName = 'Harmonic_Coefficients_';
+// var outputName = 'Test_Z_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
@@ -135,19 +131,47 @@ var scale = null;
 
 
 ////////////////////////////////////////////////
-//Harmonic regression parameters
+//Moving window parameters
 
-//Which harmonics to include
-//Is a list of numbers of the n PI per year
-//Typical assumption of 1 cycle/yr would be [2]
-//If trying to overfit, or expected bimodal phenology try adding a higher frequency as well
-//ex. [2,4]
-var whichHarmonics = [2];
+//Parameters used for both z and trend analyses
 
-//Which bands/indices to run harmonic regression across
-var indexNames =['NDVI'];//,'NBR','NDMI','nir','swir1','swir2','tcAngleBG'];//['nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];//['blue','green','red','nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];
+//Number of julian days for each analysis
+//Generally want it to be >= 32 or the output will be noisy
+//Should almost never be less than 16
+var nDays = 60;
 
-var detrend = false;
+//Which bands/indices to run the analysis with
+//Can be any of ['blue','green','red','nir','swir1','swir2','NDMI','NDVI','NBR','NDSI','tcAngleBG']
+var indexNames = ['NBR','NDVI'];//['nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];//['blue','green','red','nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];
+
+
+////////////////////////////////////
+//Moving window z parameters
+
+//Number of years in baseline
+//Generally 5 years works best in the Western CONUS and 3 in the Eastern CONUS
+var baselineLength = 5;
+
+//Number of years between the analysis year and the last year of the baseline
+//This helps ensure the z-test is being performed data that are less likely to be 
+//temporally auto-correlated
+//E.g. if the analysis year is 1990, the last year of the baseline would be 1987
+//Set to 0 if the last year of the baseline needs to be the year just before the analysis year
+var baselineGap = 2;
+
+//Since there could be multiple z values for a given pixel on a given analysis period, how to summarize
+//Generally use ee.Reducer.mean() or ee.Reducer.median()
+var zReducer = ee.Reducer.mean();
+
+////////////////////////////////////
+//Moving window trend parameters
+
+//Number of years in a given trend analysis inclusive of the analysis year
+//E.g. if the analysis year was 1990 and the epochLength was 5, 
+//the years included in the trend analysis would be 1986,1987,1988,1989, and 1990
+var epochLength = 5;
+
+
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,63 +182,14 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
   toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
   applyFmaskCloudShadowMask,applyFmaskSnowMask,
   cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels
-  );
+  ).select(indexNames);
+
+
 ////////////////////////////////////////////////////////////
-//Iterate across each time window and fit harmonic regression model
-var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1).getInfo().map(function(yr){
-  //Set up dates
-  var startYearT = yr-timebuffer;
-  var endYearT = yr+timebuffer;
-  
-  //Get scenes for those dates
-  var allScenesT = allScenes.filter(ee.Filter.calendarRange(startYearT,endYearT,'year'));
-  
-  //Fit harmonic model
-  var coeffsPredicted =getImageLib.getHarmonicCoefficientsAndFit(allScenesT,indexNames,whichHarmonics,detrend);
-  
-  //Set some properties
-  var coeffs = coeffsPredicted[0]
-            .set({'system:time_start':ee.Date.fromYMD(yr,6,1).millis(),
-            'timebuffer':timebuffer,
-            'startYearT':startYearT,
-            'endYearT':endYearT,
-            }).float();
 
-  //Get predicted values for visualization
-  var predicted = coeffsPredicted[1];
-  Map.addLayer(predicted,{},'predicted',false);
-  
-  //Optionally simplify coeffs to phase, amplitude, and date of peak
-  if(whichHarmonics.indexOf(2) > -1){
-    var pap = ee.Image(getImageLib.getPhaseAmplitudePeak(coeffs));
-    print(pap);
-    
-    var vals = coeffs.select(['.*_intercept']);
-    var amplitudes = pap.select(['.*_amplitude']);
-    var phases = pap.select(['.*_phase']);
-    var peakJulians = pap.select(['.*peakJulianDay']);
-    
-    // Map.addLayer(pap,{},'pap',false);
-    Map.addLayer(peakJulians,{'min':0,'max':365},'peakJulians',false);
-  
-    
-    // Turn the HSV data into an RGB image and add it to the map.
-    var seasonality = ee.Image.cat(phases.select([0]), 
-                                    amplitudes.select([0]), 
-                                    vals.select([0])).hsvToRgb();
-  
-    Map.addLayer(seasonality, {'min':0,'max':1}, 'Seasonality',false);
-    
-  };
-  
-  //Export image
-  var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
-  var outPath = exportPathRoot + '/' + outName;
-  getImageLib.exportToAssetWrapper(coeffs,outName,outPath,
-  'mean',studyArea,scale,crs,transform);
-  return coeffs;
-  
-});
 
-// coeffCollection = ee.ImageCollection(coeffCollection);
-// Map.addLayer(coeffCollection);
+var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
+          baselineLength,baselineGap,epochLength,zReducer);
+dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
+dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
+

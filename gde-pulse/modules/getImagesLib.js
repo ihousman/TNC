@@ -72,12 +72,24 @@ function fillEmptyCollections(inCollection,dummyImage){
 //////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 //Adds the float year with julian proportion to image
-function addDateBand(img){
+function addDateBand(img,maskTime){
+  if(maskTime === null || maskTime === undefined){maskTime = false}
   var d = ee.Date(img.get('system:time_start'));
   var y = d.get('year');
   d = y.add(d.getFraction('year'));
+  // d=d.getFraction('year')
   var db = ee.Image.constant(d).rename(['year']).float();
-  db = db.updateMask(img.select([0]).mask())
+  if(maskTime){db = db.updateMask(img.select([0]).mask())}
+  
+  return img.addBands(db);
+}
+function addYearFractionBand(img){
+  var d = ee.Date(img.get('system:time_start'));
+  var y = d.get('year');
+  // d = y.add(d.getFraction('year'));
+  d=d.getFraction('year')
+  var db = ee.Image.constant(d).rename(['year']).float();
+  db = db//.updateMask(img.select([0]).mask())
   return img.addBands(db);
 }
 function addYearBand(img){
@@ -85,7 +97,7 @@ function addYearBand(img){
   var y = d.get('year');
   
   var db = ee.Image.constant(y).rename(['year']).float();
-  db = db.updateMask(img.select([0]).mask())
+  db = db//.updateMask(img.select([0]).mask())
   return img.addBands(db);
 }
 ////////////////////////////////////////////////
@@ -410,6 +422,28 @@ function addIndices(img){
   var ibi = ibi_a.normalizedDifference(['IBI_A','IBI_B']);
   img = img.addBands(ibi.rename('IBI'));
   
+  return img;
+}
+///////////////////////////////////////////
+//Function to  add SAVI and EVI
+function addSAVIandEVI(img){
+  // Add Enhanced Vegetation Index (EVI)
+  var evi = img.expression(
+    '2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))', {
+      'NIR': img.select('nir'),
+      'RED': img.select('red'),
+      'BLUE': img.select('blue')
+  }).float();
+  img = img.addBands(evi.rename('EVI'));
+  
+  // Add Soil Adjust Vegetation Index (SAVI)
+  // using L = 0.5;
+  var savi = img.expression(
+    '(NIR - RED) * (1 + 0.5)/(NIR + RED + 0.5)', {
+      'NIR': img.select('nir'),
+      'RED': img.select('red')
+  }).float();
+  img = img.addBands(savi.rename('SAVI'));
   return img;
 }
 /////////////////////////////////////////////////////////////////
@@ -1427,7 +1461,9 @@ function getHarmonicList(yearDateImg,transformBandName,harmonicList){
 //Takes a dependent and independent variable and returns the dependent, 
 // sin of ind, and cos of ind
 //Intended for harmonic regression
-function getHarmonics2(collection,transformBandName,harmonicList){
+function getHarmonics2(collection,transformBandName,harmonicList,detrend){
+  if(detrend === undefined || detrend === null){detrend = false}
+  
   var depBandNames = ee.Image(collection.first()).bandNames().remove(transformBandName);
   var depBandNumbers = depBandNames.map(function(dbn){
     return depBandNames.indexOf(dbn);
@@ -1438,8 +1474,13 @@ function getHarmonics2(collection,transformBandName,harmonicList){
     .copyProperties(img,['system:time_start','system:time_end']);
     return outT;
   });
- 
-
+  
+  if(!detrend){
+    var outBandNames = ee.Image(out.first()).bandNames().removeAll(['year'])
+    out = out.select(outBandNames)
+  }
+  
+  // Map.addLayer(out)
   var indBandNames = ee.Image(out.first()).bandNames().removeAll(depBandNames);
   var indBandNumbers = indBandNames.map(function(ind){
     return ee.Image(out.first()).bandNames().indexOf(ind);
@@ -1501,8 +1542,51 @@ function newRobustMultipleLinear2(dependentsIndependents){//,dependentBands,inde
 
 
 /////////////////////////////////////////////////////////////////
+//Code for finding the date of peak of green
+//Also converts it to Julian day, month, and day of month
+var monthRemap =[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12 ];
+var monthDayRemap = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ];
+var julianDay = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365 ];
+
+//Direction of photosynthetic vegetation- add any that are missing
+var bandDirection = ee.Dictionary({'green':1,'nir':1,'NDVI':1,'NDMI':1,'NDSI':1,'VIG':1,'NBR':1,'tcAngleBG':1,'greenness':1,'wetness':1,
+                    'blue':-1,'red':-1,'swir1':-1,'swir2':-1,'brightness':-1})
+//Function for getting the date of the peak of veg vigor- can handle bands negatively correlated to veg in
+//bandDirection dictionary above
+function getPeakDate(coeffs,peakDirection){
+  if(peakDirection === null || peakDirection === undefined){peakDirection = 1};
+  
+  var sin = coeffs.select([0]);
+  var cos = coeffs.select([1]);
+  
+  //Find where in cycle slope is zero
+  var greenDate = ((sin.divide(cos)).atan()).divide(2*Math.PI).rename(['peakDate']);
+  var greenDateLater = greenDate.add(0.5);
+  //Check which d1 slope = 0 is the max by predicting out the value
+  var predicted1 = coeffs.select([0])
+                  .add(sin.multiply(greenDate.multiply(2*Math.PI).sin()))
+                  .add(cos.multiply(greenDate.multiply(2*Math.PI).cos()))
+                  .rename('predicted')
+                  .multiply(ee.Image.constant(peakDirection))
+                  .addBands(greenDate);
+  var predicted2 = coeffs.select([0])
+                  .add(sin.multiply(greenDateLater.multiply(2*Math.PI).sin()))
+                  .add(cos.multiply(greenDateLater.multiply(2*Math.PI).cos()))
+                  .rename('predicted')
+                  .multiply(ee.Image.constant(peakDirection))
+                  .addBands(greenDateLater);
+  var finalGreenDate = ee.ImageCollection([predicted1,predicted2]).qualityMosaic('predicted').select(['peakDate']).rename(['peakJulianDay']);
+  finalGreenDate = finalGreenDate.where(finalGreenDate.lt(0), greenDate.add(1)).multiply(365).int16();
+  
+  //Convert to month and day of month
+  var greenMonth = finalGreenDate.remap(julianDay,monthRemap).rename(['peakMonth']);
+  var greenMonthDay = finalGreenDate.remap(julianDay,monthDayRemap).rename(['peakDayOfMonth']);
+  var greenStack = finalGreenDate.addBands(greenMonth).addBands(greenMonthDay);
+  return greenStack;
+  // Map.addLayer(greenStack,{'min':1,'max':12},'greenMonth',false);
+}
 ///////////////////////////////////////////////
-function getPhaseAmplitude(coeffs){
+function getPhaseAmplitudePeak(coeffs){
   //Parse the model
   var bandNames = coeffs.bandNames();
   var bandNumber = bandNames.length();
@@ -1511,35 +1595,49 @@ function getPhaseAmplitude(coeffs){
   var interceptBands = ee.List.sequence(0,bandNumber.subtract(1),modelLength);
   
   var models = ee.List.sequence(0,noDependents.subtract(1));
+  
   var parsedModel =models.map(function(mn){
     mn = ee.Number(mn);
     return bandNames.slice(mn.multiply(modelLength),mn.multiply(modelLength).add(modelLength));
   });
+  
   // print('Parsed harmonic regression model',parsedModel);
 
-  
+  //Iterate across models to convert to phase, amplitude, and peak
   var phaseAmplitude =parsedModel.map(function(pm){
       pm = ee.List(pm);
       var modelCoeffs = coeffs.select(pm);
+      
+      var intercept = modelCoeffs.select('.*_intercept');
+      var harmCoeffs = modelCoeffs.select('.*_200_year');
       var outName = ee.String(ee.String(pm.get(1)).split('_').get(0));
-      var intercept = modelCoeffs.select(modelCoeffs.bandNames().slice(0,1));
-      var others = modelCoeffs.select(modelCoeffs.bandNames().slice(1,null));
+      var sign = bandDirection.get(outName);
       
-      var regCoeffs = modelCoeffs.select(modelCoeffs.bandNames().slice(2,null));
-      var amplitude = regCoeffs.pow(2).reduce(ee.Reducer.sum()).sqrt().rename([outName.cat('_amplitude')])
-                      .multiply(5);
-      // var amplitude2 = regCoeffs.select([1]).hypot(regCoeffs.select([0])).rename(['amplitude2']);
-      var phase = regCoeffs.select([0]).atan2(regCoeffs.select([1]))
-      .unitScale(-Math.PI, Math.PI)
-      // .divide(2).multiply(365).multiply(0.01)
-      .rename([outName.cat('_phase')]);
+ 
+  
+      var amplitude = harmCoeffs.select([1]).hypot(harmCoeffs.select([0]))
+                    .multiply(2)
+                    .rename([outName.cat('_amplitude')]);
+      var phase = harmCoeffs.select([0]).atan2(harmCoeffs.select([1]))
+                    .unitScale(-Math.PI, Math.PI)
+                    .rename([outName.cat('_phase')]);
       
-      return amplitude.addBands(phase);
+      //Get peak date info
+      var peakDate = getPeakDate(harmCoeffs,sign);
+      var peakDateBandNames = peakDate.bandNames();
+      peakDateBandNames = peakDateBandNames.map(function(bn){return outName.cat(ee.String('_').cat(ee.String(bn)))});
+      
+      
+      return amplitude.addBands(phase).addBands(peakDate.rename(peakDateBandNames));
     
     });
     //Convert to an image
     phaseAmplitude = ee.ImageCollection.fromImages(phaseAmplitude);
-    return collectionToImage(phaseAmplitude);
+    
+    phaseAmplitude = ee.Image(collectionToImage(phaseAmplitude)).float()
+          .copyProperties(coeffs,['system:time_start']);
+    // print('pa',phaseAmplitude);
+    return phaseAmplitude;
 
 
 }
@@ -1639,16 +1737,23 @@ function getDateStack(startYear,endYear,startJulian,endJulian,frequency){
 
 
 ////////////////////////////////////////////////////////////////////
-function getHarmonicCoefficientsAndFit(allImages,indexNames,whichHarmonics){
+function getHarmonicCoefficientsAndFit(allImages,indexNames,whichHarmonics,detrend){
+  if(detrend === undefined || detrend === null){detrend = false}
+  if(whichHarmonics === undefined || whichHarmonics === null){whichHarmonics = [2]}
   
   //Select desired bands
   var allIndices = allImages.select(indexNames);
   
   //Add date band
-  allIndices = allIndices.map(addDateBand);
+  if(detrend){
+    allIndices = allIndices.map(addDateBand);
+  }
+  else{
+    allIndices = allIndices.map(addYearFractionBand);
+  }
   
   //Add independent predictors (harmonics)
-  var withHarmonics = getHarmonics2(allIndices,'year',whichHarmonics);
+  var withHarmonics = getHarmonics2(allIndices,'year',whichHarmonics,detrend);
   var withHarmonicsBns = ee.Image(withHarmonics.first()).bandNames().slice(indexNames.length+1,null);
   
   //Optionally chart the collection with harmonics
@@ -1715,7 +1820,9 @@ exports.landsatCloudScore = landsatCloudScore;
 exports.applyCloudScoreAlgorithm = applyCloudScoreAlgorithm;
 exports.cFmask = cFmask;
 exports.simpleTDOM2 = simpleTDOM2;
+exports.medoidMosaicMSD = medoidMosaicMSD;
 exports.addIndices = addIndices;
+exports.addSAVIandEVI = addSAVIandEVI;
 exports.simpleAddIndices = simpleAddIndices;
 exports.getTasseledCap = getTasseledCap;
 exports.simpleAddTCAngles = simpleAddTCAngles;
@@ -1740,4 +1847,4 @@ exports.harmonizationRoy = harmonizationRoy;
 exports.fillEmptyCollections = fillEmptyCollections;
 
 exports.getHarmonicCoefficientsAndFit = getHarmonicCoefficientsAndFit;
-exports.getPhaseAmplitude = getPhaseAmplitude;
+exports.getPhaseAmplitudePeak = getPhaseAmplitudePeak;

@@ -1,45 +1,57 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-114.47916369631713, 48.7444187437357],
-          [-114.42697863772338, 48.39000318609775],
-          [-113.31735949709838, 48.51205685707847],
-          [-113.28989367678588, 48.84935559144764]]]);
+        [[[-122.91349669443616, 40.98973589629366],
+          [-123.02335997568616, 40.4652228774622],
+          [-122.01261778818616, 40.481937594544576],
+          [-122.00163146006116, 40.931660898201365]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-//Wrapper for z monitoring across a moving window of years
-
 //Module imports
-var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
-var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
-///////////////////////////////////////////////////////////////////////////////
+var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
+///////////////////////////////////////////////////////////////////////////////
 // Define user parameters:
 
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var studyArea = ee.Feature(ee.FeatureCollection('TIGER/2016/States')
-            .filter(ee.Filter.eq('NAME','California'))
-            .first())
-            .convexHull(10000)
-            .buffer(10000)
-            .geometry();
+var studyArea = geometry;//paramDict[studyAreaName][3];
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
 // endJulian: Ending Julian date
-var startJulian = 150;
-var endJulian = 300; 
+var startJulian = 1;
+var endJulian = 365; 
 
 // 3. Specify start and end years for all analyses
 // More than a 3 year span should be provided for time series methods to work 
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
 var startYear = 1984;
-var endYear = 1990;
+var endYear = 2018;
+
+// 4. Specify an annual buffer to include imagery from the same season 
+// timeframe from the prior and following year. timeBuffer = 1 will result 
+// in a 3 year moving window
+var timebuffer = 1;
+
+// 5. Specify the weights to be used for the moving window created by timeBuffer
+//For example- if timeBuffer is 1, that is a 3 year moving window
+//If the center year is 2000, then the years are 1999,2000, and 2001
+//In order to overweight the center year, you could specify the weights as
+//[1,5,1] which would duplicate the center year 5 times and increase its weight for
+//the compositing method
+var weights = [1,5,1];
 
 
+
+// 6. Choose medoid or median compositing method. 
+// Median tends to be smoother, while medoid retains 
+// single date of observation across all bands
+// If not exporting indices with composites to save space, medoid should be used
+var compositingMethod = 'medoid';
 
 // 7. Choose Top of Atmospheric (TOA) or Surface Reflectance (SR) 
 // Specify TOA or SR
@@ -116,12 +128,13 @@ var correctScale = 250;//Choose a scale to reduce on- 250 generally works well
 var exportComposites = false;
 
 //Set up Names for the export
-var outputName = 'Test_Z_';
+var outputName = 'EWMA';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'projects/igde-work/raster-data/z-score-collection';
+var exportPathRoot = 'users/ianhousman/test/changeCollection';
 
+// var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
 //Common crs codes: Web mercator is EPSG:4326, USGS Albers is EPSG:5070, 
 //WGS84 UTM N hemisphere is EPSG:326+ zone number (zone 12 N would be EPSG:32612) and S hemisphere is EPSG:327+ zone number
@@ -134,100 +147,88 @@ var transform = [30,0,-2361915.0,0,-30,3177735.0];
 var scale = null;
 
 
-////////////////////////////////////////////////
-//Moving window z parameters
-
-var nDays = 32;
-var baselineLength = 5;
+////////////////////////////////////////////////////////////
 
 
-var zReducer = ee.Reducer.mean();
-//Which bands/indices to run z score on
-var indexNames = ['NBR'];//['nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];//['blue','green','red','nir','swir1','swir2','NDMI','NDVI','NBR','tcAngleBG'];
+//List of bands or indices to iterate across
+//Typically a list of spectral bands or computed indices
+//Can include: 'blue','green','red','nir','swir1','swir2'
+//'NBR','NDVI','wetness','greenness','brightness','tcAngleBG'
+// var indexList = ee.List(['nir','swir1']);
+var indexList = ['NBR','NDVI'];//['nir','swir1','swir2','NDMI',NBR','NDVI','wetness','greenness','brightness','tcAngleBG'];
+
+
+///////////////////////////////////////////////////////////////////////
+//EWMACD Parameters
+
+
+//Expected frequency of phenological cycles. 
+//harmonicCount is n pi so 1 cycle/yr is 2 
+var harmonicCount = 1;
+
+//When simplifying from all EWMA values to annual values
+//this is the reducer that is applied.  Generally will want to pull from the 
+//bottom quadrant
+var annualReducer = ee.Reducer.percentile([10]);
+
+//List of bands or indices to iterate across
+//Typically a list of spectral bands or computed indices
+//Can include: 'blue','green','red','nir','swir1','swir2'
+//'NBR','NDVI','wetness','greenness','brightness','tcAngleBG'
+// var indexList = ee.List(['nir','swir1']);
+var indexList = ['NBR','SAVI','EVI'];//['NBR','blue','green','red','nir','swir1','swir2','NDMI','NDVI','wetness','greenness','brightness','tcAngleBG'];
+
+//Year range to train harmonic regression model with
+var trainingStartYear = 1984;
+var trainingEndYear = 1989;
+
+///////////////////////////////////////////////////////////////////////
+// End user parameters
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//Start function calls
+
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//Function Calls
-//Get all images
-var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYear,startJulian,endJulian,
-  
+//Call on master wrapper function to get Landat scenes and composites
+var processedScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYear,startJulian,endJulian,
   toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
   applyFmaskCloudShadowMask,applyFmaskSnowMask,
   cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels
-  ).select(indexNames);
+  ).map(getImageLib.addSAVIandEVI);
+  
 
-////////////////////////////////////////////////////////////
-//Iterate across each time window and fit harmonic regression model
-var zCollection = []
-ee.List.sequence(startYear+baselineLength,endYear,1).getInfo().map(function(yr){
+//Get EWMACD values for each index/band
+var outputCollection;
+indexNames.map(function(indexName){
+  var lsIndex = processedScenes.select(indexName);
+ 
+  //Apply EWMACD
+  var ewmaOutputs = dLib.runEWMACD(lsIndex,indexName,startYear,endYear,trainingStartYear,trainingEndYear,harmonicCount,annualReducer,!includeSLCOffL7);
+  var annualEWMA = ewmaOutputs[1];
   
-  var blStartYear = yr-baselineLength;
-  var blEndYear = yr-1;
-  // print(yr,blStartYear,blEndYear);
-  ee.List.sequence(startJulian,endJulian-nDays,nDays).getInfo().map(function(jd){
-    print(jd);
-    var jdStart = jd;
-    var jdEnd = jd+nDays;
+  var ewmaChange = dLib.thresholdChange(annualEWMA,3,-1).select('.*_change');
+  Map.addLayer(annualEWMA,{},indexName + ' ewma',false);
+  Map.addLayer(ewmaChange.min().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'EWMA Most Recent Change Year',false);
     
-    var blImages = allScenes.filter(ee.Filter.calendarRange(blStartYear,blEndYear,'year'))
-                            .filter(ee.Filter.calendarRange(jdStart,jdEnd));
-    
-    var analysisImages = allScenes.filter(ee.Filter.calendarRange(yr,yr,'year'))
-                            .filter(ee.Filter.calendarRange(jdStart,jdEnd)); 
-    
-    var blMean = blImages.mean();
-    var blStd = blImages.reduce(ee.Reducer.stdDev());
-    
-    var analysisImagesZ = analysisImages.map(function(img){
-      return img.subtract(blMean).divide(blStd);
-    }).reduce(zReducer);
-    // Map.addLayer(analysisImagesZ,{'min':-20,'max':20,'palette':'F00,888,0F0'},'z '+outName,false);
-    var out = analysisImages.reduce(zReducer).addBands(analysisImagesZ)
-          .set({'system:time_start':ee.Date.fromYMD(yr,1,1).advance(jdStart,'day').millis(),
-                'system:time_end':ee.Date.fromYMD(yr,1,1).advance(jdEnd,'day').millis(),
-                'baselineYrs': baselineLength,
-                'year':yr,
-                
-          });
-    // Export image
-    var outName = outputName + blStartYear.toString() + '_' + blEndYear.toString() + '_'+yr.toString() + '_'+jdStart.toString() + '_'+ jdEnd.toString();
-    var outPath = exportPathRoot + '/' + outName;
-    getImageLib.exportToAssetWrapper(out,outName,outPath,
-      'mean',studyArea,scale,crs,transform);
-    
-    zCollection.push(out);
-    
-  });
-  
-  //Set up dates
-  // var startYearT = yr-timebuffer;
-  // var endYearT = yr+timebuffer;
-  
-  // //Get scenes for those dates
-  // var allScenesT = allScenes.filter(ee.Filter.calendarRange(startYearT,endYearT,'year'));
-  
-  // //Fit harmonic model
-  // var coeffsPredicted =getImageLib.getHarmonicCoefficientsAndFit(allScenesT,indexNames,whichHarmonics);
-  
-  // //Set some properties
-  // var coeffs = coeffsPredicted[0]
-  //           .set({'system:time_start':ee.Date.fromYMD(yr,6,1).millis(),
-  //           'timebuffer':timebuffer,
-  //           'startYearT':startYearT,
-  //           'endYearT':endYearT,
-  //           }).float();
-            
-  // var predicted = coeffsPredicted[1];
-  
-  // //Export image
-  // var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
-  // var outPath = exportPathRoot + '/' + outName;
-  // getImageLib.exportToAssetWrapper(coeffs,outName,outPath,
-  // 'mean',studyArea,scale,crs,transform);
-  // // Map.addLayer(allScenesT.median(),{'min':0.1,'max':0.3,'bands':'swir1,nir,red'},yr.toString(),false);
-  // return coeffs;
-  
+    if(outputCollection === undefined){
+      outputCollection = annualEWMA;
+    }else{
+      outputCollection = getImageLib.joinCollections(outputCollection,annualEWMA,false);
+    }
+
 });
-zCollection = ee.ImageCollection(zCollection)
-Map.addLayer(zCollection,{},'z collection',false)
-// Map.addLayer(allScenes,{},'all scenes',false)
+
+//Export each years EWMACD output
+var years = ee.List.sequence(startYear,endYear).getInfo();
+
+  years.map(function(year){
+    var ewmaYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
+    .int16();
+    
+  var exportName = outputName+'_' + year.toString();
+    var exportPath = exportPathRoot + '/'+exportName;
+    
+    getImageLib.exportToAssetWrapper(ewmaYr,exportName,exportPath,'mean',
+      studyArea,null,crs,transform);
+  });
