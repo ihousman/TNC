@@ -93,11 +93,10 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.simpleAddTCAngles)
         .map(getImageLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
-Map.addLayer(composites.select(['SAVI','EVI']),{},'savi',false);
-var startYear = ee.Date(ee.Image(composites.first()).get('system:time_start')).get('year').getInfo();
-var endYear = ee.Date(ee.Image(composites.sort('system:time_start',false).first()).get('system:time_start')).get('year').getInfo();
-
-print(startYear,endYear)
+var startYear = 1984;
+var endYear = 2018;
+var startJulian = 190;
+var endJulian = 190;
 ////////////////////////////////////////////////////////////
 //Landtrendr code
 var indexListString = getImageLib.listToString(indexList,'_');
