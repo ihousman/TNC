@@ -146,7 +146,7 @@ var nDays = 64;
 var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
 
 //Whether each output should be exported to asset
-var exportImages = true;
+var exportImages = false;
 
 ////////////////////////////////////
 //Moving window z parameters
@@ -199,9 +199,8 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 
 
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
-          baselineLength,baselineGap,epochLength,zReducer,false,
-          false);
-          // exportImages,exportPathRoot,studyArea,scale,crs,transform);
+          baselineLength,baselineGap,epochLength,zReducer,useAnnualMedianForTrend,
+          exportImages,exportPathRoot,studyArea,scale,crs,transform);
 
 
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
