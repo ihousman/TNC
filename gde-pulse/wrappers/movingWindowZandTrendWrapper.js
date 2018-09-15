@@ -199,29 +199,29 @@ zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)
 dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
 
-function runTaskList() {
+// function runTaskList() {
 
 
-    //1. task local type-EXPORT_FEATURES awaiting-user-config
+//     //1. task local type-EXPORT_FEATURES awaiting-user-config
 
-    //2. task local type-EXPORT_IMAGE awaiting-user-config
+//     //2. task local type-EXPORT_IMAGE awaiting-user-config
 
-    var tasklist = document.getElementsByClassName('awaiting-user-config');
+//     var tasklist = document.getElementsByClassName('awaiting-user-config');
 
-    for (var i = 0; i < tasklist.length; i++)
+//     for (var i = 0; i < tasklist.length; i++)
 
-        tasklist[i].children[2].click();
+//         tasklist[i].children[2].click();
 
-}
+// }
 
-// confirmAll();
+// // confirmAll();
 
-function confirmAll() {
+// function confirmAll() {
 
-    var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
+//     var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
 
-    for (var i = 0; i < ok.length; i++)
+//     for (var i = 0; i < ok.length; i++)
 
-        ok[i].click();
+//         ok[i].click();
 
-}
+// }
