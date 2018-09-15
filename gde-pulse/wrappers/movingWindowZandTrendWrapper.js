@@ -33,7 +33,7 @@ var endJulian = 121+(64*2)
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
 var startYear = 1984;
-var endYear = 2018;
+var endYear = 1990;
 
 
 
@@ -194,7 +194,7 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
           baselineLength,baselineGap,epochLength,zReducer);
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
-
+print(zAndTrendCollection)
 // dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
 dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
