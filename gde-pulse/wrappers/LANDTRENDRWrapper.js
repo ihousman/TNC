@@ -1,9 +1,9 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-121.6646587842406, 40.42996409556283],
-          [-121.5767681592406, 40.77196366286651],
-          [-122.7523052686156, 40.93815738938883],
-          [-122.8511822217406, 40.49683309199189]]]);
+        [[[-122.03399043160425, 39.69289674376742],
+          [-122.02712397652613, 39.64612112618452],
+          [-121.9045577533816, 39.65405142583059],
+          [-121.92069392281519, 39.70372725596056]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Wrapper for LANDTRENDR across an annual time series
 //Supports multiple bands and/or indices
@@ -22,8 +22,8 @@ dLib.getExistingChangeData();
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
 var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg').geometry()
-var studyArea =sa.bounds();
-
+var studyArea =geometry;
+Map.addLayer(sa)
 //Set up Names for the export
 var outputName = 'LT_';
 
@@ -134,21 +134,21 @@ indexDirList.map(function(indexDir){
 Map.addLayer(outputCollection,{},'LT Fitted IndexNames',false);
 Map.addLayer(outputStack.select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},indexList[0] + ' LT Change Year',false);
   
-// // Export each fitted year
+// Export each fitted year
 // var years = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo();
-
-//   years.map(function(year){
-//     var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
-//     .multiply(10000).int16()
-//     .set('bandsUsed',indexListString)
-//     .set('system:time_start',ee.Date.fromYMD(year,6,1).millis());
- 
-//   var exportName = outputName + year.toString();
-//     var exportPath = exportPathRoot + '/'+ exportName;
+var years = [2018];
+  years.map(function(year){
+    var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
+    .multiply(10000).int16()
+    .set('bandsUsed',indexListString)
+    .set('system:time_start',ee.Date.fromYMD(year,6,1).millis())
+    .clip(sa)
+  var exportName = outputName + year.toString();
+    var exportPath = exportPathRoot + '/'+ exportName;
     
-//     getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
-//       studyArea,null,crs,transform);
-//   });
+    getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
+      studyArea,null,crs,transform);
+  });
   
 // //Export thresholded stack
 // var exportName = outputName + 'LT_Stack';
