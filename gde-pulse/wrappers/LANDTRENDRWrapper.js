@@ -21,9 +21,9 @@ dLib.getExistingChangeData();
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg').geometry()
+var sa = ee.FeatureCollection('projects/igde-work/igde-data/igde_buffer_20k_union_for_clipping').geometry();
 var studyArea =geometry;
-Map.addLayer(sa)
+
 //Set up Names for the export
 var outputName = 'LT_';
 
@@ -91,11 +91,10 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.getTasseledCap)
         .map(getImageLib.simpleAddTCAngles)
         .map(getImageLib.addSAVIandEVI)
-        // .map(function(img){return img.clip(sa)});
+        .map(function(img){return img.clip(sa)});
 var startYear = 1984;
 var endYear = 2018;
-var startJulian = 190;
-var endJulian = 190;
+
 Map.addLayer(ee.Image(composites.first()),getImageLib.vizParamsFalse,'comp')
 ////////////////////////////////////////////////////////////
 //Landtrendr code
@@ -135,14 +134,14 @@ Map.addLayer(outputCollection,{},'LT Fitted IndexNames',false);
 Map.addLayer(outputStack.select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},indexList[0] + ' LT Change Year',false);
   
 // Export each fitted year
-// var years = ee.List.sequence(startYear+timebuffer,endYear-timebuffer).getInfo();
-var years = [2018];
+var years = ee.List.sequence(startYear,endYear).getInfo();
+
   years.map(function(year){
     var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
     .multiply(10000).int16()
     .set('bandsUsed',indexListString)
     .set('system:time_start',ee.Date.fromYMD(year,6,1).millis())
-    .clip(sa)
+    // .clip(sa)
   var exportName = outputName + year.toString();
     var exportPath = exportPathRoot + '/'+ exportName;
     
