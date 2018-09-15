@@ -1,9 +1,9 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-123.07894045524273, 41.20545062616133],
-          [-123.02400881461773, 40.57425366846473],
-          [-121.66170412711773, 40.52416604285035],
-          [-121.74959475211773, 41.263284164328454]]]);
+        [[[-121.84184170228588, 37.84695600629141],
+          [-120.83109951478588, 37.88164936390631],
+          [-120.87504482728588, 38.434518153452075],
+          [-122.01762295228588, 38.50333172837808]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Wrapper for running z-score and linear trend across a moving window of years
 
@@ -19,6 +19,8 @@ dLib.getExistingChangeData();
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
 var sa = ee.FeatureCollection('projects/igde-work/igde-data/igde_buffer_20k_union_for_clipping').geometry();
+sa = sa.intersection(geometry);
+
 var studyArea =sa.bounds();
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
