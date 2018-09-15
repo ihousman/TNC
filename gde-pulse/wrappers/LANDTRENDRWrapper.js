@@ -156,5 +156,3 @@ var years = [2018];
     
 // getImageLib.exportToAssetWrapper(outputStack,exportName,exportPath,'mean',
 //       studyArea,null,crs,transform);
-var t = ee.Image('projects/igde-work/raster-data/LANDTRENDR-collection/LT_2018');
-Map.addLayer(t)
