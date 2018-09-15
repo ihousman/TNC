@@ -92,9 +92,13 @@ var lsAndTs = getImageLib.getLandsatWrapper(studyArea,startYear,endYear,startJul
   exportComposites,outputName,exportPathRoot,crs,transform,scale);
 
 //Separate into scenes and composites for subsequent analysis
-
-composites = composites.map(getImageLib.addSAVIandEVI)
-            .map(function(img){return img.clip(sa)});
+var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
+        .map(function(img){return dLib.multBands(img,1,0.0001)})
+        .map(getImageLib.simpleAddIndices)
+        .map(getImageLib.getTasseledCap)
+        .map(getImageLib.simpleAddTCAngles)
+        .map(getImageLib.addSAVIandEVI)
+        .map(function(img){return img.clip(sa)});
 Map.addLayer(composites.select(['SAVI','EVI']),{},'savi',false);
 ////////////////////////////////////////////////////////////
 //Landtrendr code
