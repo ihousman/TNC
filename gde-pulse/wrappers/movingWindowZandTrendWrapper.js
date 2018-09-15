@@ -200,7 +200,7 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
           baselineLength,baselineGap,epochLength,zReducer,useAnnualMedianForTrend,
-          exportImages,exportPathRoot,studyArea,scale,crs,transform);
+          exportImages,exportPathRoot,sa,scale,crs,transform);
 
 
 zAndTrendCollection =  zAndTrendCollection.map(function(img){return img.clip(sa)});
