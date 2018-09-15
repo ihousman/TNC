@@ -113,7 +113,7 @@ indexDirList.map(function(indexDir){
   
   //Run master LT wrapper
   //Returns the raw, heuristic output, and fitted collection
-  var ltOutputs = dLib.landtrendrWrapper(tsIndex,startYear+timebuffer,endYear-timebuffer,indexName,distDir,run_params,distParams,mmu);
+  var ltOutputs = dLib.landtrendrWrapper(tsIndex,startYear,endYear,indexName,distDir,run_params,distParams,mmu);
   
   var ltRaw = ltOutputs[0];
   var ltHeuristic = ltOutputs[1];
