@@ -97,6 +97,7 @@ var startYear = 1984;
 var endYear = 2018;
 var startJulian = 190;
 var endJulian = 190;
+Map.addLayer(ee.Image(composites.first()))
 ////////////////////////////////////////////////////////////
 //Landtrendr code
 var indexListString = getImageLib.listToString(indexList,'_');
