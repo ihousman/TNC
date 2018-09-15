@@ -148,7 +148,7 @@ var nDays = 64;
 var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
 
 //Whether each output should be exported to asset
-var exportImages = false;
+var exportImages = true;
 
 ////////////////////////////////////
 //Moving window z parameters
