@@ -194,8 +194,8 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
 var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
           baselineLength,baselineGap,epochLength,zReducer);
 print(ee.Image(zAndTrendCollection.first()).bandNames())
-dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
-dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
+// dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
+// dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
 
 // function runTaskList() {
