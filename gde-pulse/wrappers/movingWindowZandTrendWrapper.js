@@ -193,3 +193,30 @@ var zAndTrendCollection = dLib.zAndTrendChangeDetection(allScenes,indexNames,nDa
 dLib.thresholdZAndTrend(zAndTrendCollection,-5,-0.05,startYear,endYear);
 dLib.exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform);
 
+
+// function runTaskList() {
+
+
+//     //1. task local type-EXPORT_FEATURES awaiting-user-config
+
+//     //2. task local type-EXPORT_IMAGE awaiting-user-config
+
+//     var tasklist = document.getElementsByClassName('awaiting-user-config');
+
+//     for (var i = 0; i < tasklist.length; i++)
+
+//         tasklist[i].children[2].click();
+
+// }
+
+// // confirmAll();
+
+// function confirmAll() {
+
+//     var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
+
+//     for (var i = 0; i < ok.length; i++)
+
+//         ok[i].click();
+
+// }
