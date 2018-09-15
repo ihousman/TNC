@@ -21,6 +21,8 @@ dLib.getExistingChangeData();
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
+var sa = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg')
+Map.addLayer(sa)
 var studyArea =geometry;
 
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
