@@ -24,8 +24,8 @@ var studyArea =geometry;
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
 // endJulian: Ending Julian date
-var startJulian = 190;
-var endJulian = 250
+var startJulian = 1;
+var endJulian = 365
 
 // 3. Specify start and end years for all analyses
 // More than a 3 year span should be provided for time series methods to work 
@@ -138,7 +138,7 @@ var scale = null;
 //Number of julian days for each analysis
 //Generally want it to be >= 32 or the output will be noisy
 //Should almost never be less than 16
-var nDays = 60;
+var nDays = 64;
 
 //Which bands/indices to run the analysis with
 //Can be any of ['blue','green','red','nir','swir1','swir2','NDMI','NDVI','NBR','NDSI','tcAngleBG']
