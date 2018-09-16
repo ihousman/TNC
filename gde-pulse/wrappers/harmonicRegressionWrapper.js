@@ -18,7 +18,7 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
 var sa = ee.FeatureCollection('projects/igde-work/igde-data/igde_buffer_20k_union_for_clipping').geometry();
-sa = sa.intersection(geometry);
+// sa = sa.intersection(geometry);
 
 var studyArea =sa.bounds();
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
