@@ -1,10 +1,9 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-111.84507284221758, 41.07234859989189],
-          [-111.92197713909258, 40.19695544874679],
-          [-111.54844198284258, 39.98683877844594],
-          [-111.16392049846758, 40.723568905877514]]]),
-    plotPoint = /* color: #98ff00 */ee.Geometry.Point([-113.81457071908915, 48.069298246118436]);
+        [[[-121.23759765624999, 38.707578877743806],
+          [-121.30076904296874, 38.936542782111054],
+          [-121.65782470703124, 38.92799663450319],
+          [-121.64683837890624, 38.69257428097446]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Wrapper for running harmonic regression across a moving window of years
 
@@ -18,8 +17,10 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
-var studyArea = geometry;
+var sa = ee.FeatureCollection('projects/igde-work/igde-data/igde_buffer_20k_union_for_clipping').geometry();
+sa = sa.intersection(geometry);
 
+var studyArea =sa.bounds();
 // 2. Update the startJulian and endJulian variables to indicate your seasonal 
 // constraints. This supports wrapping for tropics and southern hemisphere.
 // startJulian: Starting Julian date 
@@ -119,7 +120,7 @@ var outputName = 'Harmonic_Coefficients_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'users/iwhousman/test/ChangeCollection';
+var exportPathRoot = 'projects/igde-work/raster-data/harmonic-coefficients-collection';
 
 // var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
