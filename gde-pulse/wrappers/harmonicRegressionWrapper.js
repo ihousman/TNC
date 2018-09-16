@@ -160,7 +160,8 @@ var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYea
   toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
   applyFmaskCloudShadowMask,applyFmaskSnowMask,
   cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels
-  );
+  )
+  .map(getImageLib.addSAVIandEVI);
 ////////////////////////////////////////////////////////////
 //Iterate across each time window and fit harmonic regression model
 var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1).getInfo().map(function(yr){
