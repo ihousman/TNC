@@ -189,7 +189,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   //Optionally simplify coeffs to phase, amplitude, and date of peak
   if(whichHarmonics.indexOf(2) > -1){
     var pap = ee.Image(getImageLib.getPhaseAmplitudePeak(coeffs));
-    print(pap);
+    // print(pap);
     
     var vals = coeffs.select(['.*_intercept']);
     var amplitudes = pap.select(['.*_amplitude']);
@@ -222,3 +222,29 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
 
 // coeffCollection = ee.ImageCollection(coeffCollection);
 // Map.addLayer(coeffCollection);
+// function runTaskList() {
+
+
+//     //1. task local type-EXPORT_FEATURES awaiting-user-config
+
+//     //2. task local type-EXPORT_IMAGE awaiting-user-config
+
+//     var tasklist = document.getElementsByClassName('awaiting-user-config');
+
+//     for (var i = 0; i < tasklist.length; i++)
+
+//         tasklist[i].children[2].click();
+
+// }
+
+// // confirmAll();
+
+// function confirmAll() {
+
+//     var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
+
+//     for (var i = 0; i < ok.length; i++)
+
+//         ok[i].click();
+
+// }
