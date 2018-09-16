@@ -1,9 +1,9 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var geometry = /* color: #d63000 */ee.Geometry.Polygon(
-        [[[-121.23759765624999, 38.707578877743806],
-          [-121.30076904296874, 38.936542782111054],
-          [-121.65782470703124, 38.92799663450319],
-          [-121.64683837890624, 38.69257428097446]]]);
+        [[[-122.5614899897987, 39.17664376185983],
+          [-122.3582429194862, 38.444708512738714],
+          [-120.5454987788612, 38.397367776330576],
+          [-120.8311433101112, 39.240489425285]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Wrapper for running harmonic regression across a moving window of years
 
@@ -179,8 +179,8 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
             'timebuffer':timebuffer,
             'startYearT':startYearT,
             'endYearT':endYearT,
-            }).float();
-
+            });
+  
   //Get predicted values for visualization
   var predicted = coeffsPredicted[1];
   Map.addLayer(predicted,{},'predicted',false);
@@ -209,6 +209,8 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   };
   
   //Export image
+  coeffs = coeffs.multiply(1000).int16().clip(sa);
+  Map.addLayer(coeffs)
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
   getImageLib.exportToAssetWrapper(coeffs,outName,outPath,
