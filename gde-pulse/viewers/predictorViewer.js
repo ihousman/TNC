@@ -82,15 +82,16 @@ var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
 joined = joined.select(bns,bnsOut)
 print('j',joined)
 igdes = igdes.limit(2);
-var out = ee.List.sequence(1991,1995).map(function(yr){
+var out = ee.List.sequence(1991,1993).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  outTable = outTable.map(function(f){return f.set('A_Year',yr)})
   return outTable
 
 });
 out = ee.FeatureCollection(out).flatten()
 print(out)
-
+Export.table.toDrive(out, 'Export-test', 'tnc-gdepulse_ianhousman/GEE-Export-Tables')
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
