@@ -64,6 +64,13 @@ var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_'+bandName]))
 joined = getImageLib.joinCollections(joined,trend.select([bandName+'.*']))
 joined = getImageLib.joinCollections(joined,z.select([bandName+'.*']))
 
+
+igdes = igdes.limit(2);
+var out = ee.List.sequence(1991,1995).map(function(yr){
+  var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  var outTable = joined.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, crsTransform, tileScale)
+
+})
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
