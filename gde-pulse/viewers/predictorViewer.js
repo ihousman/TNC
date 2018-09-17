@@ -33,8 +33,8 @@ var peakJulians = pap.select(['.*peakJulianDay']);
     
  
 Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
-Map.addLayer(lt,{},'Landtrendr Fitted Values',false);
-Map.addLayer(zTrend,{},'z and trend values',false);
-Map.addLayer(harmonics,{},'harmonic coeffs',false);
+Map.addLayer(lt.select(['.*_NBR']),{},'Landtrendr Fitted Values',false);
+Map.addLayer(zTrend.select(['NBR.*']),{},'z and trend values',false);
+// Map.addLayer(harmonics,{},'harmonic coeffs',false);
 Map.addLayer(igdes)
 
