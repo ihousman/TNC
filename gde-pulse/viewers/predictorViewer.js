@@ -116,7 +116,7 @@ var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
 joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
-igdes = igdes.limit(50);
+// igdes = igdes.limit(50);
 var out = ee.List.sequence(1991,2018).map(function(yr){
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
@@ -139,7 +139,7 @@ var out = ee.List.sequence(1991,2018).map(function(yr){
 });
 out = ee.FeatureCollection(out).flatten()
 
-Export.table.toDrive(out, 'Export-test-small', 'TNC-GDEPulse-GEE-Export-Tables')
+Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
 // joined = joined.map(function(img){
 //   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
 //   // out = out.addBands(img.select([0,1,2]))
