@@ -23,7 +23,7 @@ harmonics = harmonics.map(function(img){
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 zTrend = zTrend.filter(ee.Filter.calendarRange(185,249))
         .map(function(img){
-          var y = ee.Date(img.get('system:time_start')).get(['year']);
+          var y = ee.Date(img.get('system:time_start')).get('year');
           return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
         })
 var z = zTrend.select(['.*_Z'])
