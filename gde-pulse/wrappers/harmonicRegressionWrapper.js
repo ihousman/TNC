@@ -214,6 +214,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   print(coeffs)
   coeffs = coeffs
   .multiply(1000).int16().clip(sa);
+  print(coeffs)
   Map.addLayer(coeffs)
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
