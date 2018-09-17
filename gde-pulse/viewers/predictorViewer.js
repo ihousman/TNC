@@ -23,17 +23,16 @@ var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-col
 
 
 
-var f = ee.Image(harmonics.first())
-getImageLib.getPhaseAmplitudePeak(f)
-// var pap = harmonics
-    // .map(getImageLib.getPhaseAmplitudePeak);
 
-// var amplitudes = pap.select(['.*_amplitude']);
-// var phases = pap.select(['.*_phase']);
-// var peakJulians = pap.select(['.*peakJulianDay']);
+var pap = harmonics
+    .map(getImageLib.getPhaseAmplitudePeak);
+
+var amplitudes = pap.select(['.*_amplitude']);
+var phases = pap.select(['.*_phase']);
+var peakJulians = pap.select(['.*peakJulianDay']);
     
-    // Map.addLayer(pap,{},'pap',false);
-// Map.addLayer(peakJulians,{'min':0,'max':365},'peakJulians',false);
+    Map.addLayer(pap,{},'pap',false);
+Map.addLayer(peakJulians,{'min':0,'max':365},'peakJulians',false);
 Map.addLayer(lt,{},'Landtrendr Fitted Values',false);
 Map.addLayer(zTrend,{},'z and trend values',false);
 Map.addLayer(harmonics,{},'harmonic coeffs',false);
