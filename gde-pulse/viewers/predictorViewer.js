@@ -16,8 +16,8 @@ var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collectio
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
-Map.addLayer(lt,{},'Landtrendr Fitted Values',false);
-Map.addLayer(zTrend,{},'z and trend values',false);
-Map.addLayer(harmonics,{},'harmonic coeffs',false);
-Map.addLayer(igdes)
+// Map.addLayer(lt,{},'Landtrendr Fitted Values',false);
+// Map.addLayer(zTrend,{},'z and trend values',false);
+// Map.addLayer(harmonics,{},'harmonic coeffs',false);
+// Map.addLayer(igdes)
 
