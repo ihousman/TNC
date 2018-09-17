@@ -10,6 +10,11 @@ function addPrefixToCollectionBandNames(c,prefix){
 	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
 	return c.select(bandNames,outBandNames);
 }
+function addSuffixToCollectionBandNames(c,suffix){
+  var bandNames = ee.Image(c.first()).bandNames();
+	var outBandNames = bandNames.map(function(i){return ee.String(i).cat(suffix)});
+	return c.select(bandNames,outBandNames);
+}
 // Define user parameters:
 
 // 1. Specify study area: Study area
@@ -59,7 +64,8 @@ var zTrend2 = zTrend.filter(ee.Filter.calendarRange(185,249))
           var y = ee.Date(img.get('system:time_start')).get('year');
           return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
         })
-print(zTrend1)       
+zTrend1 = addSuffixToCollectionBandNames(zTrend1,'121_185');
+print(zTrend1)
 // var z = zTrend.select(['.*_Z'])
 //   .map(function(img){return dLib.multBands(img,1,0.1)});
 // var trend = zTrend.select(['.*._slope'])
