@@ -76,6 +76,7 @@ joined = getImageLib.joinCollections(joined,z)
 
 var bns = ee.Image(joined.first()).bandNames()
 var bnsOut = bns.map(function(bn){return ee.String('a_').cat(bn)})
+print(bns,bnsOut)
 joined = joined.select(bns,bnsOut)
 igdes = igdes.limit(2);
 var out = ee.List.sequence(1991,1995).map(function(yr){
