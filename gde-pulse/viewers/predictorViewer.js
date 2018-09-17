@@ -10,6 +10,16 @@ dLib.getExistingChangeData();
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
 var sa = ee.FeatureCollection('projects/igde-work/igde-data/igde_buffer_20k_union_for_clipping').geometry();
+
+var crs = 'EPSG:5070';
+
+//Specify transform if scale is null and snapping to known grid is needed
+var transform = [30,0,-2361915.0,0,-30,3177735.0];
+
+//Specify scale if transform is null
+var scale = null;
+
+
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
 
 var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection')
@@ -68,9 +78,11 @@ joined = getImageLib.joinCollections(joined,z.select([bandName+'.*']))
 igdes = igdes.limit(2);
 var out = ee.List.sequence(1991,1995).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-  var outTable = joined.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, crsTransform, tileScale)
+  var outTable = joined.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  return outTable
 
 })
+print(out)
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
