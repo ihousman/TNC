@@ -108,24 +108,23 @@ var igdeyr = years.getInfo().map(function(yz){
 igdeyr = ee.ImageCollection(igdeyr);
 
 
-var joined = getImageLib.joinCollections(igdeyr,composites)
-joined = getImageLib.joinCollections(joined,lt)
-joined = getImageLib.joinCollections(joined,zTrend)
-joined = getImageLib.joinCollections(joined,pap)
-print(joined.first())
-// var bns = ee.Image(joined.first()).bandNames()
-// var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
-// joined = joined.select(bns,bnsOut)
-// print('j',joined)
-// print(igdes.size())
-// igdes = igdes.limit(50);
-// var out = ee.List.sequence(1991,2018).map(function(yr){
-//   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
+joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
+// joined = getImageLib.joinCollections(joined,zTrend)
+joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
+joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'A_')
+
+print(igdes.size())
+igdes = igdes.limit(2);
+var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
+  var rawPre = 
+  var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
 //   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
 //   outTable = outTable.map(function(f){return f.set('A_Year',yr)})
 //   return outTable
 
-// });
+});
 // out = ee.FeatureCollection(out).flatten()
 
 // Export.table.toDrive(out, 'Export-test-small', 'TNC-GDEPulse-GEE-Export-Tables')
