@@ -47,7 +47,7 @@ var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collectio
         .map(function(img){return dLib.multBands(img,1,0.0001)});
 
 var compLtJoined = getImageLib.joinCollections(composites,lt)     ;
-Map.addLayer(comLtJoined,{},'compLT',false);
+Map.addLayer(compLtJoined,{},'compLT',false);
 // var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
 // harmonics = harmonics.map(function(img){
 //   var yr = ee.Number.parse(img.id().split('_').get(2)).add(1);
