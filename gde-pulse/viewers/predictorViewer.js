@@ -90,7 +90,7 @@ var out = ee.List.sequence(1991,1995).map(function(yr){
 });
 out = ee.FeatureCollection(out).flatten()
 print(out)
-print(joined)
+
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
