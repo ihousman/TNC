@@ -63,7 +63,7 @@ var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR']))
 joined = getImageLib.joinCollections(joined,trend.select(['NBR.*']))
 
 joined = joined.map(function(img){
-  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 256);
+  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
   out = out.copyProperties(img,['system:time_start']);
   return out;
