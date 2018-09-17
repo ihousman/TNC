@@ -33,7 +33,7 @@ var endJulian = 365;
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
 var startYear = 1983;
-var endYear = 2019;
+var endYear = 1985;
 
 // 4. Specify an annual buffer to include imagery from the same season 
 // timeframe from the prior and following year. timeBuffer = 1 will result 
@@ -185,34 +185,34 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   
   //Get predicted values for visualization
   var predicted = coeffsPredicted[1];
-  Map.addLayer(predicted,{},'predicted',false);
+  // Map.addLayer(predicted,{},'predicted',false);
   
   //Optionally simplify coeffs to phase, amplitude, and date of peak
-  if(whichHarmonics.indexOf(2) > -1){
-    var pap = ee.Image(getImageLib.getPhaseAmplitudePeak(coeffs));
-    // print(pap);
+  // if(whichHarmonics.indexOf(2) > -1){
+  //   var pap = ee.Image(getImageLib.getPhaseAmplitudePeak(coeffs));
+  //   // print(pap);
     
-    var vals = coeffs.select(['.*_intercept']);
-    var amplitudes = pap.select(['.*_amplitude']);
-    var phases = pap.select(['.*_phase']);
-    var peakJulians = pap.select(['.*peakJulianDay']);
+  //   var vals = coeffs.select(['.*_intercept']);
+  //   var amplitudes = pap.select(['.*_amplitude']);
+  //   var phases = pap.select(['.*_phase']);
+  //   var peakJulians = pap.select(['.*peakJulianDay']);
     
-    // Map.addLayer(pap,{},'pap',false);
-    Map.addLayer(peakJulians,{'min':0,'max':365},'peakJulians',false);
+  //   // Map.addLayer(pap,{},'pap',false);
+  //   Map.addLayer(peakJulians,{'min':0,'max':365},'peakJulians',false);
   
     
-    // Turn the HSV data into an RGB image and add it to the map.
-    var seasonality = ee.Image.cat(phases.select([0]), 
-                                    amplitudes.select([0]), 
-                                    vals.select([0])).hsvToRgb();
+  //   // Turn the HSV data into an RGB image and add it to the map.
+  //   var seasonality = ee.Image.cat(phases.select([0]), 
+  //                                   amplitudes.select([0]), 
+  //                                   vals.select([0])).hsvToRgb();
   
-    Map.addLayer(seasonality, {'min':0,'max':1}, 'Seasonality',false);
+  //   Map.addLayer(seasonality, {'min':0,'max':1}, 'Seasonality',false);
     
-  };
+  // };
   
   //Export image
+  
   coeffs = coeffs
-  .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
   .multiply(1000).int16().clip(sa);
   Map.addLayer(coeffs)
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
