@@ -46,8 +46,8 @@ var pap = harmonics
 
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
-var peakJulians = pap.select(['.*peakJulianDay']);
- 
+var peakJulians = pap.select(['.*peakJulianDay'])
+  .map(function(img){return dLib.multBands(img,1,1/365.)});
     
 //Set up the years to filter on- this is hard-coded since its set up oddly
 var years = ee.List.sequence(1985,2018);
@@ -72,6 +72,7 @@ igdeyr = ee.ImageCollection(igdeyr);
 var bandName = 'wetness';
 var joined = getImageLib.joinCollections(igdeyr,lt)
 joined = getImageLib.joinCollections(joined,trend)
+joined = getImageLib.joinCollections(joined,z)
 joined = getImageLib.joinCollections(joined,z)
 
 var bns = ee.Image(joined.first()).bandNames()
