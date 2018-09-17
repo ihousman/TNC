@@ -43,7 +43,9 @@ var trend = zTrend.select(['.*._slope'])
 
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
-    .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
+print(pap.first())
+    // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
 var peakJulians = pap.select(['.*peakJulianDay'])
