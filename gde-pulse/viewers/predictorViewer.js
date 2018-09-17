@@ -81,7 +81,8 @@ var out = ee.List.sequence(1991,1995).map(function(yr){
   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
   return outTable
 
-})
+});
+out = ee.FeatureCollection(out).flatten()
 print(out)
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
