@@ -47,11 +47,7 @@ var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collectio
 
 
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
-harmonics = harmonics.map(function(img){
-  var yr = ee.Number.parse(img.id().split('_').get(2)).add(1);
-  return ee.Image(dLib.multBands(img,1,0.001)).set({'system:time_start':ee.Date.fromYMD(yr,6,1).millis(),
-                  'modelLength':3,'noDependents':9})
-})
+
 // var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 // zTrend = zTrend.filter(ee.Filter.calendarRange(185,249))
 //         .map(function(img){
@@ -63,15 +59,15 @@ harmonics = harmonics.map(function(img){
 // var trend = zTrend.select(['.*._slope'])
 //   .map(function(img){return dLib.multBands(img,1,0.0001)});
 
-// var pap = harmonics
-//     .map(getImageLib.getPhaseAmplitudePeak)
-//     .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
+var pap = harmonics
+    .map(getImageLib.getPhaseAmplitudePeak)
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
 
 //     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
-// var amplitudes = pap.select(['.*_amplitude']);
-// var phases = pap.select(['.*_phase']);
-// var peakJulians = pap.select(['.*peakJulianDay'])
-  
+var amplitudes = pap.select(['.*_amplitude']);
+var phases = pap.select(['.*_phase']);
+var peakJulians = pap.select(['.*peakJulianDay'])
+Map.addLayer(peakJulians)
     
 // //Set up the years to filter on- this is hard-coded since its set up oddly
 // var years = ee.List.sequence(1985,2018);
