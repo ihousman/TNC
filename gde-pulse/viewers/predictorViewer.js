@@ -73,8 +73,10 @@ var bandName = 'wetness';
 var joined = getImageLib.joinCollections(igdeyr,lt)
 joined = getImageLib.joinCollections(joined,trend)
 joined = getImageLib.joinCollections(joined,z)
-print(ee.Image(joined.first()).bandNames())
 
+var bns = ee.Image(joined.first()).bandNames()
+var bnsOut = bns.map(function(bn){return ee.String('a_').cat(bn)})
+joined = joined.select(bns,bnsOut)
 igdes = igdes.limit(2);
 var out = ee.List.sequence(1991,1995).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
