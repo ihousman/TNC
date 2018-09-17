@@ -48,12 +48,18 @@ var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collectio
 
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
 
-// var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
-// zTrend = zTrend.filter(ee.Filter.calendarRange(185,249))
-//         .map(function(img){
-//           var y = ee.Date(img.get('system:time_start')).get('year');
-//           return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
-//         })
+var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
+var zTrend1 = zTrend.filter(ee.Filter.calendarRange(121,185))
+        .map(function(img){
+          var y = ee.Date(img.get('system:time_start')).get('year');
+          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
+        })
+var zTrend2 = zTrend.filter(ee.Filter.calendarRange(185,249))
+        .map(function(img){
+          var y = ee.Date(img.get('system:time_start')).get('year');
+          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
+        })
+print(zTrend1)       
 // var z = zTrend.select(['.*_Z'])
 //   .map(function(img){return dLib.multBands(img,1,0.1)});
 // var trend = zTrend.select(['.*._slope'])
