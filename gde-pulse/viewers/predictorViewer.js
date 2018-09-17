@@ -81,7 +81,8 @@ var bns = ee.Image(joined.first()).bandNames()
 var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
 joined = joined.select(bns,bnsOut)
 print('j',joined)
-// igdes = igdes;
+print(igdes.size())
+igdes = igdes.limit(50);
 var out = ee.List.sequence(1991,2018).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
@@ -91,7 +92,7 @@ var out = ee.List.sequence(1991,2018).map(function(yr){
 });
 out = ee.FeatureCollection(out).flatten()
 
-Export.table.toDrive(out, 'Export-test', 'TNC-GDEPulse-GEE-Export-Tables')
+Export.table.toDrive(out, 'Export-test-small', 'TNC-GDEPulse-GEE-Export-Tables')
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
   // out = out.addBands(img.select([0,1,2]))
