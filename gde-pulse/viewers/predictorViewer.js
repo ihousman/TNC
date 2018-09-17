@@ -14,6 +14,10 @@ var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE
 
 var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection');
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
+harmonics = harmonics.map(function(img){
+  var yr = ee.Number.parse(img.id().split('_').get(2)).add(1);
+  return img.set('system:time_start',ee.Date.fromYMD(yr,6,1).millis())
+})
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
 // Map.addLayer(lt,{},'Landtrendr Fitted Values',false);
