@@ -75,7 +75,7 @@ joined = getImageLib.joinCollections(joined,trend)
 joined = getImageLib.joinCollections(joined,z)
 
 var bns = ee.Image(joined.first()).bandNames()
-var bnsOut = bns.map(function(bn){return ee.String('a_').cat(bn)})
+var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
 
 joined = joined.select(bns,bnsOut)
 igdes = igdes.limit(2);
