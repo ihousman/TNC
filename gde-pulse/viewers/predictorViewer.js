@@ -62,7 +62,14 @@ igdeyr = ee.ImageCollection(igdeyr);
 var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR']))
 joined = getImageLib.joinCollections(joined,trend.select(['NBR.*']))
 
-Map.addLayer(joined.select([0,2,3]),{},'joined',false)
+joined = joined.map(function(img){
+  var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 256);
+  // out = out.addBands(img.select([0,1,2]))
+  out = out.copyProperties(img,['system:time_start']);
+  return out;
+  
+})
+Map.addLayer(joined,{},'joined',false)
 // Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
 // Map.addLayer(lt.select(['.*_NBR']),{},'Landtrendr Fitted Values',false);
 // Map.addLayer(zTrend.select(['NBR.*']),{},'z and trend values',false);
