@@ -130,14 +130,15 @@ var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
  
   
   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
-  print(forExtraction.bandNames())
-//   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
-//   outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+  
+  var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+  print(outTable)
 //   return outTable
 
 });
-// out = ee.FeatureCollection(out).flatten()
-
+out = ee.FeatureCollection(out).flatten()
+print(out)
 // Export.table.toDrive(out, 'Export-test-small', 'TNC-GDEPulse-GEE-Export-Tables')
 // joined = joined.map(function(img){
 //   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
