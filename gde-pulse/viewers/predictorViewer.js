@@ -117,7 +117,8 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1991,2018).map(function(yr){
+var out = ee.List.sequence(1991,2018).getInfo().map(function(yr){
+  var yro = yr;
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
   var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
@@ -133,13 +134,13 @@ var out = ee.List.sequence(1991,2018).map(function(yr){
   
   var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
   outTable = outTable.map(function(f){return f.set('A_Year',yr)})
- 
+  Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
   return outTable
 
 });
 out = ee.FeatureCollection(out).flatten()
 
-Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
+// Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
 // joined = joined.map(function(img){
 //   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
 //   // out = out.addBands(img.select([0,1,2]))
@@ -154,3 +155,35 @@ Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
 // // Map.addLayer(harmonics,{},'harmonic coeffs',false);
 // Map.addLayer(igdes)
 
+// function runTaskList() {
+
+
+//     //1. task local type-EXPORT_FEATURES awaiting-user-config
+
+//     //2. task local type-EXPORT_IMAGE awaiting-user-config
+
+//     var tasklist = document.getElementsByClassName('awaiting-user-config');
+
+//     for (var i = 0; i < tasklist.length; i++)
+
+//         tasklist[i].children[2].click();
+
+// }
+
+// // confirmAll();
+
+// function confirmAll() {
+
+//     var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
+
+//     for (var i = 0; i < ok.length; i++)
+
+//         ok[i].click();
+
+// }
+
+
+
+// runTaskList();
+
+// confirmAll();
