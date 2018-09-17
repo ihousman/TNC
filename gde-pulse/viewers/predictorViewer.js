@@ -55,8 +55,8 @@ var igdeyr = years.getInfo().map(function(yz){
 });
 igdeyr = ee.ImageCollection(igdeyr);
 
-var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR','.*_SAVI','.*EVI']))
-joined = getImageLib.joinCollections(joined,trend.select(['.*_NBR','.*_SAVI','.*EVI']))
+var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR']))
+joined = getImageLib.joinCollections(joined,trend.select(['NBR.*']))
 
 Map.addLayer(joined.select([0,2,3,4]),{},'joined',false)
 // Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
