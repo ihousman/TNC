@@ -44,7 +44,7 @@ var trend = zTrend.select(['.*._slope'])
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
     .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
-print(pap.first())
+
     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
@@ -65,7 +65,7 @@ var igdeyr = years.getInfo().map(function(yz){
   t = t.updateMask(t.select([0]).lt(1000))
       .divide(100)
       .addBands(tID.int64())
-      .rename(['Depth-To-Groundwater-divided-by-one-hundred'])
+      .rename(['Depth-To-Groundwater-divided-by-one-hundred','FID'])
       .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
   return t;
 });
@@ -79,7 +79,6 @@ joined = getImageLib.joinCollections(joined,pap)
 
 var bns = ee.Image(joined.first()).bandNames()
 var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
-
 joined = joined.select(bns,bnsOut)
 print('j',joined)
 igdes = igdes.limit(2);
