@@ -62,7 +62,7 @@ igdeyr = ee.ImageCollection(igdeyr);
 var bandName = 'wetness';
 var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_'+bandName]))
 joined = getImageLib.joinCollections(joined,trend.select([bandName+'.*']))
-joined = getImageLib.joinCollections(joined,z.select(['.*']))
+joined = getImageLib.joinCollections(joined,z.select([bandName+'.*']))
 
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
