@@ -39,21 +39,19 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.simpleAddTCAngles)
         .map(getImageLib.addSAVIandEVI)
         .select(indexNames)
-        // .map(function(img){return img.clip(sa)});
-Map.addLayer(composites)
+        
 
 var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection')
         .select(indexEndWildcards)
         .map(function(img){return dLib.multBands(img,1,0.0001)});
 
-var compLtJoined = getImageLib.joinCollections(composites,lt)     ;
-Map.addLayer(compLtJoined,{},'compLT',false);
-// var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
-// harmonics = harmonics.map(function(img){
-//   var yr = ee.Number.parse(img.id().split('_').get(2)).add(1);
-//   return ee.Image(dLib.multBands(img,1,0.001)).set({'system:time_start':ee.Date.fromYMD(yr,6,1).millis(),
-//                   'modelLength':3,'noDependents':9})
-// })
+
+var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
+harmonics = harmonics.map(function(img){
+  var yr = ee.Number.parse(img.id().split('_').get(2)).add(1);
+  return ee.Image(dLib.multBands(img,1,0.001)).set({'system:time_start':ee.Date.fromYMD(yr,6,1).millis(),
+                  'modelLength':3,'noDependents':9})
+})
 // var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 // zTrend = zTrend.filter(ee.Filter.calendarRange(185,249))
 //         .map(function(img){
