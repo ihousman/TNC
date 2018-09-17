@@ -78,7 +78,7 @@ joined = getImageLib.joinCollections(joined,z.select([bandName+'.*']))
 igdes = igdes.limit(2);
 var out = ee.List.sequence(1991,1995).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-  var outTable = joined.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
   return outTable
 
 })
