@@ -54,6 +54,13 @@ var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collectio
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
 
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
+
+var z = zTrend.select(['.*_Z'])
+  .map(function(img){return dLib.multBands(img,1,0.1)});
+var trend = zTrend.select(['.*._slope'])
+  .map(function(img){return dLib.multBands(img,1,0.0001)});
+
+zTrend = getImageLib.joinCollections(z,trend,false);
 var zTrend1 = zTrend.filter(ee.Filter.calendarRange(121,185))
         .map(function(img){
           var y = ee.Date(img.get('system:time_start')).get('year');
@@ -64,12 +71,11 @@ var zTrend2 = zTrend.filter(ee.Filter.calendarRange(185,249))
           var y = ee.Date(img.get('system:time_start')).get('year');
           return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
         })
-zTrend1 = addSuffixToCollectionBandNames(zTrend1,'121_185');
-print(zTrend1)
-// var z = zTrend.select(['.*_Z'])
-//   .map(function(img){return dLib.multBands(img,1,0.1)});
-// var trend = zTrend.select(['.*._slope'])
-//   .map(function(img){return dLib.multBands(img,1,0.0001)});
+zTrend1 = addSuffixToCollectionBandNames(zTrend1,'_121_185');
+zTrend2 = addSuffixToCollectionBandNames(zTrend2,'_185_249');
+
+zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
+
 
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
@@ -81,32 +87,32 @@ var phases = pap.select(['.*_phase']);
 var peakJulians = pap.select(['.*peakJulianDay'])
 Map.addLayer(peakJulians)
     
-// //Set up the years to filter on- this is hard-coded since its set up oddly
-// var years = ee.List.sequence(1985,2018);
-// //Reformat the igdes to have a unique feature per year
-// var igdeyr = years.getInfo().map(function(yz){
-//   var fieldName ='Depth'+ yz.toString();
-//   // var t = f.select([fieldName], ['AvgAnnD'])
-//   //         .map(function(ft){return ft.set('year',yz)});
-//   var t = igdes.select([fieldName], ['AvgAnnD']);
-//   var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
-//   var tID = igdes.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
-//   t = depth;
-//   t = t.updateMask(t.select([0]).lt(1000))
-//       .divide(100)
-//       .addBands(tID.int64())
-//       .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
-//       .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
-//   return t;
-// });
-// igdeyr = ee.ImageCollection(igdeyr);
+//Set up the years to filter on- this is hard-coded since its set up oddly
+var years = ee.List.sequence(1985,2018);
+//Reformat the igdes to have a unique feature per year
+var igdeyr = years.getInfo().map(function(yz){
+  var fieldName ='Depth'+ yz.toString();
+  // var t = f.select([fieldName], ['AvgAnnD'])
+  //         .map(function(ft){return ft.set('year',yz)});
+  var t = igdes.select([fieldName], ['AvgAnnD']);
+  var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
+  var tID = igdes.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
+  t = depth;
+  t = t.updateMask(t.select([0]).lt(1000))
+      // .divide(100)
+      // .addBands(tID.int64())
+      .rename(['Depth-To-Groundwater'])
+      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
+  return t;
+});
+igdeyr = ee.ImageCollection(igdeyr);
 
-// var bandName = 'wetness';
-// var joined = getImageLib.joinCollections(igdeyr,lt)
-// joined = getImageLib.joinCollections(joined,trend)
-// joined = getImageLib.joinCollections(joined,z)
-// joined = getImageLib.joinCollections(joined,pap)
 
+var joined = getImageLib.joinCollections(igdeyr,composites)
+joined = getImageLib.joinCollections(joined,lt)
+joined = getImageLib.joinCollections(joined,zTrend)
+joined = getImageLib.joinCollections(joined,pap)
+print(joined.first())
 // var bns = ee.Image(joined.first()).bandNames()
 // var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
 // joined = joined.select(bns,bnsOut)
