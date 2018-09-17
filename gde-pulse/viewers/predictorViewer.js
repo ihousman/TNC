@@ -22,7 +22,7 @@ harmonics = harmonics.map(function(img){
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
 
-
+print(harmonics)
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak);
 
