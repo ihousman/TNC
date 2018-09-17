@@ -81,7 +81,7 @@ var bns = ee.Image(joined.first()).bandNames()
 var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
 joined = joined.select(bns,bnsOut)
 print('j',joined)
-igdes = igdes.limit(2);
+// igdes = igdes;
 var out = ee.List.sequence(1991,2018).map(function(yr){
   var img = ee.Image(joined.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
