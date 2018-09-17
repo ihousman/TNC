@@ -30,11 +30,33 @@ var pap = harmonics
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
 var peakJulians = pap.select(['.*peakJulianDay']);
-    
  
-Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
-Map.addLayer(lt.select(['.*_NBR']),{},'Landtrendr Fitted Values',false);
-Map.addLayer(zTrend.select(['NBR.*']),{},'z and trend values',false);
+    
+//Set up the years to filter on- this is hard-coded since its set up oddly
+var years = ee.List.sequence(1985,2018);
+//Reformat the igdes to have a unique feature per year
+var igdeyr = years.getInfo().map(function(yz){
+  var fieldName ='Depth'+ yz.toString();
+  // var t = f.select([fieldName], ['AvgAnnD'])
+  //         .map(function(ft){return ft.set('year',yz)});
+  var t = igdes.select([fieldName], ['AvgAnnD']);
+  var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
+  var tID = igdes.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
+  t = depth;
+  t = t.updateMask(t.select([0]).lt(1000))
+      .divide(100)
+      .addBands(tID.int64())
+      .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
+      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
+  return t;
+});
+igdeyr = ee.ImageCollection(igdeyr);
+
+var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR','.*_SAVI','.*EVI']))
+Map.addLayer(joined,{},'joined',false)
+// Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
+// Map.addLayer(lt.select(['.*_NBR']),{},'Landtrendr Fitted Values',false);
+// Map.addLayer(zTrend.select(['NBR.*']),{},'z and trend values',false);
 // Map.addLayer(harmonics,{},'harmonic coeffs',false);
 Map.addLayer(igdes)
 
