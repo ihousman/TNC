@@ -211,7 +211,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   // };
   
   //Export image
-  
+  print(coeffs)
   coeffs = coeffs
   .multiply(1000).int16().clip(sa);
   Map.addLayer(coeffs)
