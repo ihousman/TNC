@@ -42,12 +42,12 @@ var trend = zTrend.select(['.*._slope'])
   .map(function(img){return dLib.multBands(img,1,0.0001)});
 
 var pap = harmonics
-    .map(getImageLib.getPhaseAmplitudePeak);
-
+    .map(getImageLib.getPhaseAmplitudePeak)
+    .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
 var peakJulians = pap.select(['.*peakJulianDay'])
-  .map(function(img){return dLib.multBands(img,1,1/365.)});
+  
     
 //Set up the years to filter on- this is hard-coded since its set up oddly
 var years = ee.List.sequence(1985,2018);
