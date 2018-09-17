@@ -129,12 +129,6 @@ var f = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_
 
 //Set up the years to filter on- this is hard-coded since its set up oddly
 var years = ee.List.sequence(1985,2018);
-// var yearsOddballs = ee.List.sequence(20,20);
-// var years2 = ee.List.sequence(1,18);
-// var years = years1.cat(yearsOddballs).cat(years2);
-// var yearsInt = ee.List.sequence(1985,2018);
-// var yearsZ = years.zip(yearsInt).getInfo();
-
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
