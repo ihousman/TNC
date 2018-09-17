@@ -59,8 +59,10 @@ var igdeyr = years.getInfo().map(function(yz){
 });
 igdeyr = ee.ImageCollection(igdeyr);
 
-var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_NBR']))
-joined = getImageLib.joinCollections(joined,trend.select(['NBR.*']))
+var bandName = 'wetness';
+var joined = getImageLib.joinCollections(igdeyr,lt.select(['.*_'+bandName]))
+joined = getImageLib.joinCollections(joined,trend.select([bandName+'.*']))
+joined = getImageLib.joinCollections(joined,z.select(['.*']))
 
 joined = joined.map(function(img){
   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'ORIG_FID', 1000);
