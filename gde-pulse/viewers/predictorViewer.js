@@ -62,7 +62,7 @@ var igdeyr = years.getInfo().map(function(yz){
   t = depth;
   t = t.updateMask(t.select([0]).lt(1000))
       .divide(100)
-      .addBands(tID.int64())
+      // .addBands(tID.int64())
       .rename(['Depth-To-Groundwater-divided-by-one-hundred','ORIG_FID'])
       .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
   return t;
