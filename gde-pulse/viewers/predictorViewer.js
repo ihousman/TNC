@@ -22,7 +22,9 @@ var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-col
 
 
 
-var pap = harmonics.map(getImageLib.getPhaseAmplitudePeak);
+var pap = harmonics
+    .map(function(img){return dLib.multBands(img,1,0.001)})
+    .map(getImageLib.getPhaseAmplitudePeak);
 
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
