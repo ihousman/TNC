@@ -73,7 +73,7 @@ var bandName = 'wetness';
 var joined = getImageLib.joinCollections(igdeyr,lt)
 joined = getImageLib.joinCollections(joined,trend)
 joined = getImageLib.joinCollections(joined,z)
-joined = getImageLib.joinCollections(joined,z)
+joined = getImageLib.joinCollections(joined,pap)
 
 var bns = ee.Image(joined.first()).bandNames()
 var bnsOut = bns.map(function(bn){return ee.String('A_').cat(bn)})
