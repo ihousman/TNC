@@ -112,14 +112,24 @@ var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
 joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
 // joined = getImageLib.joinCollections(joined,zTrend)
 joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
-joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'A_')
-
+var joinedRawForSlope = joinedRaw;
+joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
+zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 print(igdes.size())
 igdes = igdes.limit(2);
 var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
-  var rawPre = 
+  yr = ee.Number(yr);
+  var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
+  var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  
   var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  
   var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  var rawD = raw.subtract(rawPre);
+  rawD = addPrefixToCollectionBandNames(rawD,'D1_')
+  
+  var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
+  print(forExtraction.bandNames())
 //   var outTable = img.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
 //   outTable = outTable.map(function(f){return f.set('A_Year',yr)})
 //   return outTable
