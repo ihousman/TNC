@@ -1,6 +1,7 @@
 library(corrplot)
 library(randomForest)
 library(varSelRF)
+library(stringr)
 ######################################
 #Set up workspace
 wd = 'D:/scratch'
@@ -11,7 +12,7 @@ ntree = 100
 
 
 #Define strata fields
-strataFields = c('All','Level1_For','Level2_For','Level3_For','Level4_Div',  'Macrogroup','VEGETATION')
+strataFields = c('All','Level1_For','Level2_For','Level3_For','Level4_Div',  'Macrogroup','VEGETATION','wDepth_str','q_maxMean')
 
 ######################################
 #Read in tables
@@ -59,7 +60,7 @@ dev.off()
 allData$All = as.factor('Covers')
 
 
-outTable = c()
+outTable2 = c()
 
 for(strataField in strataFields){
   #Set up strata
@@ -83,7 +84,7 @@ for(strataField in strataFields){
     if(n>2){
       if(str_detect(class,'1.C.3. Temperate Flooded and Swamp Forest')){class = '1.C.3. Temperate Flooded and Swamp Forest'}
       class = str_replace(class,'/',' ')
-      
+
       png(paste0(strataField,'_',class,'_Corr_plot.png'),width = 2000,height = 2000)
       corrplot(corMatrix,method = 'ellipse',type = 'lower')#,order = 'FPC')
       mtext(paste0(strataField,' ',class,' n = ',n),  line=-0.5, cex=2)
@@ -102,8 +103,8 @@ for(strataField in strataFields){
     outTable = rbind(outTable,corLines)
     
     
-    # dep0ClassStrata = predictorsTableClassStrata$D0_Depth.To.Groundwater
-    # dep1ClassStrata = predictorsTableClassStrata$D1_Depth.To.Groundwater
+    dep0ClassStrata = predictorsTableClassStrata$D0_Depth.To.Groundwater
+    dep1ClassStrata = predictorsTableClassStrata$D1_Depth.To.Groundwater
     # indClassStrata = predictorsTableClassStrata[independents]
     # 
     # rfD0ClassStrata = randomForest(indClassStrata, dep0ClassStrata,  ntree=ntree,importance = TRUE)
@@ -126,24 +127,35 @@ write.csv(outTable,'R-Values-By-Strata.csv')
 
 #Filter out table for finding variables with highest r values
 outTableFiltered = outTable[outTable[,1] > 5,]
+ns = outTableFiltered[,1]
 outTableFiltered = outTableFiltered[,independents]
 rns = rownames(outTableFiltered)
+
 
 #Iterate across each stratum to find variable with highest r2
 maxR2Table = c()
 for(i in seq(1,length(rns))){
   r = outTableFiltered[i,]
-  r = r[4:length(r)]
-  r2 = r*r
-  minR2 = min(r2)
-  maxR2 = max(r2)
+  n = ns[i]
+  if(n > 2){
+    r2 = r*r
+    minR2 = min(r2)
+    maxR2 = max(r2)
+    
+    r2Min = r2[r2== minR2]
+    r2Max = r2[r2== maxR2]
+    
+    tops = quantile(r2,c(0.9))
+    r2Tops = sort(r2[r2 >= tops])
+    
+    maxR2Table = rbind(maxR2Table,c(rns[i],n,names(r2Tops),r2Tops))
+  }
   
-  r2Min = r2[r2== minR2]
-  r2Max = r2[r2== maxR2]
- 
-  
-  maxR2Table = rbind(maxR2Table,c(rns[i],names(r2Max),r2Max))
 }
+nTops = length(r2Tops)
+topsVarsNames = lapply(seq(nTops,1),function(i){paste0('Top R2 Var Name ',i)})
+topsValuesNames = lapply(seq(nTops,1),function(i){paste0('Top R2 Value ',i)})
+
 maxR2Table  = data.frame(maxR2Table)
-names(maxR2Table) = c('Strata','Max R2 Var','Max R2')
-write.csv(maxR2Table,'Max-R2-Variables-By-Strata.csv')
+names(maxR2Table) = c('Strata','N',topsVarsNames,topsValuesNames)
+write.csv(maxR2Table,'Top-10pctl-R2-Variables-By-Strata.csv')
