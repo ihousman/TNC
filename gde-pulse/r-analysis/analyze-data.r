@@ -4,7 +4,8 @@ library(varSelRF)
 library(stringr)
 ######################################
 #Set up workspace
-wd = 'D:/scratch'
+load("C:/TNC-analysis/RData")
+wd = 'C:/TNC-analysis/'
 setwd(wd)
 
 #Set parameters
@@ -134,6 +135,7 @@ rns = rownames(outTableFiltered)
 
 #Iterate across each stratum to find variable with highest r2
 maxR2Table = c()
+maxR2TableSimple = c()
 for(i in seq(1,length(rns))){
   r = outTableFiltered[i,]
   n = ns[i]
@@ -145,10 +147,11 @@ for(i in seq(1,length(rns))){
     r2Min = r2[r2== minR2]
     r2Max = r2[r2== maxR2]
     
-    tops = quantile(r2,c(0.9))
+    tops = quantile(r2,c(0.5))
     r2Tops = sort(r2[r2 >= tops])
     
     maxR2Table = rbind(maxR2Table,c(rns[i],n,names(r2Tops),r2Tops))
+    maxR2TableSimple = rbind(maxR2TableSimple,c(rns[i],r2Tops))
   }
   
 }
@@ -157,5 +160,18 @@ topsVarsNames = lapply(seq(nTops,1),function(i){paste0('Top R2 Var Name ',i)})
 topsValuesNames = lapply(seq(nTops,1),function(i){paste0('Top R2 Value ',i)})
 
 maxR2Table  = data.frame(maxR2Table)
+maxR2TableSimple  = data.frame(maxR2TableSimple)
 names(maxR2Table) = c('Strata','N',topsVarsNames,topsValuesNames)
+names(maxR2TableSimple) = c('Strata',topsValuesNames)
+
 write.csv(maxR2Table,'Top-10pctl-R2-Variables-By-Strata.csv')
+
+
+t = outTable#[seq(1,5),]
+t = t[,independents]
+t = t*t
+rns = rownames(t)
+
+png('test_boxplot.png',width = 3000,height = 1500)
+boxplot(t~rns)
+dev.off()
