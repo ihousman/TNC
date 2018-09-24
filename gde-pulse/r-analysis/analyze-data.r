@@ -149,9 +149,12 @@ for(i in seq(1,length(rns))){
     
     tops = quantile(r2,c(0.5))
     r2Tops = sort(r2[r2 >= tops])
+    repStrata = as.vector(rep(rns[i],length(r2Tops)))
+    repN = as.vector(rep(n,length(r2Tops)))
     
-    maxR2Table = rbind(maxR2Table,c(rns[i],n,names(r2Tops),r2Tops))
-    maxR2TableSimple = rbind(maxR2TableSimple,c(rns[i],r2Tops))
+    simpleT = cbind(repStrata,names(r2Tops),repN,r2Tops)
+    maxR2Table = rbind(maxR2Table,c(rns[i],n,names(r2Tops),as.vector(r2Tops)))
+    maxR2TableSimple = rbind(maxR2TableSimple,simpleT)
   }
   
 }
@@ -162,16 +165,23 @@ topsValuesNames = lapply(seq(nTops,1),function(i){paste0('Top R2 Value ',i)})
 maxR2Table  = data.frame(maxR2Table)
 maxR2TableSimple  = data.frame(maxR2TableSimple)
 names(maxR2Table) = c('Strata','N',topsVarsNames,topsValuesNames)
-names(maxR2TableSimple) = c('Strata',topsValuesNames)
+names(maxR2TableSimple) = c('Strata','Pred','N','R2')
 
 write.csv(maxR2Table,'Top-10pctl-R2-Variables-By-Strata.csv')
 
+# maxR2TableSimpleT = maxR2TableSimple[seq(10),]
 
-t = outTable#[seq(1,5),]
-t = t[,independents]
-t = t*t
-rns = rownames(t)
+maxR2TableSimple$R2 = as.numeric(as.vector(maxR2TableSimple$R2))
+detach(maxR2TableSimple)
+attach(maxR2TableSimple)
+maxR2TableSimpleT = maxR2TableSimple[order(-R2),]
+detach(maxR2TableSimple)
+maxR2TableSimpleT = maxR2TableSimpleT[seq(100),]
 
-png('test_boxplot.png',width = 3000,height = 1500)
-boxplot(t~rns)
+png('test_boxplot_strata.png',width = 3000,height = 1500)
+boxplot(as.numeric(R2)~Strata,data = maxR2TableSimpleT)
+dev.off()
+
+png('test_boxplot_pred.png',width = 3000,height = 1500)
+boxplot(as.numeric(R2)~Pred,data = maxR2TableSimpleT)
 dev.off()
