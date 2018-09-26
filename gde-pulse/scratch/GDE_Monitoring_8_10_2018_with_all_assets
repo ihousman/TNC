@@ -646,8 +646,9 @@ Map.addLayer(outline, {palette: 'd843e2'}, "iGDE_landsat_ALL_nearby_USGS wells C
 //updated by macrovegetation groups
 Map.addLayer(iGDE_landsat_1000m, {}, "iGDE_landsat_within_1000m_USGS wells CA", false)
 
-//above dataset subset to grab only those iGDE with well data that meets the following conditions
+//above dataset subset to grab only those iGDE with well data that meets the following conditions(n = 15419)
 //var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
+//
 var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
 Map.addLayer(outline, {palette: '0F00FF'}, "iGDE within 1000m well, >5 years well data, drop gw <30ft", false)
 //iGDE V1 polygon with n = 8800, updated with annual depth to ground water
@@ -660,7 +661,7 @@ print(iGDE_v1_aug.limit(20))
 //print(iGDE_v053)
 //print(iGDE_v1_aug)
 
-/*
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //Load landsat collection from the archive
