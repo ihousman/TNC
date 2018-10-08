@@ -56,7 +56,7 @@ var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coef
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
 var daymet = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection');
-daymet = addPrefixToCollectionBandNames(daymet,'dymt_')
+daymet = addPrefixToCollectionBandNames(daymet,'dymt_');
 var z = zTrend.select(['.*_Z'])
   .map(function(img){return dLib.multBands(img,1,0.1)});
 var trend = zTrend.select(['.*._slope'])
