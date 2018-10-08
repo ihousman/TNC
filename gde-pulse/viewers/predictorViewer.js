@@ -101,12 +101,9 @@ var years = ee.List.sequence(1985,2018);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   // var fieldName ='Depth'+ yz.toString();
-  if(yz>= 2000){
-    yzPadded = pad(yz-2000, 2);
-  }
-  else{
-    yzPadded = pad(yz-1900, 2);
-  }
+ 
+  var yzPadded = pad(yz-1985, 2);
+  
   var fieldName = 'AnnDept_'+ yzPadded;
   print(fieldName)
   // var t = f.select([fieldName], ['AvgAnnD'])
