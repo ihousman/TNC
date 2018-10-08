@@ -57,7 +57,6 @@ var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-col
 
 var z = zTrend.select(['.*_Z'])
   .map(function(img){return dLib.multBands(img,1,0.1)});
-var trend = zTrend.select(['.*._slope'])
   .map(function(img){return dLib.multBands(img,1,0.0001)});
 
 zTrend = getImageLib.joinCollections(z,trend,false);
