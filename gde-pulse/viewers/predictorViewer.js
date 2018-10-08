@@ -119,29 +119,29 @@ var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
 joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
-// // igdes = igdes.limit(50);
-// var out = ee.List.sequence(1991,2018).getInfo().map(function(yr){
-//   var yro = yr;
-//   yr = ee.Number(yr);
-//   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
-//   var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+igdes = igdes.limit(50);
+var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
+  var yro = yr;
+  yr = ee.Number(yr);
+  var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
+  var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
   
-//   var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
   
-//   var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-//   var rawD = rawPost.subtract(rawPre);
+  var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+  var rawD = rawPost.subtract(rawPre);
   
  
   
-//   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
+  var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
   
-//   var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
-//   outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-//   Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
-//   return outTable
+  var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+  Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
+  return outTable
 
-// });
-// out = ee.FeatureCollection(out).flatten()
+});
+out = ee.FeatureCollection(out).flatten()
 
 // Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
 // joined = joined.map(function(img){
