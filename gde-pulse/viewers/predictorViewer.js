@@ -5,6 +5,12 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
 
+function pad(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
 function addPrefixToCollectionBandNames(c,prefix){
   var bandNames = ee.Image(c.first()).bandNames();
 	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
@@ -34,8 +40,9 @@ var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wet
 var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-
+// var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDEveg053_Landsat_dissolved_8022018_1000m_Depth_gwell_macro_veg_final_gt5yr_lt30ft');
+print(igdes.first())
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -93,7 +100,15 @@ Map.addLayer(peakJulians)
 var years = ee.List.sequence(1985,2018);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
-  var fieldName ='Depth'+ yz.toString();
+  // var fieldName ='Depth'+ yz.toString();
+  if(yz>= 2000){
+    yzPadded = pad(yz-2000, 2);
+  }
+  else{
+    yzPadded = pad(yz-1900, 2);
+  }
+  var fieldName = 'AnnDept_'+ yzPadded;
+  print(fieldName)
   // var t = f.select([fieldName], ['AvgAnnD'])
   //         .map(function(ft){return ft.set('year',yz)});
   var t = igdes.select([fieldName], ['AvgAnnD']);
