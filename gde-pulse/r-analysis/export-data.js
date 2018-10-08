@@ -79,7 +79,7 @@ zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
 
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
-    .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC'])
 
 //     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
@@ -107,7 +107,7 @@ var igdeyr = years.getInfo().map(function(yz){
 });
 igdeyr = ee.ImageCollection(igdeyr);
 
-
+print(igdeyr.size())
 var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
 joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
 // joined = getImageLib.joinCollections(joined,zTrend)
