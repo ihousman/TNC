@@ -41,7 +41,7 @@ var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDEveg053_Landsat_dissolved_8022018_1000m_Depth_gwell_macro_veg_final_gt5yr_lt30ft');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
 print(igdes.first())
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
@@ -100,11 +100,11 @@ Map.addLayer(peakJulians)
 var years = ee.List.sequence(1985,2018);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
-  // var fieldName ='Depth'+ yz.toString();
+  var fieldName ='Depth'+ yz.toString();
  
-  var yzPadded = pad(yz-1985, 2);
+  // var yzPadded = pad(yz-1985, 2);
   
-  var fieldName = 'AnnDept_'+ yzPadded;
+  // var fieldName = 'AnnDept_'+ yzPadded;
   print(fieldName)
   // var t = f.select([fieldName], ['AvgAnnD'])
   //         .map(function(ft){return ft.set('year',yz)});
@@ -131,7 +131,7 @@ var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
 joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
-igdes = igdes.limit(50);
+// igdes = igdes.limit(50);
 var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
