@@ -131,7 +131,7 @@ var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
 joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
-// igdes = igdes.limit(50);
+igdes = igdes.limit(50);
 var out = ee.List.sequence(1985,2018).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
