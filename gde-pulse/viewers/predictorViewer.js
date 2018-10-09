@@ -132,7 +132,7 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
+var out = ee.List.sequence(1985,2018).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
