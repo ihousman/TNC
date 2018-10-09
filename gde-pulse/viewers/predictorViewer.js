@@ -37,6 +37,8 @@ var transform = [30,0,-2361915.0,0,-30,3177735.0];
 var scale = null;
 
 var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
+var indexNamesComposites = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG','NIRv'];
+
 var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
@@ -50,7 +52,7 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.getTasseledCap)
         .map(getImageLib.simpleAddTCAngles)
         .map(getImageLib.addSAVIandEVI)
-        .select(indexNames)
+        .select(indexNamesComposites);
         
 
 var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection')
