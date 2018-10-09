@@ -5,6 +5,12 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
 
+function pad(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
 function addPrefixToCollectionBandNames(c,prefix){
   var bandNames = ee.Image(c.first()).bandNames();
 	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
@@ -34,8 +40,9 @@ var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wet
 var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-
+// var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
+print(igdes.first())
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -55,8 +62,11 @@ var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coef
 
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
+var daymet = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection');
+daymet = addPrefixToCollectionBandNames(daymet,'dymt_');
 var z = zTrend.select(['.*_Z'])
   .map(function(img){return dLib.multBands(img,1,0.1)});
+var trend = zTrend.select(['.*._slope'])
   .map(function(img){return dLib.multBands(img,1,0.0001)});
 
 zTrend = getImageLib.joinCollections(z,trend,false);
@@ -78,7 +88,7 @@ zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
 
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
-    .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC'])
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
 
 //     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
@@ -91,6 +101,11 @@ var years = ee.List.sequence(1985,2018);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
+ 
+  // var yzPadded = pad(yz-1985, 2);
+  
+  // var fieldName = 'AnnDept_'+ yzPadded;
+  print(fieldName)
   // var t = f.select([fieldName], ['AvgAnnD'])
   //         .map(function(ft){return ft.set('year',yz)});
   var t = igdes.select([fieldName], ['AvgAnnD']);
@@ -106,17 +121,18 @@ var igdeyr = years.getInfo().map(function(yz){
 });
 igdeyr = ee.ImageCollection(igdeyr);
 
-print(igdeyr.size())
+
 var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
 joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
 // joined = getImageLib.joinCollections(joined,zTrend)
 joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
+joinedRaw =getImageLib.joinCollections(joinedRaw,daymet)
 var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
 joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1991,2018).getInfo().map(function(yr){
+var out = ee.List.sequence(1991,1992).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
