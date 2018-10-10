@@ -43,7 +43,7 @@ var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 3000;
+var howMany = 1000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -89,7 +89,7 @@ zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
 
 var pap = harmonics
     .map(getImageLib.getPhaseAmplitudePeak)
-    .select(['.*_phase','.*_amplitude','.*peakJulianDay'])
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC'])
 
 //     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
 var amplitudes = pap.select(['.*_amplitude']);
