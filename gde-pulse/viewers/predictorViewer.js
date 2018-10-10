@@ -104,7 +104,7 @@ var igdeyr = years.getInfo().map(function(yz){
   // var yzPadded = pad(yz-1985, 2);
   
   // var fieldName = 'AnnDept_'+ yzPadded;
-  print(fieldName)
+  // print(fieldName)
   // var t = f.select([fieldName], ['AvgAnnD'])
   //         .map(function(ft){return ft.set('year',yz)});
   var t = igdes.select([fieldName], ['AvgAnnD']);
@@ -146,7 +146,9 @@ var out = ee.List.sequence(1985,2018).getInfo().map(function(yr){
   
   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
-    print(i)
+    var startI = i;
+    var endI = i+howMany-1
+    print(startI,endI)
   })
   // var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
   // outTable = outTable.map(function(f){return f.set('A_Year',yr)})
