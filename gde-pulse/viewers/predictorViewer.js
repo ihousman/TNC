@@ -88,6 +88,7 @@ zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
 
 
 var pap = harmonics
+    .map(function(img){return dLib.multBands(img,1,0.001)})
     .map(getImageLib.getPhaseAmplitudePeak)
     .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC'])
 
