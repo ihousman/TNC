@@ -5,11 +5,7 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
 
-function pad(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
+
 
 function addPrefixToCollectionBandNames(c,prefix){
   var bandNames = ee.Image(c.first()).bandNames();
