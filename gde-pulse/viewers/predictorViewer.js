@@ -149,12 +149,13 @@ var out = ee.List.sequence(1985,1986).getInfo().map(function(yr){
   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
-    var endI = i+howMany-1
+    var endI = i+howMany
     var igdesT = igdesL.slice(startI,endI)
-    print(igdesT.length());
+    var outName = 'Export-test-full-'+yro.toString() + '_'+startI.toString() + '_' + endI.toString();
+    print(outName)
     // var outTable = forExtraction.reduceRegions(igdes.slice, ee.Reducer.mean(), scale, crs, transform, 1);
   // outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-  // Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
+  // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   })
  
   // return outTable
