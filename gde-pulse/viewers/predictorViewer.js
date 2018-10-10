@@ -150,12 +150,13 @@ var out = ee.List.sequence(1985,1986).getInfo().map(function(yr){
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
+    if(endI > igdeCount){endI = igdeCount}
     var igdesT = igdesL.slice(startI,endI)
-    var outName = 'Export-test-full-'+yro.toString() + '_'+startI.toString() + '_' + endI.toString();
+    var outName = 'Export-test-full-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     print(outName)
-    // var outTable = forExtraction.reduceRegions(igdes.slice, ee.Reducer.mean(), scale, crs, transform, 1);
-  // outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-  // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
+    var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesT), ee.Reducer.mean(), scale, crs, transform, 1);
+    outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   })
  
   // return outTable
