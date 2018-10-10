@@ -40,7 +40,8 @@ var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
-print(igdes.first())
+var igdeCount = igdes.size().getInfo();
+var howMany = 5000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -144,14 +145,16 @@ var out = ee.List.sequence(1985,2018).getInfo().map(function(yr){
  
   
   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
-  
-  var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
-  outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-  Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
-  return outTable
+  ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
+    print(i)
+  })
+  // var outTable = forExtraction.reduceRegions(igdes, ee.Reducer.mean(), scale, crs, transform, 1);
+  // outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+  // Export.table.toDrive(outTable, 'Export-test-full-'+yro.toString(), 'TNC-GDEPulse-GEE-Export-Tables')
+  // return outTable
 
 });
-out = ee.FeatureCollection(out).flatten()
+// out = ee.FeatureCollection(out).flatten()
 
 // Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
 // joined = joined.map(function(img){
