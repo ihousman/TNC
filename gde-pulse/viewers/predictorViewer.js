@@ -152,7 +152,7 @@ var out = ee.List.sequence(1985,1986).getInfo().map(function(yr){
     var endI = i+howMany
     if(endI > igdeCount){endI = igdeCount}
     var igdesT = igdesL.slice(startI,endI)
-    var outName = 'Export-test-full-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
+    var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     print(outName)
     var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
