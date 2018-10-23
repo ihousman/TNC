@@ -99,7 +99,7 @@ var peakJulians = pap.select(['.*peakJulianDay'])
 Map.addLayer(peakJulians)
     
 //Set up the years to filter on- this is hard-coded since its set up oddly
-var years = ee.List.sequence(1985,1985);
+var years = ee.List.sequence(1985,2018);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
@@ -134,7 +134,7 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
+var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
@@ -158,6 +158,9 @@ var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
     var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
+  
+    var outAsset = 'projects/igde-work/tables/' + outTable;
+    print(outAsset)
   })
  
   // return outTable
