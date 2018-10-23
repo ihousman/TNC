@@ -160,7 +160,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   
     var outAsset = 'projects/igde-work/tables/' + outTable;
-    print(outAsset)
+    // print(outAsset)
   })
  
   // return outTable
