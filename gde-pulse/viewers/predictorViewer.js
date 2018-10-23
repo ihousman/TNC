@@ -43,7 +43,7 @@ var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 20000;
+var howMany = 1000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
