@@ -39,7 +39,7 @@ var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018').limit(10);
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
@@ -159,8 +159,8 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   
-    var outAsset = 'projects/igde-work/tables/' + outTable;
-    Export.table.toAsset(outTable, outTable, outAsset)
+    var outAsset = 'projects/igde-work/tables/' + outName;
+    Export.table.toAsset(outTable, outName, outAsset)
     // print(outAsset)
   })
  
