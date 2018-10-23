@@ -114,7 +114,7 @@ var igdeyr = years.getInfo().map(function(yz){
   var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
   var tID = igdes.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
   t = depth;
-  t = t.updateMask(t.select([0]).lt(1000))
+  t = t.updateMask(t.select([0]).neq(-999))
       // .divide(100)
       // .addBands(tID.int64())
       .rename(['Depth-To-Groundwater'])
@@ -167,6 +167,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
   // return outTable
 
 });
+
 // out = ee.FeatureCollection(out).flatten()
 
 // Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
