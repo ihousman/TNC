@@ -43,7 +43,7 @@ var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 1000;
+var howMany = 20000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -99,7 +99,7 @@ var peakJulians = pap.select(['.*peakJulianDay'])
 Map.addLayer(peakJulians)
     
 //Set up the years to filter on- this is hard-coded since its set up oddly
-var years = ee.List.sequence(1985,2018);
+var years = ee.List.sequence(1985,1985);
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
