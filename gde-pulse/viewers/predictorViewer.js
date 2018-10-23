@@ -39,7 +39,7 @@ var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018').limit(10);
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
@@ -134,7 +134,7 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
+var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
