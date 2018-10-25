@@ -44,7 +44,7 @@ print(igdes.size())
 // var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 2000;
+var howMany = 1000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -156,7 +156,8 @@ var out = ee.List.sequence(1992,1993).getInfo().map(function(yr){
    
     
     var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
-    var igdeCount = igdesT.size()
+    var igdeCount = igdesT.size().getInfo();
+    print(yro,igdeCount)
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
