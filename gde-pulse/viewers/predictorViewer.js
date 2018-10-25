@@ -44,7 +44,7 @@ print(igdes.size())
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 2000;
+var howMany = 1000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -135,20 +135,27 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-// var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
-//   var yro = yr;
-//   yr = ee.Number(yr);
-//   var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
-//   var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
+  var yro = yr;
+  yr = ee.Number(yr);
   
-//   var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-  
-//   var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-//   var rawD = rawPost.subtract(rawPre);
-  
+   var fieldName ='Depth'+ yro.toString();
  
   
-//   var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
+  var igdesT = igdes.filter(ee.Filter.neq(fieldName, -999));
+  
+
+    var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
+    var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    
+    var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    
+    var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    var rawD = rawPost.subtract(rawPre);
+    
+   
+    
+    var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
 //   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
 //     var startI = i;
 //     var endI = i+howMany
@@ -167,7 +174,7 @@ zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
  
 //   // return outTable
 
-// });
+});
 
 // out = ee.FeatureCollection(out).flatten()
 
