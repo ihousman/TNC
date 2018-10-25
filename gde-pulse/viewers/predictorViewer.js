@@ -161,11 +161,11 @@ var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
 //     var endI = i+howMany
 //     if(endI > igdeCount){endI = igdeCount}
 //     var igdesT = igdesL.slice(startI,endI)
-//     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
-//     print(outName)
-//     var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesT), ee.Reducer.mean(), scale, crs, transform, 1);
-//     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-//     // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
+    var outName = 'Export-Full-Dataset-'+yro.toString()// + '_'+startI.toString() + '_' + (endI-1).toString();
+    print(outName)
+    var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesT), ee.Reducer.mean(), scale, crs, transform, 1);
+    outTable = outTable.map(function(f){return f.set('A_Year',yr)})
+    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   
 //     var outAsset = 'projects/igde-work/tables/' + outName;
 //     Export.table.toAsset(outTable, outName, outAsset)
