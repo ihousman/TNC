@@ -143,7 +143,7 @@ var out = ee.List.sequence(1992,1993).getInfo().map(function(yr){
  
   
   var igdesT = igdes.filter(ee.Filter.neq(fieldName, -999));
-  var itdesTL = igdesT.toList(100000);
+  var igdesTL = igdesT.toList(100000);
 
     var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
     var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
