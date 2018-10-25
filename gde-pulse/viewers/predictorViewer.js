@@ -39,7 +39,8 @@ var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
+print(igdes.size())
 var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
