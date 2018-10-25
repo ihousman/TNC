@@ -41,7 +41,7 @@ var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 print(igdes.size())
-var igdeCount = 15419;//igdes.size().getInfo();
+// var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
 var howMany = 2000;
@@ -156,6 +156,7 @@ var out = ee.List.sequence(1992,1993).getInfo().map(function(yr){
    
     
     var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
+    var igdeCount = igdesT.size()
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
