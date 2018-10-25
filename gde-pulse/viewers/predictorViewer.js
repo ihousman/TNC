@@ -157,14 +157,14 @@ var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
     
     var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
     var igdeCount = igdesT.size().getInfo();
-    print(yro,igdeCount)
+    // print(yro,igdeCount)
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
     if(endI > igdeCount){endI = igdeCount}
     var igdesTLT = igdesTL.slice(startI,endI)
     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
-    print(outName)
+    // print(outName)
     var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
