@@ -135,7 +135,7 @@ joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
 zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
+var out = ee.List.sequence(1992,1993).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   
