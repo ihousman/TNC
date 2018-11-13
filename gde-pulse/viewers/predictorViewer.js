@@ -44,7 +44,7 @@ print(igdes.size())
 // var igdeCount = 15419;//igdes.size().getInfo();
 var igdesL = igdes.toList(10000000,0);
 
-var howMany = 500;
+var howMany = 2000;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -167,10 +167,10 @@ var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
     // print(outName)
     var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
+    // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
   
-//     var outAsset = 'projects/igde-work/tables/' + outName;
-//     Export.table.toAsset(outTable, outName, outAsset)
+    var outAsset = 'projects/igde-work/tables/' + outName;
+    Export.table.toAsset(outTable, outName, outAsset)
 //     // print(outAsset)
   })
  
