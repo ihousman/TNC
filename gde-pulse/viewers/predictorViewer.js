@@ -42,9 +42,9 @@ var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 print(igdes.size())
 // var igdeCount = 15419;//igdes.size().getInfo();
-var igdesL = igdes.toList(10000000,0);
+// var igdesL = igdes.toList(10000000,0);
 
-var howMany = 2000;
+var howMany = 500;
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
