@@ -178,7 +178,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     
    
     
-    var forExtraction = raw.addBands(rawD).addBands(rawZTrend);
+    var forExtraction = getYr(yr)//raw.addBands(rawD).addBands(rawZTrend);
     var igdeCount = igdesT.size().getInfo();
     // print(yro,igdeCount)
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
