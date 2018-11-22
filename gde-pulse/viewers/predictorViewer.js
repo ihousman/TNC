@@ -206,7 +206,7 @@ Map.addLayer(t,{},'t')
  
 //   // return outTable
 
-});
+// });
 
 // out = ee.FeatureCollection(out).flatten()
 
