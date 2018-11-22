@@ -134,7 +134,11 @@ function getPairDiff(c,year){
 }
 
 function getYr(yr){
-  var igdeyrPair = getPairDiff(igdeyr,year)
+  var igdeyrPair = getPairDiff(igdeyr,year);
+  var compPair = getPairDiff(composites,year);
+  var ltPair = getPairDiff(lt,year);
+  var papPair = getPairDiff(pap,year);
+  var daymetPair = getPairDiff(daymet,year);
   
   
 }
