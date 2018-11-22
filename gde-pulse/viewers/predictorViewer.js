@@ -134,7 +134,7 @@ function getPairDiff(c,year){
   
   var cSlpT  =cT2.subtract(cT1).float();
   
-  return [addPrefixToImageBandNames(cT2,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
+  return [addPrefixToImageBandNames(cT2,'D0_'),ee.Image(addPrefixToImageBandNames(cSlpT,'D1_'))];
 }
 
 function getYr(year){
