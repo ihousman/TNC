@@ -144,7 +144,7 @@ function getYr(year){
   var papPair = getPairDiff(pap,year);
   var daymetPair = getPairDiff(daymet,year);
   var zPair = getPairDiff(zTrend,year);
-  var out =ee.Image(igdeyrPair[0])//.addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
+  var out =ee.Image(igdeyrPair[0]).addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
            // .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1])
 
   return out;
