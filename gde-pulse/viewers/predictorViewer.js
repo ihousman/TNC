@@ -188,7 +188,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     var igdesTLT = igdesTL.slice(startI,endI)
     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     // print(outName)
-    if(failedExports.indexOf(outName)>-1){
+    // if(failedExports.indexOf(outName)>-1){
       var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     // Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
@@ -196,7 +196,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     var outAsset = 'projects/igde-work/tables/' + outName;
     Export.table.toAsset(outTable, outName, outAsset)
 //     // print(outAsset)
-    }
+    // }
     
   })
  
