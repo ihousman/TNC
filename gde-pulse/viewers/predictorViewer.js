@@ -148,33 +148,33 @@ function getYr(yr){
             .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1])
 }
 
-var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
-joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
-// joined = getImageLib.joinCollections(joined,zTrend)
-joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
-joinedRaw =getImageLib.joinCollections(joinedRaw,daymet)
-var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
-joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
-zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
+// var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
+// joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
+// // joined = getImageLib.joinCollections(joined,zTrend)
+// joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
+// joinedRaw =getImageLib.joinCollections(joinedRaw,daymet)
+// var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
+// joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
+// zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
 
 // igdes = igdes.limit(50);
-var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
+var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   
    var fieldName ='Depth'+ yro.toString();
  
   
-  var igdesT = igdes.filter(ee.Filter.neq(fieldName, -999));
+  var igdesT = igdes.filter(ee.Filter.neq(fieldName, -999)).limit(10);
   var igdesTL = igdesT.toList(100000);
 
-    var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
-    var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    // var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
+    // var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
     
-    var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    // var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
     
-    var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-    var rawD = rawPost.subtract(rawPre);
+    // var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
+    // var rawD = rawPost.subtract(rawPre);
     
    
     
