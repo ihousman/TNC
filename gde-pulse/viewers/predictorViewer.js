@@ -146,6 +146,8 @@ function getYr(year){
   var zPair = getPairDiff(zTrend,year);
   var out = igdeyrPair[0].addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
             .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1])
+
+  return out;
 }
 
 // var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
@@ -180,7 +182,7 @@ var out = ee.List.sequence(1992,1992).getInfo().map(function(yr){
     
     var forExtraction = getYr(yr)//raw.addBands(rawD).addBands(rawZTrend);
     var igdeCount = igdesT.size().getInfo();
-    // print(yro,igdeCount)
+    print(yro,igdeCount)
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
