@@ -6,7 +6,11 @@ var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 dLib.getExistingChangeData();
 
 
-
+function addPrefixToImageBandNames(i,prefix){
+  var bandNames = i.bandNames();
+	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
+	return i.select(bandNames,outBandNames);
+}
 function addPrefixToCollectionBandNames(c,prefix){
   var bandNames = ee.Image(c.first()).bandNames();
 	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
@@ -130,7 +134,7 @@ function getPairDiff(c,year){
   
   var cSlpT  =cT2.subtract(cT1).float();
   
-  return [cT2,cSlpT];
+  return [addPrefixToCollectionBandNames(cT2,'D0_'),addPrefixToCollectionBandNames(cSlpT,'D1_')];
 }
 
 function getYr(yr){
@@ -139,8 +143,8 @@ function getYr(yr){
   var ltPair = getPairDiff(lt,year);
   var papPair = getPairDiff(pap,year);
   var daymetPair = getPairDiff(daymet,year);
-  
-  
+  var zPair = getPairDiff(zTrend,year);
+  var out = 
 }
 
 var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
