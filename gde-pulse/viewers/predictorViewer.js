@@ -133,7 +133,7 @@ function getPairDiff(c,year){
   var cT2  = ee.Image(c.filter(ee.Filter.calendarRange(year,year,'year')).first());
   
   var cSlpT  =cT2.subtract(cT1).float();
-  
+  print('cslp',cSlpT)
   return [cSlpT];//[addPrefixToImageBandNames(cSlpT,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
 }
 
