@@ -134,7 +134,7 @@ function getPairDiff(c,year){
   
   var cSlpT  =cT2.subtract(cT1).float();
   
-  return [addPrefixToImageBandNames(cT2,'D0_'),ee.Image(addPrefixToImageBandNames(cSlpT,'D1_'))];
+  return [addPrefixToImageBandNames(cSlpT,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
 }
 
 function getYr(year){
@@ -144,7 +144,7 @@ function getYr(year){
   var papPair = getPairDiff(pap,year);
   var daymetPair = getPairDiff(daymet,year);
   var zPair = getPairDiff(zTrend,year);
-  var out =ee.Image(igdeyrPair[1])//.addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
+  var out =ee.Image(igdeyrPair[0])//.addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
            // .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1])
 
   return out;
