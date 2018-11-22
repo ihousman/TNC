@@ -137,7 +137,7 @@ function getPairDiff(c,year){
   return [addPrefixToImageBandNames(cT2,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
 }
 
-function getYr(yr){
+function getYr(year){
   var igdeyrPair = getPairDiff(igdeyr,year);
   var compPair = getPairDiff(composites,year);
   var ltPair = getPairDiff(lt,year);
