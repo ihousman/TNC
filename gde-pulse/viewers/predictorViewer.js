@@ -196,7 +196,7 @@ var out = ee.List.sequence(1993,2018).getInfo().map(function(yr){
       var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 1);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
-    print(outTable)
+    // print(outTable)
     var outAsset = 'projects/igde-work/tables/' + outName;
     // Export.table.toAsset(outTable, outName, outAsset)
 //     // print(outAsset)
