@@ -129,11 +129,12 @@ var igdeyr = years.getInfo().map(function(yz){
 igdeyr = ee.ImageCollection(igdeyr);
 
 function getPairDiff(c,year){
-  var cT1  = ee.Image(c.filter(ee.Filter.calendarRange(year-1,year-1,'year')).first());
+  year = ee.Number(year);
+  var cT1  = ee.Image(c.filter(ee.Filter.calendarRange(year.subtract(1),year.subtract(1),'year')).first());
   var cT2  = ee.Image(c.filter(ee.Filter.calendarRange(year,year,'year')).first());
   
   var cSlpT  =cT2.subtract(cT1).float();
-  print('cslp',cT1,year.subtract(1))
+  print('cslp',cT1,year
   return [cSlpT];//[addPrefixToImageBandNames(cSlpT,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
 }
 
