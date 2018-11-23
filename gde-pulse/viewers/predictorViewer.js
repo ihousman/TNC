@@ -184,7 +184,7 @@ var out = ee.List.sequence(1993,2018).getInfo().map(function(yr){
     var forExtraction = ee.Image(getYr(yr))//raw.addBands(rawD).addBands(rawZTrend);
     var igdeCount = igdesT.size().getInfo();
     print(yro,igdeCount)
-    print(forExtraction);
+    // print(forExtraction);
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
     var endI = i+howMany
