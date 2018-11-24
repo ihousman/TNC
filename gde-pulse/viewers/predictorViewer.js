@@ -193,7 +193,7 @@ var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     // print(outName)
     if(failedExports.indexOf(outName)>-1){
-      var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 1);
+      var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 2);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)})
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
     // print(outTable)
