@@ -12,11 +12,12 @@ library(ranger)
 #Set up workspace
 # load("C:/TNC-analysis/RData")
 wd = 'C:/TNC/analysis/outputs_boot1'
+wdAnalysis =  'C:/TNC/analysis'
+# setwd(wdAnalysis)
 # load("C:/scratch/_RData.gz")
 # wd = 'C:/scratch'
 setwd(wd)
 
-outputs_folder = 'outputs_boot1'
 #Set parameters
 ntree = 500
 
@@ -244,9 +245,9 @@ getLMPlot = function(m,labWord){
     ylab(paste0('Predicted ',labWord,' Depth to GW'))+
     labs(title = paste('LM Strata Field:',strataField,' Stratum:',class), subtitle = paste0('N:',n,' Bootstrap N:',bootTotal,' R2:',r2,'\u00b1',r2SD,' RMSE:',rmse,'\u00b1',rmseSD))+
     scale_fill_distiller(palette= "Spectral", direction=-1) +
-    geom_abline(slope = 1,intercept = 0,linetype = 2)+
-    geom_abline(slope = 1,intercept = 1*m$results$RMSE,linetype = 4)+
-    geom_abline(slope = 1,intercept = -1*m$results$RMSE,linetype = 4)
+    geom_abline(slope = 1,intercept = 0,linetype = 2)
+    # geom_abline(slope = 1,intercept = 1*m$results$RMSE,linetype = 4)+
+    # geom_abline(slope = 1,intercept = -1*m$results$RMSE,linetype = 4)
   
 }
 getRFStats = function(m){
@@ -275,16 +276,24 @@ getRFPlot = function(m,labWord){
     ylab(paste0('Predicted ',labWord,' Depth to GW'))+
     labs(title = paste('RF Strata Field:',strataField,' Stratum:',class), subtitle = paste0('N:',n,' R2:',r2,' RMSE:',rmse))+
     scale_fill_distiller(palette= "Spectral", direction=-1) +
-    geom_abline(slope = 1,intercept = 0,linetype = 2)+
-    geom_abline(slope = 1,intercept = 1*rmse,linetype = 4)+
-    geom_abline(slope = 1,intercept = -1*rmse,linetype = 4)
+    geom_abline(slope = 1,intercept = 0,linetype = 2)
+    # geom_abline(slope = 1,intercept = 1*rmse,linetype = 4)+
+    # geom_abline(slope = 1,intercept = -1*rmse,linetype = 4)
   return(p)
 }
-
+#Function to get var importance as a sorted flattened string list
+getImpStr = function(m,topN){
+  
+  importance = data.frame(sort(m$variable.importance,decreasing = T))
+  importance$rns = rownames(importance)
+  impF = with(importance[1:topN,], paste0(rns,' ',format(round(sort.m.variable.importance..decreasing...T., 2), nsmall = 2)))
+  return(impF)
+}
 ##########################################
 #Multiple var analysis
 outTableMult = c()
 ntree = 500
+nBoot = 100
 registerDoParallel(cores = 8)
 for(strataField in strataFields){
   #Set up strata
@@ -301,8 +310,12 @@ for(strataField in strataFields){
     if(n>20){
       if(str_detect(class,'1.C.3. Temperate Flooded and Swamp Forest')){class = '1.C.3. Temperate Flooded and Swamp Forest'}
       
-      class = str_replace(class,'/',' ')
-      class = str_replace(class,':',' ')
+      class = str_replace(class,'/','_')
+      class = str_replace(class,':','_')
+      class = str_replace(class,'>','_greater_than_')
+      class = str_replace(class,'<','_less_than_')
+      
+      
         allDataClassStrata = allDataWOOutliers[isThatClass,]
         
         predictorsTableClassStrata =  allDataClassStrata[,predictors]
@@ -327,18 +340,23 @@ for(strataField in strataFields){
         dep0ClassStrata = predictorsTableClassStrata$D0_Depth.To.Groundwater
         dep1ClassStrata = predictorsTableClassStrata$D1_Depth.To.Groundwater
         
-        train_control <- trainControl(method="boot", number=100,savePredictions = T)
+        train_control <- trainControl(method="boot", number=nBoot,savePredictions = T)
         # train the model
+        print('Fitting LM D0')
         lmD0 <- train(D0_Depth.To.Groundwater~., preProcess = c("center", "scale"),data=predictorsTableClassStrataD0, trControl=train_control, method="lm")
+        print('Fitting LM D1')
         lmD1 <- train(D1_Depth.To.Groundwater~., preProcess = c("center", "scale"),data=predictorsTableClassStrataD1, trControl=train_control, method="lm")
         
+        print('Fitting RF D0')
         rfD0 = ranger(D0_Depth.To.Groundwater~., data=predictorsTableClassStrataD0,num.trees = ntree,num.threads = 8,importance = 'impurity')
-        rfD1 = ranger(D1_Depth.To.Groundwater~., data=predictorsTableClassStrataD1,num.trees = ntree,num.threads = 8)
+        print('Fitting RF D1')
+        rfD1 = ranger(D1_Depth.To.Groundwater~., data=predictorsTableClassStrataD1,num.trees = ntree,num.threads = 8,importance = 'impurity')
         
         rfD0$obs = dep0ClassStrata
         rfD1$obs = dep1ClassStrata
         
         
+       
         lmP0 = getLMPlot(lmD0,'')
         lmP1 = getLMPlot(lmD1,' Change in')
         
@@ -355,10 +373,12 @@ for(strataField in strataFields){
         rfStats0 = getRFStats(rfD0)
         rfStats1 = getRFStats(rfD1)
         
+        rfImp0 = getImpStr(rfD0,topN)
+        rfImp1 = getImpStr(rfD1,topN)
         # # 
         # # print(lmD0P)
-        outLineD0 = c(paste0(strataField,class),strataField,class,'D0',n,ntree,lmStats0[1],rfStats0[1],lmStats0[3],rfStats0[2],lmStats0[2],lmStats0[4])
-        outLineD1 = c(paste0(strataField,class),strataField,class,'D1',n,ntree,lmStats1[1],rfStats1[1],lmStats1[3],rfStats1[2],lmStats1[2],lmStats1[4])
+        outLineD0 = c(paste0(strataField,class),strataField,class,'D0',n,ntree,nBoot,lmStats0[1],rfStats0[1],lmStats0[3],rfStats0[2],lmStats0[2],lmStats0[4],rfImp0)
+        outLineD1 = c(paste0(strataField,class),strataField,class,'D1',n,ntree,nBoot,lmStats1[1],rfStats1[1],lmStats1[3],rfStats1[2],lmStats1[2],lmStats1[4],rfImp1)
         outTableMult = rbind(outTableMult,outLineD0,outLineD1)
         
         
@@ -476,13 +496,17 @@ for(strataField in strataFields){
         # abline(0,1,lwd = 0.1,col = col)
         # dev.off()
         save(outTableMult,file ='outTableMult')
+        # save(rfD0,file =paste0(strataField,'_',class,'_RFD0_Model'))
+        # save(rfD1,file =paste0(strataField,'_',class,'_RFD1_Model'))
+        # save(lmD0,file =paste0(strataField,'_',class,'_LMD0_Model'))
+        # save(lmD1,file =paste0(strataField,'_',class,'_LMD1_Model'))
     }
   }
 }
   
 outTableMult = data.frame(outTableMult)
 # namesOutTableMult = c('Name','Strata','Class','D','N iGDEs','nTrees','LM_RSQ','RF_RSQ','LM_RMSE','RF_RMSE','LM_P',lapply(seq(topN),function(i){paste0('RF Top ',i)}),'LM_Coeffs')
-namesOutTableMult = c('Name','Strata','Class','D','N iGDEs','nTrees','LM_RSQ','RF_RSQ','LM_RMSE','RF_RMSE','LM_RSQ_SD','LM_RMSE_SD')
+namesOutTableMult = c('Name','Strata','Class','D','N iGDEs','N_RF_Trees','N_LM_Boot','LM_RSQ','RF_RSQ','LM_RMSE','RF_RMSE','LM_RSQ_SD','LM_RMSE_SD',lapply(seq(topN),function(i){paste0('RF Top ',i)}))
 names(outTableMult) = namesOutTableMult
 write.csv(outTableMult,'Mult_Linear_Regression_RF_Regression.csv')
  
