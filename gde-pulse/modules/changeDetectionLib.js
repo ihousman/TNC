@@ -16,6 +16,19 @@ function thresholdChange(changeCollection,changeThresh,changeDir){
   });
   return change;
 }
+function thresholdSubtleChange(changeCollection,changeThreshLow,changeThreshHigh,changeDir){
+  if(changeDir === undefined || changeDir === null){changeDir = 1}
+  var bandNames = ee.Image(changeCollection.first()).bandNames();
+  bandNames = bandNames.map(function(bn){return ee.String(bn).cat('_change')});
+  var change = changeCollection.map(function(img){
+    var yr = ee.Date(img.get('system:time_start')).get('year');
+    var changeYr = img.multiply(changeDir).gt(changeThreshLow).and(img.multiply(changeDir).lt(changeThreshHigh));
+    var yrImage = img.where(img.mask(),yr);
+    changeYr = yrImage.updateMask(changeYr).rename(bandNames).int16();
+    return img.mask(ee.Image(1)).addBands(changeYr);
+  });
+  return change;
+}
 
 function getExistingChangeData(changeThresh,showLayers){
   if(showLayers === undefined || showLayers === null){
@@ -35,30 +48,16 @@ function getExistingChangeData(changeThresh,showLayers){
   
   
   
-  var conusChange = ee.ImageCollection('projects/glri-phase3/science-team-outputs/conus-lcms-2018')
-    .filter(ee.Filter.calendarRange(startYear,endYear,'year'));
-  var conusChangeOut = conusChange;
-  conusChangeOut = conusChangeOut.map(function(img){
-    var m = img.mask();
-    var out = img.mask(ee.Image(1));
-    out = out.where(m.not(),0);
-    return out});
-
-  conusChange = conusChange.map(function(img){
-    var yr = ee.Date(img.get('system:time_start')).get('year');
-    var change = img.gt(changeThresh);
-    var conusChangeYr = ee.Image(yr).updateMask(change).rename(['change']).int16();
-    return img.mask(ee.Image(1)).addBands(conusChangeYr);
-  });
-  if(showLayers){
-  Map.addLayer(conusChange.select(['change']).max(),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'CONUS LCMS Most Recent Year of Change',false);
+ 
+  // if(showLayers){
+  // Map.addLayer(conusChange.select(['change']).max(),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'CONUS LCMS Most Recent Year of Change',false);
   // Map.addLayer(conusChange.select(['probability']).max(),{'min':0,'max':50,'palette':'888,008'},'LCMSC',false);
-  }
+  // }
   // var glri_lcms = glriEnsemble.updateMask(glriEnsemble.select([0])).select([1]);
   // glri_lcms = glri_lcms.updateMask(glri_lcms.gte(startYear).and(glri_lcms.lte(endYear)));
-  if(showLayers){
+  // if(showLayers){
   // Map.addLayer(glri_lcms,{'min':startYear,'max':endYear,'palette':'FF0,F00'},'GLRI LCMS',false);
-  }
+  // }
   
   
   
@@ -67,7 +66,7 @@ function getExistingChangeData(changeThresh,showLayers){
   if(showLayers){
   Map.addLayer(hansen,{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Hansen Change Year',false);
   }
-  return conusChangeOut;
+  // return conusChangeOut;
 }
 //########################################################################################################
 //Landtrendr code taken from users/emaprlab/public
@@ -117,7 +116,12 @@ var extractDisturbance = function(lt, distDir, params, mmu) {
   // select only the vertices that represents a change
   var vertexMask = lt.arraySlice(0, 3, 4); // get the vertex - yes(1)/no(0) dimension
   var vertices = lt.arrayMask(vertexMask); // convert the 0's to masked
-  
+ 
+
+  // var numberOfVertices = vertexMask.arrayReduce(ee.Reducer.sum(),[1]).arrayProject([1]).arrayFlatten([['vertexCount']]);
+  // var secondMask = numberOfVertices.gte(3);
+  // var thirdMask = numberOfVertices.gte(4);
+  // Map.addLayer(numberOfVertices,{min:2,max:4},'number of vertices',false)
   // construct segment start and end point years and index values
   var left = vertices.arraySlice(1, 0, -1);    // slice out the vertices as the start of segments
   var right = vertices.arraySlice(1, 1, null); // slice out the vertices as the end of segments
@@ -129,47 +133,77 @@ var extractDisturbance = function(lt, distDir, params, mmu) {
   var dur = endYear.subtract(startYear);       // subtract the segment start year from the segment end year to calculate the duration of segments 
   var mag = endVal.subtract(startVal);         // substract the segment start index value from the segment end index value to calculate the delta of segments 
 
+  
   // concatenate segment start year, delta, duration, and starting spectral index value to an array 
-  var distImg = ee.Image.cat([startYear.add(1), mag, dur, startVal.multiply(distDir)]).toArray(0); // make an image of segment attributes - multiply by the distDir parameter to re-orient the spectral index if it was flipped for segmentation - do it here so that the subtraction to calculate segment delta in the above line is consistent - add 1 to the detection year, because the vertex year is not the first year that change is detected, it is the following year
+  var distImg = ee.Image.cat([startYear.add(1), mag, dur, startVal.multiply(-1)]).toArray(0); // make an image of segment attributes - multiply by the distDir parameter to re-orient the spectral index if it was flipped for segmentation - do it here so that the subtraction to calculate segment delta in the above line is consistent - add 1 to the detection year, because the vertex year is not the first year that change is detected, it is the following year
  
   // sort the segments in the disturbance attribute image delta by spectral index change delta  
-  var distImgSorted = distImg.arraySort(mag.multiply(-1));                                  // flip the delta around so that the greatest delta segment is first in order
-
+  var distImgSorted = distImg.arraySort(mag.multiply(-1));    
+  
   // slice out the first (greatest) delta
-  var tempDistImg = distImgSorted.arraySlice(1, 0, 1).unmask(ee.Image(ee.Array([[0],[0],[0],[0]])));                                      // get the first segment in the sorted array
-
+  var tempDistImg1 = distImgSorted.arraySlice(1, 0, 1).unmask(ee.Image(ee.Array([[0],[0],[0],[0]])));
+  var tempDistImg2 = distImgSorted.arraySlice(1, 1, 2).unmask(ee.Image(ee.Array([[0],[0],[0],[0]])));
+  var tempDistImg3 = distImgSorted.arraySlice(1, 2, 3).unmask(ee.Image(ee.Array([[0],[0],[0],[0]])));
+  
+ 
   // make an image from the array of attributes for the greatest disturbance
-  var finalDistImg = ee.Image.cat(tempDistImg.arraySlice(0,0,1).arrayProject([1]).arrayFlatten([['yod']]),     // slice out year of disturbance detection and re-arrange to an image band 
-                                  tempDistImg.arraySlice(0,1,2).arrayProject([1]).arrayFlatten([['mag']]),     // slice out the disturbance magnitude and re-arrange to an image band 
-                                  tempDistImg.arraySlice(0,2,3).arrayProject([1]).arrayFlatten([['dur']]),     // slice out the disturbance duration and re-arrange to an image band
-                                  tempDistImg.arraySlice(0,3,4).arrayProject([1]).arrayFlatten([['preval']])); // slice out the pre-disturbance spectral value and re-arrange to an image band
+  var finalDistImg1 = tempDistImg1.arrayProject([0]).arrayFlatten([['yod','mag','dur','preval']]);
+  var finalDistImg2 = tempDistImg2.arrayProject([0]).arrayFlatten([['yod','mag','dur','preval']]);
+  var finalDistImg3 = tempDistImg3.arrayProject([0]).arrayFlatten([['yod','mag','dur','preval']]);
+  
   
   // filter out disturbances based on user settings
-  var threshold = ee.Image(finalDistImg.select(['dur']))                        // get the disturbance band out to apply duration dynamic disturbance magnitude threshold 
-                    .multiply((params.tree_loss20 - params.tree_loss1) / 19.0)  // ...
-                    .add(params.tree_loss1)                                     //    ...interpolate the magnitude threshold over years between a 1-year mag thresh and a 20-year mag thresh
-                    .lte(finalDistImg.select(['mag']))                          // ...is disturbance less then equal to the interpolated, duration dynamic disturbance magnitude threshold 
-                    .and(finalDistImg.select(['mag']).gt(0))                    // and is greater than 0  
-                    .and(finalDistImg.select(['preval']).gt(params.pre_val));   // and is greater than pre-disturbance spectral index value threshold
+  function filterDisturbances(finalDistImg){
+    // var threshold = ee.Image(finalDistImg.select(['dur']))                        // get the disturbance band out to apply duration dynamic disturbance magnitude threshold 
+    //       .multiply((params.tree_loss20 - params.tree_loss1) / 19.0)  // ...
+    //       .add(params.tree_loss1)                                     //    ...interpolate the magnitude threshold over years between a 1-year mag thresh and a 20-year mag thresh
+    //       .lte(finalDistImg.select(['mag']))                          // ...is disturbance less then equal to the interpolated, duration dynamic disturbance magnitude threshold 
+    //       .and(finalDistImg.select(['mag']).gt(0))                    // and is greater than 0  
+    //       .and(finalDistImg.select(['preval']).gt(params.pre_val));
+    var longTermDisturbance = finalDistImg.select(['dur']).gte(15);
+    var longTermThreshold = finalDistImg.select(['mag']).gte(params.tree_loss20).and(longTermDisturbance);
+    var threshold = finalDistImg.select(['mag']).gte(params.tree_loss1);
+
+    return finalDistImg.updateMask(threshold.or(longTermThreshold)); 
+  }
+  finalDistImg1 = filterDisturbances(finalDistImg1);
+  finalDistImg2 = filterDisturbances(finalDistImg2);
+  finalDistImg3 = filterDisturbances(finalDistImg3);
+
   
-  // apply the filter mask
-  finalDistImg = finalDistImg.mask(threshold).int16(); 
-  
-   // patchify the remaining disturbance pixels using a minimum mapping unit
-  if(mmu > 1){
-    var mmuPatches = finalDistImg.select(['yod'])           // patchify based on disturbances having the same year of detection
+  function applyMMU(finalDistImg){
+      var mmuPatches = finalDistImg.select(['yod.*']).int16()          // patchify based on disturbances having the same year of detection
                             .connectedPixelCount(mmu, true) // count the number of pixel in a candidate patch
                             .gte(mmu);                      // are the the number of pixels per candidate patch greater than user-defined minimum mapping unit?
-    finalDistImg = finalDistImg.updateMask(mmuPatches);     // mask the pixels/patches that are less than minimum mapping unit
+    return finalDistImg.updateMask(mmuPatches);     // mask the pixels/patches that are less than minimum mapping unit
+    
+    }
+    // patchify the remaining disturbance pixels using a minimum mapping unit
+  if(mmu > 1){
+    print('Applying mmu:',mmu,'to LANDTRENDR heuristic outputs');
+    
+    finalDistImg1 = applyMMU(finalDistImg1);
+    finalDistImg2 = applyMMU(finalDistImg2);
+    finalDistImg3 = applyMMU(finalDistImg3);
+    
   } 
   
-  return finalDistImg; // return the filtered greatest disturbance attribute image
+  return finalDistImg1.addBands(finalDistImg2).addBands(finalDistImg3); // return the filtered greatest disturbance attribute image
 };
+
+
 //////////////////////////////////////////////////////////////////////////
 //Helper to multiply image
 function multBands(img,distDir,by){
     var out = img.multiply(ee.Image(distDir).multiply(by));
-    out  = out.copyProperties(img,['system:time_start']);
+    out  = out.copyProperties(img,['system:time_start'])
+              .copyProperties(img);
+    return out;
+  }
+function addToImage(img,howMuch){
+    var out = img.add(ee.Image(howMuch));
+    out  = out.copyProperties(img,['system:time_start'])
+              .copyProperties(img);
     return out;
   }
 ///////////////////////////////////////////////////////////////
@@ -181,39 +215,43 @@ function arrayToTimeSeries(tsArray,yearsArray,possibleYears,bandName){
     
     //Ierate across years
     var tsC = possibleYears.map(function(yr){
-    yr = ee.Number(yr);
-    
-    //Pull out given year
-    var yrMask = yearsArray.eq(yr);
-  
-    //Mask array for that given year
-    var masked = tsArray.arrayMask(yrMask);
-    
-    
-    //Find null pixels
-    var l = masked.arrayLength(0);
-    
-    //Fill null values and convert to regular image
-    masked = masked.where(l.eq(0),dummyImage).arrayGet([-1]);
-    
-    //Remask nulls
-    masked = masked.updateMask(masked.neq(noDateValue)).rename([bandName])      
-      .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis());
+      yr = ee.Number(yr);
       
-    return masked;
+      //Pull out given year
+      var yrMask = yearsArray.eq(yr);
+    
+      //Mask array for that given year
+      var masked = tsArray.arrayMask(yrMask);
+      
+      
+      //Find null pixels
+      var l = masked.arrayLength(0);
+      
+      //Fill null values and convert to regular image
+      masked = masked.where(l.eq(0),dummyImage).arrayGet([-1]);
+      
+      //Remask nulls
+      masked = masked.updateMask(masked.neq(noDateValue)).rename([bandName])      
+        .set('system:time_start',ee.Date.fromYMD(yr,6,1).millis());
+        
+      return masked;
     
     
   });
   return ee.ImageCollection(tsC);
   }
+
 //Function to wrap landtrendr processing
 function landtrendrWrapper(processedComposites,startYear,endYear,indexName,distDir,run_params,distParams,mmu){
   // var startYear = 1984;//ee.Date(ee.Image(processedComposites.first()).get('system:time_start')).get('year').getInfo();
   // var endYear = 2017;//ee.Date(ee.Image(processedComposites.sort('system:time_start',false).first()).get('system:time_start')).get('year').getInfo();
-  
+  var noDataValue = 32768;
+  if(distDir === 1){
+    noDataValue = -noDataValue;
+  }
   //----- RUN LANDTRENDR -----
   var ltCollection = processedComposites.select([indexName]).map(function(img){
-     return multBands(img,distDir,1);
+     return ee.Image(multBands(img,distDir,1))//.unmask(noDataValue);
   });
   // Map.addLayer(ltCollection,{},'ltCollection',false);
   run_params.timeSeries = ltCollection;               // add LT collection to the segmentation run parameter object
@@ -229,10 +267,9 @@ function landtrendrWrapper(processedComposites,startYear,endYear,indexName,distD
   // run the dist extract function
   var distImg = extractDisturbance(lt.select('LandTrendr'), distDir, distParams,mmu);
   var distImgBandNames = distImg.bandNames();
-  distImgBandNames = distImgBandNames.map(function(bn){return ee.String(indexName).cat('_').cat(bn)})
-  distImg = distImg.rename(distImgBandNames)
-  
-  
+  distImgBandNames = distImgBandNames.map(function(bn){return ee.String(indexName).cat('_').cat(bn)});
+  distImg = distImg.rename(distImgBandNames);
+ 
   
   //########################################################################################################
   //##### DISTURBANCE MAP DISPLAY #####
@@ -280,12 +317,12 @@ function landtrendrWrapper(processedComposites,startYear,endYear,indexName,distD
     ltFitted = ltFitted.multiply(-1);
   }
   
-  var ca = arrayToTimeSeries(ltFitted,ltYear,ee.List.sequence(startYear,endYear),'LT_Fitted_'+indexName);
- 
+  var fittedCollection = arrayToTimeSeries(ltFitted,ltYear,ee.List.sequence(startYear,endYear),'LT_Fitted_'+indexName);
+  
 
   //Convert to single image
   var vertStack = getLTvertStack(rawLT,run_params);
-  return [lt,distImg,ca,vertStack];
+  return [lt,distImg,fittedCollection,vertStack];
   
 }
 
@@ -436,7 +473,20 @@ function pairwiseSlope(c){
     });
     return ee.ImageCollection.fromImages(slopeCollection);
   }
-  
+
+/////////////////////////////////////////////////////
+//Function for converting collection into annual median collection
+//Does not support date wrapping across the new year (e.g. Nov- April window is a no go)
+function toAnnualMedian(images,startYear,endYear){
+      var dummyImmage = ee.Image(images.first());
+      var out = ee.List.sequence(startYear,endYear).map(function(yr){
+        var imagesT = images.filter(ee.Filter.calendarRange(yr,yr,'year'));
+        imagesT = getImageLib.fillEmptyCollections(imagesT,dummyImmage);
+        return imagesT.median().set('system:time_start',ee.Date.fromYMD(yr,6,1));
+      });
+      return ee.ImageCollection.fromImages(out);
+    }
+////////////////////////////////////////////////////
 //Function for applying linear fit model
 //Assumes the model has a intercept and slope band prefix to the bands in the model
 //Assumes that the c (collection) has the raw bands in it
@@ -492,123 +542,189 @@ function getLinearFit(c,bandNames){
   //Return both the model and predicted
   return [model,predicted];
 }
+/////////////////////////////////////////////////////////////////////////
 //Iterate across each time window and do a z-score and trend analysis
-
+//This method does not currently support date wrapping
 function zAndTrendChangeDetection(allScenes,indexNames,nDays,startYear,endYear,startJulian,endJulian,
-          baselineLength,baselineGap,epochLength,zReducer){
+          baselineLength,baselineGap,epochLength,zReducer,useAnnualMedianForTrend,
+          exportImages,exportPathRoot,studyArea,scale,crs,transform,
+          minBaselineObservationsNeeded){
+  if(minBaselineObservationsNeeded === null || minBaselineObservationsNeeded === undefined){
+    minBaselineObservationsNeeded = 30;
+  }
   //House-keeping
-var dummyScene = ee.Image(allScenes.first());
-var outNames = indexNames.map(function(bn){return ee.String(bn).cat('_Z')});
-var analysisStartYear = Math.max(startYear+baselineLength+baselineGap,startYear+epochLength-1);
-
-//Iterate across each year and perform analysis
-var zAndTrendCollection = ee.List.sequence(analysisStartYear,endYear,1).map(function(yr){
-  yr = ee.Number(yr);
+  allScenes = allScenes.select(indexNames);
+  var dummyScene = ee.Image(allScenes.first());
+  var outNames = indexNames.map(function(bn){return ee.String(bn).cat('_Z')});
+  var analysisStartYear = Math.max(startYear+baselineLength+baselineGap,startYear+epochLength-1);
   
-  //Set up the baseline years
-  var blStartYear = yr.subtract(baselineLength).subtract(baselineGap);
-  var blEndYear = yr.subtract(1).subtract(baselineGap);
+  var years = ee.List.sequence(analysisStartYear,endYear,1).getInfo();
+  var julians = ee.List.sequence(startJulian,endJulian-nDays,nDays).getInfo();
   
-  //Set up the trend years
-  var trendStartYear = yr.subtract(epochLength).add(1);
-  
-  //Iterate across the julian dates
-  return ee.FeatureCollection(ee.List.sequence(startJulian,endJulian-nDays,nDays).map(function(jd){
+  //Iterate across each year and perform analysis
+  var zAndTrendCollection = years.map(function(yr){
+    yr = ee.Number(yr);
     
-    jd = ee.Number(jd);
+    //Set up the baseline years
+    var blStartYear = yr.subtract(baselineLength).subtract(baselineGap);
+    var blEndYear = yr.subtract(1).subtract(baselineGap);
     
-    //Set up the julian date range
-    var jdStart = jd;
-    var jdEnd = jd.add(nDays);
+    //Set up the trend years
+    var trendStartYear = yr.subtract(epochLength).add(1);
     
-    //Get the baseline images
-    var blImages = allScenes.filter(ee.Filter.calendarRange(blStartYear,blEndYear,'year'))
-                            .filter(ee.Filter.calendarRange(jdStart,jdEnd));
-    blImages = getImageLib.fillEmptyCollections(blImages,dummyScene);
+    //Iterate across the julian dates
+    return ee.FeatureCollection(julians.map(function(jd){
+      
+      jd = ee.Number(jd);
+      
+      //Set up the julian date range
+      var jdStart = jd;
+      var jdEnd = jd.add(nDays);
+     
+      //Get the baseline images
+      var blImages = allScenes.filter(ee.Filter.calendarRange(blStartYear,blEndYear,'year'))
+                              .filter(ee.Filter.calendarRange(jdStart,jdEnd));
+      blImages = getImageLib.fillEmptyCollections(blImages,dummyScene);
+      
+      //Mask out where not enough observations
+      var blCounts = blImages.count();
+      blImages = blImages.map(function(img){return img.updateMask(blCounts.gte(minBaselineObservationsNeeded))});
+      
+      //Get the z analysis images
+      var analysisImages = allScenes.filter(ee.Filter.calendarRange(yr,yr,'year'))
+                              .filter(ee.Filter.calendarRange(jdStart,jdEnd)); 
+      analysisImages = getImageLib.fillEmptyCollections(analysisImages,dummyScene);
+      
+      //Get the images for the trend analysis
+      var trendImages = allScenes.filter(ee.Filter.calendarRange(trendStartYear,yr,'year'))
+                              .filter(ee.Filter.calendarRange(jdStart,jdEnd));
+      trendImages = getImageLib.fillEmptyCollections(trendImages,dummyScene);
+      
+      
+      //Convert to annual stack if selected
+      if(useAnnualMedianForTrend){
+        trendImages = toAnnualMedian(trendImages,trendStartYear,yr);
+      }
+      
+      //Perform the linear trend analysis
+      var linearTrend = getLinearFit(trendImages,indexNames);
+      var linearTrendModel = ee.Image(linearTrend[0]).select(['.*_slope']).multiply(10000);
+      
+      //Perform the z analysis
+      var blMean = blImages.mean();
+      var blStd = blImages.reduce(ee.Reducer.stdDev());
     
+      var analysisImagesZ = analysisImages.map(function(img){
+        return (img.subtract(blMean)).divide(blStd);
+      }).reduce(zReducer).rename(outNames).multiply(10);
+      
+      // Set up the output
+      var outName = ee.String('Z_and_Trend_b').cat(ee.String(blStartYear.int16())).cat(ee.String('_'))
+                                  .cat(ee.String(blEndYear.int16())).cat(ee.String('_epoch')).cat(ee.String(ee.Number(epochLength)))
+                                  .cat(ee.String('_y')).cat(ee.String(yr.int16())).cat(ee.String('_jd'))
+                                  .cat(ee.String(jdStart.int16())).cat(ee.String('_')).cat(ee.String(jdEnd.int16()));
+      var imageStartDate =ee.Date.fromYMD(yr,1,1).advance(jdStart,'day').millis();
+      
+      
+      var out = analysisImagesZ.addBands(linearTrendModel).int16()
+            .set({'system:time_start':imageStartDate,
+                  'system:time_end':ee.Date.fromYMD(yr,1,1).advance(jdEnd,'day').millis(),
+                  'baselineYrs': baselineLength,
+                  'baselineStartYear':blStartYear,
+                  'baselineEndYear':blEndYear,
+                  'epochLength':epochLength,
+                  'trendStartYear':trendStartYear,
+                  'year':yr,
+                  'startJulian':jdStart,
+                  'endJulian':jdEnd,
+                  'system:index':outName
+            });
+        
+      if(exportImages){
+        outName = outName.getInfo();
+        var outPath = exportPathRoot + '/' + outName;
+          getImageLib.exportToAssetWrapper(out.clip(studyArea),outName,outPath,
+          'mean',studyArea.bounds(),scale,crs,transform);
+      }
+      return out;
+      }));
+    });
+    zAndTrendCollection = ee.ImageCollection(ee.FeatureCollection(zAndTrendCollection).flatten());
     
-    //Get the z analysis images
-    var analysisImages = allScenes.filter(ee.Filter.calendarRange(yr,yr,'year'))
-                            .filter(ee.Filter.calendarRange(jdStart,jdEnd)); 
-    analysisImages = getImageLib.fillEmptyCollections(analysisImages,dummyScene);
-    
-    //Get the images for the trend analysis
-    var trendImages = allScenes.filter(ee.Filter.calendarRange(trendStartYear,yr,'year'))
-                            .filter(ee.Filter.calendarRange(jdStart,jdEnd));
-    trendImages = getImageLib.fillEmptyCollections(trendImages,dummyScene);
-    
-    //Perform the linear trend analysis
-    var linearTrend = getLinearFit(trendImages,indexNames);
-    var linearTrendModel = ee.Image(linearTrend[0]).select(['.*_slope']);
-    
-    //Perform the z analysis
-    var blMean = blImages.mean();
-    var blStd = blImages.reduce(ee.Reducer.stdDev());
-    
-    var analysisImagesZ = analysisImages.map(function(img){
-      return (img.subtract(blMean)).divide(blStd);
-    }).reduce(zReducer).rename(outNames);
-    
-    //Set up the output
-    var outName = ee.String('Z_and_Trend_b').cat(ee.String(blStartYear.int16())).cat(ee.String('_'))
-                                .cat(ee.String(blEndYear.int16())).cat(ee.String('_epoch')).cat(ee.String(ee.Number(epochLength)))
-                                .cat(ee.String('_y')).cat(ee.String(yr.int16())).cat(ee.String('_jd'))
-                                .cat(ee.String(jdStart.int16())).cat(ee.String('_')).cat(ee.String(jdEnd.int16()))
-    
-    var out = analysisImages.reduce(zReducer).rename(indexNames).addBands(analysisImagesZ).addBands(linearTrendModel)
-          .set({'system:time_start':ee.Date.fromYMD(yr,1,1).advance(jdStart,'day').millis(),
-                'system:time_end':ee.Date.fromYMD(yr,1,1).advance(jdEnd,'day').millis(),
-                'baselineYrs': baselineLength,
-                'baselineStartYear':blStartYear,
-                'baselineEndYear':blEndYear,
-                'epochLength':epochLength,
-                'trendStartYear':trendStartYear,
-                'year':yr,
-                'startJulian':jdStart,
-                'endJulian':jdEnd,
-                'system:index':outName
-          });
-    
-    return out;
-    }));
-  });
-  zAndTrendCollection = ee.ImageCollection(ee.FeatureCollection(zAndTrendCollection).flatten());
-  return zAndTrendCollection;
+    return zAndTrendCollection;
 }
 
 
-function thresholdZAndTrend(zAndTrendCollection,zThresh,slopeThresh,startYear,endYear){
+function thresholdZAndTrend(zAndTrendCollection,zThresh,slopeThresh,startYear,endYear,negativeOrPositiveChange){
+  if(negativeOrPositiveChange === null || negativeOrPositiveChange === undefined){negativeOrPositiveChange = 'negative'}
+  var dir;
+  if(negativeOrPositiveChange === 'negative'){dir = -1}
+  else{dir = 1};
   var zCollection = zAndTrendCollection.select('.*_Z');
   var trendCollection = zAndTrendCollection.select('.*_slope');
-  var zChange = thresholdChange(zCollection,-zThresh,-1).select('.*_change');
-  var trendChange = thresholdChange(trendCollection,-slopeThresh,-1).select('.*_change');
   
-  Map.addLayer(zAndTrendCollection,{},'zAndTrendCollection',false);
-  Map.addLayer(zChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Z Most Recent Change Year',false);
-  Map.addLayer(trendChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Trend Most Recent Change Year',false);
+  var zChange = thresholdChange(zCollection,-zThresh,dir).select('.*_change');
+  var trendChange = thresholdChange(trendCollection,-slopeThresh,dir).select('.*_change');
+  
+  
+  Map.addLayer(zChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Z Most Recent Change Year '+negativeOrPositiveChange,false);
+  Map.addLayer(trendChange.max().select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},'Trend Most Recent Change Year '+negativeOrPositiveChange,false);
   
 }
 
-function exportZAndTrend(zAndTrendCollection,exportPathRoot,studyArea,scale,crs,transform){
- var zAndTrendCollectionL = zAndTrendCollection.toList(100);
-  zAndTrendCollection.size().evaluate(function(count){
-  ee.List.sequence(0,count-1).getInfo().map(function(i){
-   
-    var image = ee.Image(zAndTrendCollectionL.get(i));
+function thresholdZAndTrendSubtle(zAndTrendCollection,zThreshLow,zThreshHigh,slopeThreshLow,slopeThreshHigh,startYear,endYear,negativeOrPositiveChange){
+  if(negativeOrPositiveChange === null || negativeOrPositiveChange === undefined){negativeOrPositiveChange = 'negative'}
+  var dir;var colorRamp;
+  if(negativeOrPositiveChange === 'negative'){dir = -1;colorRamp = 'FF0,F00';}
+  else{dir = 1; colorRamp = 'BBB,080';}
+  var zCollection = zAndTrendCollection.select('.*_Z');
+  var trendCollection = zAndTrendCollection.select('.*_slope');
   
-    image.id().evaluate(function(id){
-      var outPath = exportPathRoot + '/' + id;
-      getImageLib.exportToAssetWrapper(image,id,outPath,
-        'mean',studyArea,scale,crs,transform);
-    });
-  });
-}); 
+  var zChange = thresholdSubtleChange(zCollection,-zThreshLow,-zThreshHigh,dir).select('.*_change');
+  var trendChange = thresholdSubtleChange(trendCollection,-slopeThreshLow,-slopeThreshHigh,dir).select('.*_change');
+  
+  
+  
+  Map.addLayer(zChange.max().select([0]),{'min':startYear,'max':endYear,'palette':colorRamp},'Z Most Recent Change Year '+negativeOrPositiveChange,false);
+  Map.addLayer(trendChange.max().select([0]),{'min':startYear,'max':endYear,'palette':colorRamp},'Trend Most Recent Change Year '+negativeOrPositiveChange,false);
+  
 }
+// function exportZAndTrend(zAndTrendCollection,dates,exportPathRoot,studyArea,scale,crs,transform){
+ 
+// print('Exporting z and trend collection');
+// var i = 0;
+// dates.map(function(d){
+//   var image = ee.Image(zAndTrendCollection.filterDate(d,d).first());
+   
+//   var outPath = exportPathRoot + '/' + i;
+//   getImageLib.exportToAssetWrapper(image,i.toString(),outPath,
+//         'mean',studyArea,scale,crs,transform)
+//     i++;
+//   // image.id().evaluate(function(id){
+//   //     var outPath = exportPathRoot + '/' + id;
+//   //     getImageLib.exportToAssetWrapper(image,id,outPath,
+//   //       'mean',studyArea,scale,crs,transform);
+//   //   });
+// })
+// // var zAndTrendCollectionL = zAndTrendCollection.toList(100);
+// //   zAndTrendCollection.size().evaluate(function(count){
+// //   ee.List.sequence(0,count-1).getInfo().map(function(i){
+   
+// //     var image = ee.Image(zAndTrendCollectionL.get(i));
+    
+// //     image.id().evaluate(function(id){
+// //       var outPath = exportPathRoot + '/' + id;
+// //       getImageLib.exportToAssetWrapper(image,id,outPath,
+// //         'mean',studyArea,scale,crs,transform);
+// //     });
+// //   });
+// // }); 
+// }
 //////////////////////////////////////////////////////////////////////////
 exports.extractDisturbance = extractDisturbance;
 exports.landtrendrWrapper = landtrendrWrapper;
 exports.multBands = multBands;
-
+exports.addToImage = addToImage;
 exports.getExistingChangeData = getExistingChangeData;
 
 exports.verdetAnnualSlope  = verdetAnnualSlope;
@@ -621,7 +737,9 @@ exports.thresholdChange = thresholdChange;
 
 exports.predictModel = predictModel;
 exports.getLinearFit = getLinearFit;
+exports.toAnnualMedian = toAnnualMedian;
 
 exports.zAndTrendChangeDetection = zAndTrendChangeDetection;
 exports.thresholdZAndTrend = thresholdZAndTrend;
-exports.exportZAndTrend = exportZAndTrend;
+exports.thresholdZAndTrendSubtle = thresholdZAndTrendSubtle;
+exports.thresholdSubtleChange = thresholdSubtleChange;
