@@ -45,7 +45,7 @@ var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
 var analysisYears = ee.List.sequence(1985,2018);
-var exportYears = ee.List.sequence(1992,2018);
+var exportYears = ee.List.sequence(1992,1992);
 
 //Which igde polygons
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
