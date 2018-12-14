@@ -44,6 +44,9 @@ var indexNamesComposites = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','green
 var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
+var analysisYears = ee.List.sequence(1985,2018);
+var exportYears = ee.List.sequence(1992,2018);
+
 //Which igde polygons
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
@@ -122,12 +125,10 @@ var phases = pap.select(['.*_phase']);
 var peakJulians = pap.select(['.*peakJulianDay']);
 Map.addLayer(peakJulians);
     
-//Set up the years to filter on- this is hard-coded since its set up oddly
-var years = ee.List.sequence(1985,2018);
 
 
 //Reformat the igdes to have a unique feature per year
-var igdeyr = years.getInfo().map(function(yz){
+var igdeyr = analysisYears.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
  
  var t = igdes.select([fieldName], ['AvgAnnD']);
@@ -143,6 +144,7 @@ var igdeyr = years.getInfo().map(function(yz){
 });
 igdeyr = ee.ImageCollection(igdeyr);
 
+//Function for getting the pairwise differencce for a collection and a given year
 function getPairDiff(c,year){
   year = ee.Number(year);
   var cT1  = ee.Image(c.filter(ee.Filter.calendarRange(year.subtract(1),year.subtract(1),'year')).first());
@@ -152,7 +154,7 @@ function getPairDiff(c,year){
   // print('cslp',cT1,year)
   return [addPrefixToImageBandNames(cT2,'D0_'),addPrefixToImageBandNames(cSlpT,'D1_')];
 }
-
+//Wrapper to get all the data for a given year
 function getYr(year){
   var igdeyrPair = getPairDiff(igdeyr,year);
   var compPair = getPairDiff(composites,year);
@@ -161,22 +163,12 @@ function getYr(year){
   var daymetPair = getPairDiff(daymet,year);
   var zPair = getPairDiff(zTrend,year);
   var out =ee.Image(igdeyrPair[0]).addBands(compPair[0]).addBands(ltPair[0]).addBands(papPair[0]).addBands(daymetPair[0])
-            .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1])
+            .addBands(igdeyrPair[1]).addBands(compPair[1]).addBands(ltPair[1]).addBands(papPair[1]).addBands(daymetPair[1]).addBands(zPair[1]);
 
   return out;
 }
-
-// var joinedRaw = getImageLib.joinCollections(igdeyr,composites)
-// joinedRaw = getImageLib.joinCollections(joinedRaw,lt)
-// // joined = getImageLib.joinCollections(joined,zTrend)
-// joinedRaw = getImageLib.joinCollections(joinedRaw,pap)
-// joinedRaw =getImageLib.joinCollections(joinedRaw,daymet)
-// var joinedRawForSlope = addPrefixToCollectionBandNames(joinedRaw,'D1_');
-// joinedRaw = addPrefixToCollectionBandNames(joinedRaw,'D0_')
-// zTrend = addPrefixToCollectionBandNames(zTrend,'D1_')
-
-// igdes = igdes.limit(50);
-var out = ee.List.sequence(1992,2018).getInfo().map(function(yr){
+//Final export
+var out = exportYears.getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   
