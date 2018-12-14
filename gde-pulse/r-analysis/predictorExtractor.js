@@ -5,7 +5,7 @@ var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
 
-
+//Define some functions for adding strings to band names
 function addPrefixToImageBandNames(i,prefix){
   var bandNames = i.bandNames();
 	var outBandNames = bandNames.map(function(i){return ee.String(prefix).cat(i)});
@@ -21,6 +21,7 @@ function addSuffixToCollectionBandNames(c,suffix){
 	var outBandNames = bandNames.map(function(i){return ee.String(i).cat(suffix)});
 	return c.select(bandNames,outBandNames);
 }
+
 // Define user parameters:
 var failedExports =['Export-Full-Dataset-1992_3000_3999', 'Export-Full-Dataset-1993_3000_3999', 'Export-Full-Dataset-1994_1000_1999', 'Export-Full-Dataset-1995_2000_2999', 'Export-Full-Dataset-1995_3000_3999', 'Export-Full-Dataset-1996_5000_5999', 'Export-Full-Dataset-1996_2000_2999', 'Export-Full-Dataset-1997_1000_1999', 'Export-Full-Dataset-1997_2000_2999', 'Export-Full-Dataset-1997_3000_3999', 'Export-Full-Dataset-1997_4000_4999', 'Export-Full-Dataset-1998_1000_1999', 'Export-Full-Dataset-1998_2000_2999', 'Export-Full-Dataset-1999_1000_1999', 'Export-Full-Dataset-1998_5000_5999', 'Export-Full-Dataset-1998_6000_6129', 'Export-Full-Dataset-1999_3000_3999', 'Export-Full-Dataset-1999_2000_2999', 'Export-Full-Dataset-2000_1000_1999', 'Export-Full-Dataset-2000_5000_5999', 'Export-Full-Dataset-2001_1000_1999', 'Export-Full-Dataset-2001_4000_4999', 'Export-Full-Dataset-2001_5000_5714', 'Export-Full-Dataset-2002_1000_1999', 'Export-Full-Dataset-2002_2000_2999', 'Export-Full-Dataset-2004_2000_2999', 'Export-Full-Dataset-2004_4000_4999', 'Export-Full-Dataset-2004_5000_5999', 'Export-Full-Dataset-2005_1000_1999', 'Export-Full-Dataset-2006_3000_3999', 'Export-Full-Dataset-2006_6000_6999', 'Export-Full-Dataset-2007_4000_4999', 'Export-Full-Dataset-2007_7000_7574', 'Export-Full-Dataset-2008_1000_1999', 'Export-Full-Dataset-2008_2000_2999', 'Export-Full-Dataset-2008_6000_6999', 'Export-Full-Dataset-2009_1000_1999', 'Export-Full-Dataset-2009_3000_3999', 'Export-Full-Dataset-2009_5000_5999', 'Export-Full-Dataset-2010_1000_1999', 'Export-Full-Dataset-2010_4000_4999', 'Export-Full-Dataset-2010_7000_7797', 'Export-Full-Dataset-2011_1000_1999', 'Export-Full-Dataset-2011_2000_2999', 'Export-Full-Dataset-2011_3000_3999', 'Export-Full-Dataset-2011_8000_8999', 'Export-Full-Dataset-2011_9000_9703', 'Export-Full-Dataset-2012_2000_2999', 'Export-Full-Dataset-2012_3000_3999', 'Export-Full-Dataset-2012_8000_8999', 'Export-Full-Dataset-2013_1000_1999', 'Export-Full-Dataset-2013_2000_2999', 'Export-Full-Dataset-2013_3000_3999', 'Export-Full-Dataset-2014_1000_1999', 'Export-Full-Dataset-2014_2000_2999', 'Export-Full-Dataset-2014_3000_3999', 'Export-Full-Dataset-2014_4000_4999', 'Export-Full-Dataset-2014_8000_8999', 'Export-Full-Dataset-2015_1000_1999', 'Export-Full-Dataset-2015_2000_2999', 'Export-Full-Dataset-2016_1000_1999', 'Export-Full-Dataset-2016_4000_4999', 'Export-Full-Dataset-2016_6000_6999', 'Export-Full-Dataset-2016_7000_7999', 'Export-Full-Dataset-2017_1000_1999', 'Export-Full-Dataset-2017_2000_2999', 'Export-Full-Dataset-2017_5000_5999', 'Export-Full-Dataset-2017_7000_7999', 'Export-Full-Dataset-2018_0_540'];
 // 1. Specify study area: Study area
@@ -36,19 +37,25 @@ var transform = [30,0,-2361915.0,0,-30,3177735.0];
 //Specify scale if transform is null
 var scale = null;
 
+//Which bands to extract
 var indexNames = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
 var indexNamesComposites = ['NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG','NIRv'];
 
 var indexEndWildcards = indexNames.map(function(bn){return '.*'+bn});
 var indexStartWildcards = indexNames.map(function(bn){return bn +'.*'});
 
+//Which igde polygons
 // var igdes = ee.FeatureCollection('projects/igde-work/igde-data/GDEpulse2018_iGDE_V1_20180802_joined_annual_depth_macro_veg');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
-print(igdes.size())
+print(igdes.size());
 // var igdeCount = 15419;//igdes.size().getInfo();
 // var igdesL = igdes.toList(10000000,0);
 
+//Define how many igdes to extract at once- reduce to increase stability
 var howMany = 1000;
+
+//////////////////////////////////////////////////////////////////////////////////////
+//Bring in composites
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
@@ -58,64 +65,72 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImageLib.addSAVIandEVI)
         .select(indexNamesComposites);
         
-
+//Bring in Landtrendr outputs
 var lt = ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection')
         .select(indexEndWildcards)
         .map(function(img){return dLib.multBands(img,1,0.0001)});
 
-
+//Bring in harmonics
 var harmonics = ee.ImageCollection('projects/igde-work/raster-data/harmonic-coefficients-collection');
 
+//Bring in z and trend
 var zTrend =ee.ImageCollection('projects/igde-work/raster-data/z-score-trend-collection');
 
+//Bring in DAYMET
 var daymet = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection');
+
+//Add prefix to DAYMET
 daymet = addPrefixToCollectionBandNames(daymet,'dymt_');
+
+//Separate z and trend and rescale them to their raw value
 var z = zTrend.select(['.*_Z'])
   .map(function(img){return dLib.multBands(img,1,0.1)});
 var trend = zTrend.select(['.*._slope'])
   .map(function(img){return dLib.multBands(img,1,0.0001)});
 
+//Join them back together
 zTrend = getImageLib.joinCollections(z,trend,false);
+
+//Seperate two date periods z-score was processed for and set to same date
 var zTrend1 = zTrend.filter(ee.Filter.calendarRange(121,185))
         .map(function(img){
           var y = ee.Date(img.get('system:time_start')).get('year');
-          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
-        })
+          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis());
+        });
 var zTrend2 = zTrend.filter(ee.Filter.calendarRange(185,249))
         .map(function(img){
           var y = ee.Date(img.get('system:time_start')).get('year');
-          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis())
-        })
+          return img.set('system:time_start',ee.Date.fromYMD(y,6,1).millis());
+        });
+
+//Add ending to band names to denote which period
 zTrend1 = addSuffixToCollectionBandNames(zTrend1,'_121_185');
 zTrend2 = addSuffixToCollectionBandNames(zTrend2,'_185_249');
 
-zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false)
+//Join them back together
+zTrend = getImageLib.joinCollections(zTrend1,zTrend2,false);
 
-
+//Get phase, amplitude, peak and AUC of the harmonic functions
 var pap = harmonics
     .map(function(img){return dLib.multBands(img,1,0.001)})
     .map(getImageLib.getPhaseAmplitudePeak)
-    .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC'])
+    .select(['.*_phase','.*_amplitude','.*peakJulianDay','.*AUC']);
 
-//     // .map(function(img){return dLib.multBands(img,1,[1,1,1/365.0])});
+//Pull individual components out
 var amplitudes = pap.select(['.*_amplitude']);
 var phases = pap.select(['.*_phase']);
-var peakJulians = pap.select(['.*peakJulianDay'])
-Map.addLayer(peakJulians)
+var peakJulians = pap.select(['.*peakJulianDay']);
+Map.addLayer(peakJulians);
     
 //Set up the years to filter on- this is hard-coded since its set up oddly
 var years = ee.List.sequence(1985,2018);
+
+
 //Reformat the igdes to have a unique feature per year
 var igdeyr = years.getInfo().map(function(yz){
   var fieldName ='Depth'+ yz.toString();
  
-  // var yzPadded = pad(yz-1985, 2);
-  
-  // var fieldName = 'AnnDept_'+ yzPadded;
-  // print(fieldName)
-  // var t = f.select([fieldName], ['AvgAnnD'])
-  //         .map(function(ft){return ft.set('year',yz)});
-  var t = igdes.select([fieldName], ['AvgAnnD']);
+ var t = igdes.select([fieldName], ['AvgAnnD']);
   var depth = t.reduceToImage(['AvgAnnD'], ee.Reducer.first());
   var tID = igdes.select(['ORIG_FID']).reduceToImage(['ORIG_FID'], ee.Reducer.first());
   t = depth;
@@ -123,7 +138,7 @@ var igdeyr = years.getInfo().map(function(yz){
       // .divide(100)
       // .addBands(tID.int64())
       .rename(['Depth-To-Groundwater'])
-      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis())
+      .set('system:time_start',ee.Date.fromYMD(yz,6,1).millis());
   return t;
 });
 igdeyr = ee.ImageCollection(igdeyr);
