@@ -8,8 +8,8 @@ var geometry = /* color: #d63000 */ee.Geometry.Polygon(
 //Wrapper for running z-score and linear trend across a moving window of years
 
 //Module imports
-var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
-var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
+var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
