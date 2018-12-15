@@ -215,14 +215,14 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   //Export image
   var coeffsOut = coeffs
     .multiply(1000).int16().clip(sa);
-     print('coeffs',coeffsOut)
+   
   coeffsOut = coeffsOut.copyProperties(coeffs)
                         .copyProperties(coeffs,['system:time_start'])
-  
+   
 
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
-  getImageLib.exportToAssetWrapper(coeffsOut,outName,outPath,
+  getImageLib.exportToAssetWrapper(ee.Image(1),outName,outPath,
   'mean',studyArea,scale,crs,transform);
   return coeffs;
   
