@@ -7,7 +7,7 @@ var geometry = /* color: #98ff00 */ee.Geometry.Polygon(
           [-119.54718180335408, 37.47850889576281]]]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Module imports
-var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 // Define user parameters:
 
