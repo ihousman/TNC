@@ -222,8 +222,8 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
 
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
-  getImageLib.exportToAssetWrapper(coeffsOut,assetName,assetPath,
-  pyramidingPolicy,roi,scale,crs,transform);
+  getImageLib.exportToAssetWrapper(coeffsOut,outName,outPath,
+  'mean',studyArea,scale,crs,transform);
   return coeffs;
   
 });
