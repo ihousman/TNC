@@ -168,70 +168,51 @@ function getYr(year){
   return out;
 }
 //Final export
+//Iterate across each year
 var out = exportYears.getInfo().map(function(yr){
   var yro = yr;
   yr = ee.Number(yr);
   
-   var fieldName ='Depth'+ yro.toString();
+  //Get the name of the field for DGW
+  var fieldName ='Depth'+ yro.toString();
  
-  
+  //Filter out the igdes for that year
   var igdesT = igdes.filter(ee.Filter.neq(fieldName, -999));
   var igdesTL = igdesT.toList(100000);
 
-    // var rawPre = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr.subtract(1),yr.subtract(1),'year')).first());
-    // var rawPost = ee.Image(joinedRawForSlope.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-    
-    // var raw = ee.Image(joinedRaw.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-    
-    // var rawZTrend = ee.Image(zTrend.filter(ee.Filter.calendarRange(yr,yr,'year')).first());
-    // var rawD = rawPost.subtract(rawPre);
-    
    
-    
-    var forExtraction = ee.Image(getYr(yr))//raw.addBands(rawD).addBands(rawZTrend);
-    var igdeCount = igdesT.size().getInfo();
-    print(yro,igdeCount)
-    // print(forExtraction);
+  //Get the change image for extraction
+  var forExtraction = ee.Image(getYr(yr));//raw.addBands(rawD).addBands(rawZTrend);
+  
+  //Find how many igdes there were that year
+  var igdeCount = igdesT.size().getInfo();
+  print(yro,igdeCount);
+  
+  //Iterate across each block of igdes and export them to avoid memory errors
   ee.List.sequence(0,igdeCount,howMany).getInfo().map(function(i){
     var startI = i;
-    var endI = i+howMany
+    var endI = i+howMany;
     if(endI > igdeCount){endI = igdeCount}
-    var igdesTLT = igdesTL.slice(startI,endI)
+    var igdesTLT = igdesTL.slice(startI,endI);
     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     // print(outName)
     if(failedExports.indexOf(outName)>-1){
       var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 2);
-    outTable = outTable.map(function(f){return f.set('A_Year',yr)})
-    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables')
-    // print(outTable)
+    outTable = outTable.map(function(f){return f.set('A_Year',yr)});
+    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables');
+    
+    //For phase 2- export to asset as well
     var outAsset = 'projects/igde-work/tables/' + outName;
     // Export.table.toAsset(outTable, outName, outAsset)
-//     // print(outAsset)
+
     }
     
-  })
+  });
  
-//   // return outTable
 
 });
 
-// out = ee.FeatureCollection(out).flatten()
-
-// Export.table.toDrive(out, 'Export-test-full', 'TNC-GDEPulse-GEE-Export-Tables')
-// joined = joined.map(function(img){
-//   var out = img.reduceConnectedComponents(ee.Reducer.mean(), 'A_ORIG_FID', 1000);
-//   // out = out.addBands(img.select([0,1,2]))
-//   out = out.copyProperties(img,['system:time_start']);
-//   return out;
-  
-// })
-// Map.addLayer(joined,{},'joined',false)
-// // Map.addLayer(peakJulians.select(['NBR.*']),{'min':0,'max':365},'peakJulians',false);
-// // Map.addLayer(lt.select(['.*_NBR']),{},'Landtrendr Fitted Values',false);
-// // Map.addLayer(zTrend.select(['NBR.*']),{},'z and trend values',false);
-// // Map.addLayer(harmonics,{},'harmonic coeffs',false);
-// Map.addLayer(igdes)
-
+//Code for starting many export tasks
 // function runTaskList() {
 
 
