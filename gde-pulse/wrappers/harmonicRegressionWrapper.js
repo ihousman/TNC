@@ -184,7 +184,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
             'startYearT':startYearT,
             'endYearT':endYearT,
             });
-  print('coeffs'coeffs)
+  print('coeffs',coeffs)
   //Get predicted values for visualization
   var predicted = coeffsPredicted[1];
   // Map.addLayer(predicted,{},'predicted',false);
