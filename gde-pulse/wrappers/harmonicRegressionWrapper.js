@@ -155,12 +155,14 @@ var detrend = false;
 ////////////////////////////////////////////////////////////////////////////////
 //Function Calls
 //Get all images
-var allScenes = getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYear,startJulian,endJulian,
-  
+var allScenes =getImageLib.getProcessedLandsatScenes(studyArea,startYear,endYear,startJulian,endJulian,
   toaOrSR,includeSLCOffL7,defringeL5,applyCloudScore,applyFmaskCloudMask,applyTDOM,
   applyFmaskCloudShadowMask,applyFmaskSnowMask,
-  cloudScoreThresh,cloudScorePctl,contractPixels,dilatePixels
+  cloudScoreThresh,cloudScorePctl,
+  zScoreThresh,shadowSumThresh,
+  contractPixels,dilatePixels
   )
+  
   .map(getImageLib.addSAVIandEVI);
 ////////////////////////////////////////////////////////////
 //Iterate across each time window and fit harmonic regression model
@@ -220,8 +222,8 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
 
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
-  getImageLib.exportToAssetWrapper(coeffsOut,outName,outPath,
-  'mean',studyArea,scale,crs,transform);
+  getImageLib.exportToAssetWrapper(coeffsOut,assetName,assetPath,
+  pyramidingPolicy,roi,scale,crs,transform);
   return coeffs;
   
 });
