@@ -216,7 +216,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
   var coeffsOut = coeffs
     .multiply(1000).int16().clip(sa);
     
-  coeffsOut = coeffsOut.copyProperties(coeffs)
+  coeffsOut = ee.Image(coeffsOut).copyProperties(coeffs)
                         .copyProperties(coeffs,['system:time_start'])
   
 
