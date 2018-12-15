@@ -222,7 +222,7 @@ var coeffCollection = ee.List.sequence(startYear+timebuffer,endYear-timebuffer,1
 
   var outName = outputName + startYearT.toString() + '_'+ endYearT.toString();
   var outPath = exportPathRoot + '/' + outName;
-  getImageLib.exportToAssetWrapper(coeffsOut,outName,outPath,
+  getImageLib.exportToAssetWrapper(ee.Image(coeffsOut),outName,outPath,
   'mean',studyArea,scale,crs,transform);
   return coeffs;
   
