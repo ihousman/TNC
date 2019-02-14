@@ -63,17 +63,20 @@ var plotPanelParent = ui.Panel([plotsPanelLabel, plotPanel], null, {width: '480p
 
 var map = ui.Map();
 map.add(ui.Label({
-  value: 'Click a point',
+  value: 'Click a point to plot time series',
   style: {position: 'top-center'}
 }));
 
 map.onClick(function(coords) {
   var x = coords.lon;
   var y = coords.lat;
-  print(x,y)
+  var chart = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30)
+  // var chart = chartPoint(lt, pixel, name[0], name[1]);
+    plotPanel = plotPanel.clear();
+    plotPanel.add(chart);
 });
 map.style().set({cursor:'crosshair'});
-map.addLayer(joined,{},'Time Series',false);
+// map.addLayer(joined,{},'Time Series',false);
 map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'080,888,800','bands':'rate'},'Recent Trend',false);
 map.addLayer(distFinal,{min:-0.5,max:0.5,palette:'080,888,800','bands':'mag'},'Recent Magnitude',true);
 map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'800,080','bands':'endVal'},'End NBR Value',false);
@@ -82,6 +85,7 @@ map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'800,080','bands':'endVal'},'E
 ui.root.clear();
 // ui.root.add(controlPanel);
 ui.root.add(map);
+map.setCenter(-118.5,38.5,7)
 ui.root.add(plotPanelParent);
 
 // var sortedSlope = all.arraySlice(0,3,4)
