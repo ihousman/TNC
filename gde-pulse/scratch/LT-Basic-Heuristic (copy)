@@ -1,7 +1,7 @@
 //Module imports
 var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
-cd.getExistingChangeData()
+
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
