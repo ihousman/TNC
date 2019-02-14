@@ -2,9 +2,7 @@
 var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 cd.getExistingChangeData()
-// var c = ee.ImageCollection('projects/USFS/LCMS-NFS/R1/Composites/R1-Composite-Collection');
-var c = ee.ImageCollection('projects/servir-mekong/usgs_sr_composites/drycool');
-
+var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 
 var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return cd.multBands(img,-1,1)});
 
