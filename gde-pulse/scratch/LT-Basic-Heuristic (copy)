@@ -89,6 +89,8 @@ ui.root.add(map);
 map.setCenter(-118.5,38.5,7)
 ui.root.add(plotPanelParent);
 
+
+
 // var sortedSlope = all.arraySlice(0,3,4)
 // Map.addLayer(sortedSlope,{},'sortedSlope')
 
