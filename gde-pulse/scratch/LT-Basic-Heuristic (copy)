@@ -44,8 +44,12 @@ var mag = diff.arraySlice(0,2,3);
 var duration = diff.arraySlice(0,0,1);
 var slope = mag.divide(duration);
 var all = ee.Image.cat([yearsLeft,yearsRight,duration,mag,slope])
-
+var sortBy = yearsRight.multiply(-1);
+all = all.arraySort(sortBy)
 Map.addLayer(all)
+
+var sortedSlope = all.arraySlice([0,3,4])
+Map.addLayer(sortedSlope,{},'sortedSlope')
 
 // var slowchange =  slope.gt(0.005).and(duration.gt(5));
 // var fastChange =  mag.gt(0.15).and(duration.lte(5));
