@@ -49,7 +49,7 @@ var dsnr = mag.divide(rmse);              // make mag relative to fit rmse
 var all =ee.Image.cat([startYear, endYear, startVal, endVal, mag, dur, rate, dsnr])
                    .unmask(ee.Image(ee.Array([[-9999],[-9999],[-9999],[-9999],[-9999],[-9999],[-9999],[-9999]])))
                    .toArray(0);
-var sortByThis = rate.multiply(-1);
+var sortByThis = endYear.multiply(-1);
 
 var segInfoSorted =all.arraySort(sortByThis); // sort the array by magnitude
 var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten([['startYear','endYear','startVal','endVal','mag','dur','rate','dsnr']]); // get the first
@@ -57,7 +57,7 @@ var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten
 // Map.addLayer(all) ;
 // Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
 // Map.addLayer(distArray,{},'distarray')
-Map.addLayer(distFinal,{min:0,max:0.005,palette:'888,800','bands':'rate'},'Recent Trend');
+Map.addLayer(distFinal,{min:-0.005,max:0.005,palette:'080,888,800','bands':'rate'},'Recent Trend');
 Map.addLayer(distFinal,{min:-0.5,max:0.5,palette:'080,888,800','bands':'mag'},'Recent Magnitude');
 
 // var sortedSlope = all.arraySlice(0,3,4)
