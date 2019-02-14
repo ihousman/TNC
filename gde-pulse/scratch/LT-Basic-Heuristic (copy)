@@ -5,7 +5,7 @@ cd.getExistingChangeData()
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
-var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)})
+var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
 Map.addLayer(ts,{},'ts',false);
 
 ts = ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
@@ -51,6 +51,9 @@ var fastChange =  mag.gt(0.15).and(duration.lte(5));
 
 var slowChangeYears = yearsRight.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
 var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
+
+var slowChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
+var fastChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
 
 var vizParams = {min:1985,max:2018,palette:'FF0,F00'};
 Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeYears',false)
