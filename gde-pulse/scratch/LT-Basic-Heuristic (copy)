@@ -56,6 +56,8 @@ var distArray = segInfoSorted.arraySlice(1, 0, 1); // get the first
   
 Map.addLayer(all) ;
 Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
+Map.addLayer(distArray,{},'distarray')
+
 // var sortedSlope = all.arraySlice(0,3,4)
 // Map.addLayer(sortedSlope,{},'sortedSlope')
 
