@@ -28,7 +28,7 @@ var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params);
 
 var vertices = lt.arraySlice(0,3,4);
 
-var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR')
+var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR Fitted')
 var joined = getImageLib.joinCollections(ts,fittedC);
 
 var ltlt = lt.select('LandTrendr');            // select the LandTrendr band
@@ -76,6 +76,7 @@ map.onClick(function(coords) {
     plotPanel.add(chart);
 });
 map.style().set({cursor:'crosshair'});
+
 // map.addLayer(joined,{},'Time Series',false);
 map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'080,888,800','bands':'rate'},'Recent Trend',false);
 map.addLayer(distFinal,{min:-0.5,max:0.5,palette:'080,888,800','bands':'mag'},'Recent Magnitude',true);
