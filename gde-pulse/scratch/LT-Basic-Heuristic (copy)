@@ -8,7 +8,6 @@ var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_
 var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
 Map.addLayer(ts,{},'ts',false);
 
-ts = ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
 
 //Define landtrendr params
 var run_params = { 
@@ -22,12 +21,16 @@ var run_params = {
   minObservationsNeeded:  6
 };
 
-run_params.timeSeries = ts;
+run_params.timeSeries =  ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
 
 var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).select([0]);
 Map.addLayer(lt,{},'lt',false);
 
 var vertices = lt.arraySlice(0,3,4);
+
+var fittedC = cd.arrayToTimeSeries(lt.arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR')
+var joined = getImageLib.joinCollections(ts,fittedC);
+Map.addLayer(joined,{},'joined',false)
 lt = lt.arrayMask(vertices)
 // Map.addLayer(lt)
 
@@ -56,10 +59,10 @@ var slowChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1])
 var fastChangeMag = mag.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['fastChange']]);
 
 var vizParamsYears = {min:1985,max:2018,palette:'FF0,F00'};
-var vizParamsMag = {min:0.01,max:0.3,palette:'080,F00'};
-Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeYears',false)
-Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeYears',false)
+var vizParamsMag = {min:0.01,max:0.5,palette:'080,F00'};
+Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParamsYears,'slowChangeYears',false)
+Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParamsYears,'fastChangeYears',false)
 
-Map.addLayer(slowChangeMag.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeMag',false)
-Map.addLayer(fastChangeMag.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeMag',false)
+Map.addLayer(slowChangeMag.updateMask(slowChangeYears.neq(0)),vizParamsMag,'slowChangeMag',false)
+Map.addLayer(fastChangeMag.updateMask(fastChangeYears.neq(0)),vizParamsMag,'fastChangeMag',false)
 Map.addLayer(igdes)
