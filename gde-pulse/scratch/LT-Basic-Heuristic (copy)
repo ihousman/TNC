@@ -23,12 +23,12 @@ var run_params = {
 
 run_params.timeSeries =  ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
 
-var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).select([0]);
+var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params);
 Map.addLayer(lt,{},'lt',false);
 
 var vertices = lt.arraySlice(0,3,4);
 
-var fittedC = cd.arrayToTimeSeries(lt.arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR')
+var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR')
 var joined = getImageLib.joinCollections(ts,fittedC);
 Map.addLayer(joined,{},'joined',false)
 var ltlt = lt.select('LandTrendr');            // select the LandTrendr band
@@ -46,9 +46,16 @@ var mag = endVal.subtract(startVal);         // substract the segment start inde
 var rate = mag.divide(dur);                  // calculate the rate of spectral change    
 var dsnr = mag.divide(rmse);              // make mag relative to fit rmse
 
-var all =ee.Image.cat([startYear.add(1), endYear, startVal, endVal, mag, dur, rate, dsnr])
+var all =ee.Image.cat([startYear, endYear, startVal, endVal, mag, dur, rate, dsnr])
                    .unmask(ee.Image(ee.Array([[-9999],[-9999],[-9999],[-9999],[-9999],[-9999],[-9999],[-9999]])))
                    .toArray(0);
+var sortByThis = rate.multiply(-1);
+
+var segInfoSorted =all.arraySort(sortByThis); // sort the array by magnitude
+var distArray = segInfoSorted.arraySlice(1, 0, 1); // get the first
+  
+Map.addLayer(all) ;
+Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
 // var sortedSlope = all.arraySlice(0,3,4)
 // Map.addLayer(sortedSlope,{},'sortedSlope')
 
