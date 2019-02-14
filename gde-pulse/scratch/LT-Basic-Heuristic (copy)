@@ -57,7 +57,7 @@ var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten
 // Map.addLayer(all) ;
 // Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
 // Map.addLayer(distArray,{},'distarray')
-Map.addLayer(distFinal,{min:-0.005,max:0.005,palette:'080,888,800','bands':'rate'},'Recent Trend',false);
+Map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'080,888,800','bands':'rate'},'Recent Trend',false);
 Map.addLayer(distFinal,{min:-0.5,max:0.5,palette:'080,888,800','bands':'mag'},'Recent Magnitude',true);
 Map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'800,080','bands':'endVal'},'End NBR Value',false)
 // var sortedSlope = all.arraySlice(0,3,4)
