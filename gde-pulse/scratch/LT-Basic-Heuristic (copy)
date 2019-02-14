@@ -45,11 +45,11 @@ var duration = diff.arraySlice(0,0,1);
 var slope = mag.divide(duration);
 var all = ee.Image.cat([yearsLeft.arrayProject([1]),yearsRight.arrayProject([1]),
           duration.arrayProject([1]),mag.arrayProject([1]),slope.arrayProject([1])])
-var sortBy = yearsRight.multiply(-1);
+var sortBy = yearsRight.multiply(-1).arrayProject([1]);
 all = all.arraySort(sortBy)
 Map.addLayer(all)
 
-var sortedSlope = all.arraySlice(0,3,4)
+var sortedSlope = all.arraySlice(1,3,4)
 Map.addLayer(sortedSlope,{},'sortedSlope')
 
 // var slowchange =  slope.gt(0.005).and(duration.gt(5));
