@@ -1,0 +1,56 @@
+//Module imports
+var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
+cd.getExistingChangeData()
+// var c = ee.ImageCollection('projects/USFS/LCMS-NFS/R1/Composites/R1-Composite-Collection');
+var c = ee.ImageCollection('projects/servir-mekong/usgs_sr_composites/drycool');
+
+
+var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return cd.multBands(img,-1,1)});
+
+//Define landtrendr params
+var run_params = { 
+  maxSegments:            6,
+  spikeThreshold:         0.9,
+  vertexCountOvershoot:   3,
+  preventOneYearRecovery: true,
+  recoveryThreshold:      0.25,
+  pvalThreshold:          0.05,
+  bestModelProportion:    0.75,
+  minObservationsNeeded:  6
+};
+
+run_params.timeSeries = ts;
+Map.addLayer(ts,{},'ts',false);
+
+var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).select([0]);
+Map.addLayer(lt,{},'lt',false);
+
+var vertices = lt.arraySlice(0,3,4);
+lt = lt.arrayMask(vertices)
+// Map.addLayer(lt)
+
+var left = lt.arraySlice(1,0,-1);
+var right = lt.arraySlice(1,1,null);
+var diff  = right.subtract(left);
+
+var yearsRight = right.arraySlice(0,0,1);
+var mag = diff.arraySlice(0,2,3);
+var duration = diff.arraySlice(0,0,1);
+
+var slope = mag.divide(duration);
+// Map.addLayer(duration)
+
+var slowchange =  slope.gt(0.005).and(duration.gt(5));
+var fastChange =  mag.gt(0.15).and(duration.lte(5));
+
+// Map.addLayer(slope,{},'slope',false)
+// Map.addLayer(diff,{},'diff',false);
+// Map.addLayer(change,{},'change',false)
+
+var slowChangeYears = yearsRight.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
+var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
+
+var vizParams = {min:1985,max:2018,palette:'FF0,F00'};
+Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeYears',false)
+Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeYears',false)
