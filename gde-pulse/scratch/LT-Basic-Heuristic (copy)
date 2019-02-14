@@ -86,7 +86,7 @@ map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'E
 ui.root.clear();
 // ui.root.add(controlPanel);
 ui.root.add(map);
-map.setCenter(-118.5,38.5,7)
+map.setCenter(-121.5,38.8,10)
 ui.root.add(plotPanelParent);
 
 
