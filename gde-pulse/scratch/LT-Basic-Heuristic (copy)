@@ -6,7 +6,7 @@ var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection'
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
 var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
-Map.addLayer(ts,{},'ts',false);
+// Map.addLayer(ts,{},'ts',false);
 
 
 //Define landtrendr params
@@ -24,13 +24,13 @@ var run_params = {
 run_params.timeSeries =  ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
 
 var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params);
-Map.addLayer(lt,{},'lt',false);
+// Map.addLayer(lt,{},'lt',false);
 
 var vertices = lt.arraySlice(0,3,4);
 
 var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR')
 var joined = getImageLib.joinCollections(ts,fittedC);
-Map.addLayer(joined,{},'joined',false)
+Map.addLayer(joined,{},'Time Series',false)
 var ltlt = lt.select('LandTrendr');            // select the LandTrendr band
 var rmse = lt.select('rmse');                  // select the rmse band
 var vertexMask = ltlt.arraySlice(0, 3, 4);     // slice out the 'Is Vertex' row - yes(1)/no(0)
@@ -54,7 +54,7 @@ var sortByThis = rate.multiply(-1);
 var segInfoSorted =all.arraySort(sortByThis); // sort the array by magnitude
 var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten([['startYear','endYear','startVal','endVal','mag','dur','rate','dsnr']]); // get the first
   
-Map.addLayer(all) ;
+// Map.addLayer(all) ;
 // Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
 // Map.addLayer(distArray,{},'distarray')
 Map.addLayer(distFinal,{min:0,max:0.005,palette:'888,800','bands':'rate'},'Recent Trend');
