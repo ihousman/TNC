@@ -38,31 +38,33 @@ var left = lt.arraySlice(1,0,-1);
 var right = lt.arraySlice(1,1,null);
 var diff  = right.subtract(left);
 
+var yearsLeft = left.arraySlice(0,0,1);
 var yearsRight = right.arraySlice(0,0,1);
 var mag = diff.arraySlice(0,2,3);
 var duration = diff.arraySlice(0,0,1);
-
 var slope = mag.divide(duration);
-// Map.addLayer(duration)
+var all = ee.Image.cat([yearsLeft,yearsRight,duration,mag,slope])
 
-var slowchange =  slope.gt(0.005).and(duration.gt(5));
-var fastChange =  mag.gt(0.15).and(duration.lte(5));
+Map.addLayer(all)
 
-// Map.addLayer(slope,{},'slope',false)
-// Map.addLayer(diff,{},'diff',false);
-// Map.addLayer(change,{},'change',false)
+// var slowchange =  slope.gt(0.005).and(duration.gt(5));
+// var fastChange =  mag.gt(0.15).and(duration.lte(5));
 
-var slowChangeYears = yearsRight.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
-var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
+// // Map.addLayer(slope,{},'slope',false)
+// // Map.addLayer(diff,{},'diff',false);
+// // Map.addLayer(change,{},'change',false)
 
-var slowChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
-var fastChangeMag = mag.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['fastChange']]);
+// var slowChangeYears = yearsRight.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
+// var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
 
-var vizParamsYears = {min:1985,max:2018,palette:'FF0,F00'};
-var vizParamsMag = {min:0.01,max:0.5,palette:'080,F00'};
-Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParamsYears,'slowChangeYears',false)
-Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParamsYears,'fastChangeYears',false)
+// var slowChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
+// var fastChangeMag = mag.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['fastChange']]);
 
-Map.addLayer(slowChangeMag.updateMask(slowChangeYears.neq(0)),vizParamsMag,'slowChangeMag',false)
-Map.addLayer(fastChangeMag.updateMask(fastChangeYears.neq(0)),vizParamsMag,'fastChangeMag',false)
-Map.addLayer(igdes)
+// var vizParamsYears = {min:1985,max:2018,palette:'FF0,F00'};
+// var vizParamsMag = {min:0.01,max:0.5,palette:'080,F00'};
+// Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParamsYears,'slowChangeYears',false)
+// Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParamsYears,'fastChangeYears',false)
+
+// Map.addLayer(slowChangeMag.updateMask(slowChangeYears.neq(0)),vizParamsMag,'slowChangeMag',false)
+// Map.addLayer(fastChangeMag.updateMask(fastChangeYears.neq(0)),vizParamsMag,'fastChangeMag',false)
+// Map.addLayer(igdes)
