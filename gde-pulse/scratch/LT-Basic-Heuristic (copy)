@@ -53,9 +53,13 @@ var slowChangeYears = yearsRight.arrayMask(slowchange).arrayReduce(ee.Reducer.ma
 var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['year']]);
 
 var slowChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
-var fastChangeMag = mag.arrayMask(slowchange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['slowChange']]);
+var fastChangeMag = mag.arrayMask(fastChange).arrayReduce(ee.Reducer.max(), [1]).arrayProject([0]).arrayFlatten([['fastChange']]);
 
-var vizParams = {min:1985,max:2018,palette:'FF0,F00'};
+var vizParamsYears = {min:1985,max:2018,palette:'FF0,F00'};
+var vizParamsMag = {min:0.01,max:0.3,palette:'080,F00'};
 Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeYears',false)
 Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeYears',false)
+
+Map.addLayer(slowChangeMag.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeMag',false)
+Map.addLayer(fastChangeMag.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeMag',false)
 Map.addLayer(igdes)
