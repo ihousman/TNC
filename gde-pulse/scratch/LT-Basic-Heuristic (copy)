@@ -3,8 +3,12 @@ var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 cd.getExistingChangeData()
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
-var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return cd.multBands(img,-1,1)});
+var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)})
+Map.addLayer(ts,{},'ts',false);
+
+ts = ts.map(function(img){return ee.Image(cd.multBands(img,-1,1))});
 
 //Define landtrendr params
 var run_params = { 
@@ -19,7 +23,6 @@ var run_params = {
 };
 
 run_params.timeSeries = ts;
-Map.addLayer(ts,{},'ts',false);
 
 var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params).select([0]);
 Map.addLayer(lt,{},'lt',false);
@@ -52,3 +55,4 @@ var fastChangeYears = yearsRight.arrayMask(fastChange).arrayReduce(ee.Reducer.ma
 var vizParams = {min:1985,max:2018,palette:'FF0,F00'};
 Map.addLayer(slowChangeYears.updateMask(slowChangeYears.neq(0)),vizParams,'slowChangeYears',false)
 Map.addLayer(fastChangeYears.updateMask(fastChangeYears.neq(0)),vizParams,'fastChangeYears',false)
+Map.addLayer(igdes)
