@@ -4,8 +4,8 @@ var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
-
-var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
+var ts = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection').select([0]);
+// var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
 // Map.addLayer(ts,{},'ts',false);
 
 
