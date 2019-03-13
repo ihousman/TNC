@@ -28,8 +28,15 @@ joined = joined.map(function(img){
 });
 print(joined)
 var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
+var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
+predicted = joined.select([2]).map(function(img){
+  var pred = img.multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
+  return img.addBands(img.select([1,2,3]))
+});
+Map.addLayer(predicted)
+Map.addLayer(fit)
 var error = fit.select(['residuals']).arrayFlatten([['error']])
 // print(fit)
-// Map.addLayer(joined);
+// Map.addLayer(joined,{},'ts',false);
 // Map.addLayer(fit)
-Map.addLayer(error.abs(),{min:0,max:5},'Residual')
+Map.addLayer(error.abs(),{min:0,max:10,'palette':'888,F00'},'Residual')
