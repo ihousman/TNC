@@ -105,9 +105,9 @@ map.onClick(function(coords) {
   c
   var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit'});
   // var chart = chartPoint(lt, pixel, name[0], name[1]);
-    
-    plotPanel.add(chart1);
     plotPanel.add(chart2);
+    plotPanel.add(chart1);
+    
 });
 map.style().set({cursor:'crosshair'});
 
