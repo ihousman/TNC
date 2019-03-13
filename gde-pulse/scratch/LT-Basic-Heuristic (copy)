@@ -101,9 +101,9 @@ map.onClick(function(coords) {
   plotPanel = plotPanel.clear();
   var x = coords.lon;
   var y = coords.lat;
-  var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'LANDTRENDR Fit',hAxis:{title: 'Time'}});
+  var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'LANDTRENDR Fit',hAxis:{title: 'Year'}});
   c
-  var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit'});
+  var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit',hAxis:{title: 'Year'}});
   // var chart = chartPoint(lt, pixel, name[0], name[1]);
     plotPanel.add(chart2);
     plotPanel.add(chart1);
