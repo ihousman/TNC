@@ -17,7 +17,7 @@ var igdesC = years.map(function(yr){
   return img
 });
 var c =ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection');
-c = c.map(function(img){return dLib.multBands(img,-1,0.001)}).select(['.*NDMI']);
+c = c.map(function(img){return dLib.multBands(img,1,0.001)}).select(['.*NDMI']);
 
 igdesC = ee.ImageCollection.fromImages(igdesC)
 
@@ -39,4 +39,4 @@ var error = fit.select(['residuals']).arrayFlatten([['error']])
 // print(fit)
 // Map.addLayer(joined,{},'ts',false);
 // Map.addLayer(fit)
-Map.addLayer(error.abs(),{min:0,max:10,'palette':'888,F00'},'Residual')
+Map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'Residual')
