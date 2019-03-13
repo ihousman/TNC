@@ -30,11 +30,11 @@ print(joined)
 var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
 var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
 var predicted = joined.map(function(img){
-  var pred = img.select([2]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
+  var pred = img.select([1]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
   return img.addBands(pred).select([1,2,3])
 });
-Map.addLayer(predicted)
-Map.addLayer(fit)
+Map.addLayer(predicted,{},'Fitted Time Series',false);
+// Map.addLayer(fit)
 var error = fit.select(['residuals']).arrayFlatten([['error']])
 // print(fit)
 // Map.addLayer(joined,{},'ts',false);
