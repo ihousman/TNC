@@ -4,8 +4,8 @@ var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
-var ts = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection').select([0]);
-// var ts = c.map(getImageLib.simpleAddIndices).select(['NBR']).map(function(img){return img.clip(igdes)});
+// var ts = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection').select([0]);
+var ts = c.map(getImageLib.simpleAddIndices).select(['NDMI']).map(function(img){return img.clip(igdes)});
 // Map.addLayer(ts,{},'ts',false);
 
 
@@ -28,7 +28,7 @@ var lt = ee.Algorithms.TemporalSegmentation.LandTrendr(run_params);
 
 var vertices = lt.arraySlice(0,3,4);
 
-var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NBR Fitted')
+var fittedC = cd.arrayToTimeSeries(lt.select([0]).arraySlice(0,2,3).arrayProject([1]).multiply(-1),lt.select([0]).arraySlice(0,0,1).arrayProject([1]),ee.List.sequence(1985,2018),'NDMI Fitted')
 var joined = getImageLib.joinCollections(ts,fittedC);
 
 var ltlt = lt.select('LandTrendr');            // select the LandTrendr band
@@ -80,7 +80,7 @@ map.style().set({cursor:'crosshair'});
 // map.addLayer(joined,{},'Time Series',false);
 map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'0B0,BBB,B00','bands':'rate'},'Recent Trend',false);
 map.addLayer(distFinal,{min:-0.4,max:0.4,palette:'0B0,BBB,B00','bands':'mag'},'Recent Magnitude',true);
-map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NBR Value',false);
+map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NDMI Value',false);
 
 
 ui.root.clear();
