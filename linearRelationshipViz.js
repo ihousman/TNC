@@ -27,7 +27,8 @@ joined = joined.map(function(img){
   return c.addBands(img).copyProperties(img,['system:time_start'])
 });
 print(joined)
-var fit = joined.reduce(ee.Reducer.linearRegression(1,1));
+var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
 // print(fit)
-Map.addLayer(joined);
-Map.addLayer(fit)
+// Map.addLayer(joined);
+// Map.addLayer(fit)
+Map.addLayer(ee.Image(fit.select(['residuals'])).abs(),{min:0,max:5},'Residual')
