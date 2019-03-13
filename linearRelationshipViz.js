@@ -28,7 +28,8 @@ joined = joined.map(function(img){
 });
 print(joined)
 var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
+var error = fit.select(['residuals']).arrayFlatten([['error']])
 // print(fit)
 // Map.addLayer(joined);
 // Map.addLayer(fit)
-Map.addLayer(ee.Image(fit.select(['residuals'])).abs(),{min:0,max:5},'Residual')
+Map.addLayer(error.abs(),{min:0,max:5},'Residual')
