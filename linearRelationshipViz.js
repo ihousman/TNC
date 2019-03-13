@@ -29,7 +29,7 @@ joined = joined.map(function(img){
 print(joined)
 var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
 var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
-predicted = joined.select([2]).map(function(img){
+var predicted = joined.select([2]).map(function(img){
   var pred = img.multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
   return img.addBands(img.select([1,2,3]))
 });
