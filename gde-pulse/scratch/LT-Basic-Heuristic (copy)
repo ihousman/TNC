@@ -23,15 +23,15 @@ ltC = ltC.map(function(img){return dLib.multBands(img,1,0.001)}).select(['.*NDMI
 
 igdesC = ee.ImageCollection.fromImages(igdesC);
 
-var joined = getImageLib.joinCollections(ltC,igdesC);
-joined = joined.map(function(img){
+var joined2 = getImageLib.joinCollections(ltC,igdesC);
+joined2 = joined.map(function(img){
   var c = ee.Image(1);
   return c.addBands(img).copyProperties(img,['system:time_start']);
 });
 
-var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
+var fit = joined2.reduce(ee.Reducer.linearRegression(2,1));
 var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
-var predicted = joined.map(function(img){
+var predicted = joined2.map(function(img){
   var pred = img.select([1]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
   return img.addBands(pred).select([1,2,3]);
 });
@@ -100,10 +100,12 @@ map.add(ui.Label({
 map.onClick(function(coords) {
   var x = coords.lon;
   var y = coords.lat;
-  var chart = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30)
+  var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30);
+  var chart2 = ui.Chart.image.series(joined2, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30)
   // var chart = chartPoint(lt, pixel, name[0], name[1]);
     plotPanel = plotPanel.clear();
-    plotPanel.add(chart);
+    plotPanel.add(chart1);
+    plotPanel.add(chart2);
 });
 map.style().set({cursor:'crosshair'});
 
