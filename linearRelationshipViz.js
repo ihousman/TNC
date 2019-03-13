@@ -15,7 +15,7 @@ var igdesC = years.map(function(yr){
   return img
 });
 var c =ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection');
-c = c.map(function(img){return dLib.multBands(img,1,0.0001)}).select(['.*NDMI']);
+c = c.map(function(img){return dLib.multBands(img,1,0.001)}).select(['.*NDMI']);
 
 igdesC = ee.ImageCollection(igdesC)
 
