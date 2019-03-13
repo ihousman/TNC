@@ -1,12 +1,42 @@
 //Module imports
 var getImageLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var cd = require('users/USFS_GTAC/modules:changeDetectionLib.js');
+var dLib = cd;
 
 var c = ee.ImageCollection('projects/igde-work/raster-data/composite-collection');
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 // var ts = ee.ImageCollection('projects/igde-work/raster-data/DAYMET-Collection').select([0]);
 var ts = c.map(getImageLib.simpleAddIndices).select(['NDMI']).map(function(img){return img.clip(igdes)});
 // Map.addLayer(ts,{},'ts',false);
+
+var years = ee.List.sequence(1985,2018).getInfo();
+var igdesC = years.map(function(yr){
+  yr = ee.Number(yr);
+  var field = ee.String('Depth').cat(ee.String(yr));
+  var img = igdes.reduceToImage([field],ee.Reducer.first());
+  img = img.updateMask(img.neq(-999)).rename(['Depth_to_gw']).multiply(-1);
+  img = img.set('system:time_start',ee.Date.fromYMD(yr,6,1).millis());
+  return img;
+});
+var ltC =ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection');
+ltC = ltC.map(function(img){return dLib.multBands(img,1,0.001)}).select(['.*NDMI']);
+
+igdesC = ee.ImageCollection.fromImages(igdesC);
+
+var joined = getImageLib.joinCollections(ltC,igdesC);
+joined = joined.map(function(img){
+  var c = ee.Image(1);
+  return c.addBands(img).copyProperties(img,['system:time_start']);
+});
+
+var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
+var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
+var predicted = joined.map(function(img){
+  var pred = img.select([1]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
+  return img.addBands(pred).select([1,2,3]);
+});
+
+var error = fit.select(['residuals']).arrayFlatten([['error']]);
 
 
 //Define landtrendr params
@@ -81,6 +111,9 @@ map.style().set({cursor:'crosshair'});
 map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'0B0,BBB,B00','bands':'rate'},'Recent Trend',false);
 map.addLayer(distFinal,{min:-0.4,max:0.4,palette:'0B0,BBB,B00','bands':'mag'},'Recent Magnitude',true);
 map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NDMI Value',false);
+// map.addLayer(predicted,{},'Fitted Time Series',false);
+
+Map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'Depth to GW and NDMI Linear Fit RMSE',true);
 
 
 ui.root.clear();
