@@ -113,7 +113,7 @@ map.addLayer(distFinal,{min:-0.4,max:0.4,palette:'0B0,BBB,B00','bands':'mag'},'R
 map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NDMI Value',false);
 // map.addLayer(predicted,{},'Fitted Time Series',false);
 
-map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'Depth to GW and NDMI Linear Fit RMSE',true);
+map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'RMSE of linear fit between Depth to GW and NDMI',true);
 
 
 ui.root.clear();
