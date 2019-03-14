@@ -120,10 +120,12 @@ map.onClick(function(coords) {
   var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'LANDTRENDR Fit',hAxis:{title: 'Year'}});
   c
   var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit',hAxis:{title: 'Year'}});
+  
+  var r2_value = r2.reduceRegion(ee.Reducer.first(), ee.Geometry.Point([x,y]), 30);
   // var chart = chartPoint(lt, pixel, name[0], name[1]);
     plotPanel.add(chart2);
     plotPanel.add(chart1);
-    plotPanel.add(ui.Label('test1'))
+    plotPanel.add(ui.Label(r2_value))
     
 });
 map.style().set({cursor:'crosshair'});
