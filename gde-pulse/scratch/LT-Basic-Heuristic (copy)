@@ -163,14 +163,6 @@ map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
 map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
 
 
-/////////////////////////////////////////////////////////////////
-//Map.addLayer(table,{}, 'iGDE Layer')
-// iGDE_v053: original iGDE database polygons with vegetation and macrovegetation class
-var empty = ee.Image().byte();
-var outline = empty.paint({featureCollection: iGDE_v053, color: 2, width: 1});
-map.addLayer(outline, {palette: '0bbe00'}, "iGDE_polygons_5_03_2018", false)
-
-
 //above dataset subset to grab only those iGDE with well data that meets the following conditions
 //var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
 var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
