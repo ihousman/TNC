@@ -1,5 +1,5 @@
 var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
-var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
+var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
