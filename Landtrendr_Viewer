@@ -1,0 +1,59 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var iGDE_v053 = ee.FeatureCollection("projects/igde-work/igde-data/i02_IndicatorsofGDE_Vegetation_v0_5_3_updated_macroclasses"),
+    table = ee.FeatureCollection("projects/igde-work/igde-data/iGDEveg053_Landsat_dissolved_join_well_8022018_closest_ecoregion_macro_veg_final"),
+    imageVisParam = {"opacity":1,"bands":["constant"],"palette":["81be0b"]};
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+//Map.addLayer(table,{}, 'iGDE Layer')
+// iGDE_v053: original iGDE database polygons with vegetation and macrovegetation class
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: iGDE_v053, color: 2, width: 1});
+Map.addLayer(outline, {palette: '0bbe00'}, "iGDE_polygons_5_03_2018", false)
+
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
+var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
+
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
+
+//above dataset subset to grab only those iGDE with well data that meets the following conditions
+//var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
+var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
+Map.addLayer(outline, {palette: '0F00FF'}, "iGDE within 1000m well, >5 years well data, larger than 1 landsat pixel", false)
+
+
+var years = ee.List.sequence(1985,2018).getInfo();
+// var fields = years.map(function(yr){return 'Depth'+yr.toString()});
+// print(fields);
+// var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDEveg053_Landsat_dissolved_8022018_1000m_Depth_gwell_macro_veg_final_gt5yr_lt30ft');
+var igdesC = years.map(function(yr){
+  yr = ee.Number(yr)
+  var field = ee.String('Depth').cat(ee.String(yr));
+  
+  var img = igdes.reduceToImage([field],ee.Reducer.first());
+  img = img.updateMask(img.neq(-999)).rename(['Depth_to_gw']).multiply(-1)
+  img = img.set('system:time_start',ee.Date.fromYMD(yr,6,1).millis());
+  return img
+});
+var c =ee.ImageCollection('projects/igde-work/raster-data/LANDTRENDR-collection');
+c = c.map(function(img){return dLib.multBands(img,-1,0.001)}).select(['.*NDMI']);
+
+igdesC = ee.ImageCollection.fromImages(igdesC)
+
+var joined = getImageLib.joinCollections(c,igdesC)
+joined = joined.map(function(img){
+  var c = ee.Image(1);
+  return c.addBands(img).copyProperties(img,['system:time_start'])
+});
+print(joined)
+var fit = joined.reduce(ee.Reducer.linearRegression(2,1));
+var model = fit.select(['coefficients']).arrayProject([0]).arrayFlatten([['intercept','slope']]);
+var predicted = joined.map(function(img){
+  var pred = img.select([1]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
+  return img.addBands(pred).select([1,2,3])
+});
+Map.addLayer(predicted,{},'Fitted Time Series',false);
+// Map.addLayer(fit)
+var error = fit.select(['residuals']).arrayFlatten([['error']])
+// print(fit)
+// Map.addLayer(joined,{},'ts',false);
+// Map.addLayer(fit)
+Map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'Residual')
