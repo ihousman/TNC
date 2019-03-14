@@ -29,6 +29,8 @@ var predicted = joined.map(function(img){
   var pred = img.select([1]).multiply(model.select(['slope'])).add(model.select(['intercept'])).rename(['Depth_to_gw_pred']);
   return img.addBands(pred).select([1,2,3]);
 });
+var r2 = dLib.getR2(joined,model,[2],[0,1]);
+Map.addLayer(r2)
 Map.addLayer(predicted,{},'Fitted Time Series',false);
 
 var error = fit.select(['residuals']).arrayFlatten([['error']]);
