@@ -86,28 +86,10 @@ var segInfoSorted =all.arraySort(sortByThis); // sort the array by magnitude
 var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten([['startYear','endYear','startVal','endVal','mag','dur','rate','dsnr']]); // get the first
 
 // Grabbing all NAIP images with NIR bands within the study area
-var collection1 = ee.ImageCollection('USDA/NAIP/DOQQ')
-  .filter(ee.Filter.listContains('system:band_names', 'N')) 
-  .filterBounds(igdes);
-  collection1 = collection1.map(function(img){
-  var bns = img.bandNames();
-  var bnsL = bns.length();
-  return img.set('bnsL',bnsL)
-});
-
-
-// Sort NAIP Collection within study area by year
-var naip_collect = collection1.sort('system:time_start');  
-naip_collect = naip_collect.select([0,1,2,3]);
+var naip_collect = ee.ImageCollection('USDA/NAIP/DOQQ').select([0,1,2]);
 //print('NAIP Imagery within study area', naip_collect);
 
-var get_projection = ee.Image(naip_collect.first()).select([0]).projection(); //properties(('date_range',[0])); //select([0]).pr('system:time_start'());
 
-//Get the dates of First and Last images
-var start_image = ee.Image(naip_collect.sort('system:time_start',true).first());
-var end_image = ee.Image(naip_collect.sort('system:time_start',false).first());
-var start_date = ee.Date(start_image.get('system:time_start'));
-var end_date = ee.Date(end_image.get('system:time_start'));
 //print('NAIP Start Date Timestamp: ', start_date); 
 //print('NAIP End Date Timestamp: ', end_date); 
 
@@ -144,6 +126,7 @@ map.onClick(function(coords) {
     
 });
 map.style().set({cursor:'crosshair'});
+
 map.addLayer(naip2009, {bands:["R","G","B"]}, 'NAIP (2009)', false);
 map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
 map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
