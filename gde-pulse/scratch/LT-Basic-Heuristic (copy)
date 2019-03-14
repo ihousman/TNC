@@ -142,7 +142,7 @@ map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'E
 // map.addLayer(predicted,{},'Fitted Time Series',false);
 
 map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'RMSE of linear fit between Depth to GW and NDMI',false);
-map.addLayer(r2,{min:0.2,max:0.8,palette:'F00,00F'},'R-squared of linear fit between Depth to GW and NDMI',true);
+map.addLayer(r2,{min:0.2,max:0.8,palette:'ffa500,0F0'},'R-squared of linear fit between Depth to GW and NDMI',true);
 
 
 
