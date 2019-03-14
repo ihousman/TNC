@@ -121,6 +121,62 @@ map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'E
 map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'RMSE of linear fit between Depth to GW and NDMI',false);
 map.addLayer(r2,{min:0.2,max:0.8,palette:'F00,00F'},'R-squared of linear fit between Depth to GW and NDMI',true);
 
+// Grabbing all NAIP images with NIR bands within the study area
+var collection1 = ee.ImageCollection('USDA/NAIP/DOQQ')
+  .filter(ee.Filter.listContains('system:band_names', 'N')) 
+  .filterBounds(igdes);
+  collection1 = collection1.map(function(img){
+  var bns = img.bandNames();
+  var bnsL = bns.length();
+  return img.set('bnsL',bnsL)
+});
+
+
+// Sort NAIP Collection within study area by year
+var naip_collect = collection1.sort('system:time_start');  
+naip_collect = naip_collect.select([0,1,2,3]);
+//print('NAIP Imagery within study area', naip_collect);
+
+var get_projection = ee.Image(naip_collect.first()).select([0]).projection(); //properties(('date_range',[0])); //select([0]).pr('system:time_start'());
+
+//Get the dates of First and Last images
+var start_image = ee.Image(naip_collect.sort('system:time_start',true).first());
+var end_image = ee.Image(naip_collect.sort('system:time_start',false).first());
+var start_date = ee.Date(start_image.get('system:time_start'));
+var end_date = ee.Date(end_image.get('system:time_start'));
+//print('NAIP Start Date Timestamp: ', start_date); 
+//print('NAIP End Date Timestamp: ', end_date); 
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// NAIP Image, bands added create annual mosaics
+var naip2009 = ee.Image(naip_collect.filterDate('2009-01-01','2010-12-31').mosaic()).clip(igdes);
+var naip2014 = ee.Image(naip_collect.filterDate('2014-01-01','2014-12-31').mosaic()).clip(igdes);
+var naip2016 = ee.Image(naip_collect.filterDate('2016-01-01','2016-12-31').mosaic()).clip(igdes);
+
+///////////////////////////
+//Visualize Base Imageries
+////////////////////////////
+
+map.addLayer(naip2009, {bands:["R","G","B"]}, 'NAIP (2009)', false);
+map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
+map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
+
+
+/////////////////////////////////////////////////////////////////
+//Map.addLayer(table,{}, 'iGDE Layer')
+// iGDE_v053: original iGDE database polygons with vegetation and macrovegetation class
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: iGDE_v053, color: 2, width: 1});
+map.addLayer(outline, {palette: '0bbe00'}, "iGDE_polygons_5_03_2018", false)
+
+
+//above dataset subset to grab only those iGDE with well data that meets the following conditions
+//var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
+var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
+map.addLayer(outline, {palette: '0F00FF'}, "iGDE within 1000m well, >5 years well data, larger than 1 landsat pixel", false)
+
+////////////////////////////////////////////////////////
 ui.root.clear();
 // ui.root.add(controlPanel);
 ui.root.add(map);
