@@ -167,8 +167,8 @@ var empty = ee.Image().byte();
 
 //above dataset subset to grab only those iGDE with well data that meets the following conditions
 //var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
-var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
-map.addLayer(outline, {palette: '0F00FF'}, "iGDE within 1000m well, >5 years well data, larger than 1 landsat pixel", false)
+var outline = empty.paint({featureCollection: igdes, color: 3, width: 1});
+map.addLayer(outline, {palette: '0F00FF'}, "iGDEs within 1000m well, >5 years well data, larger than 1 landsat pixel", false)
 
 ////////////////////////////////////////////////////////
 ui.root.clear();
