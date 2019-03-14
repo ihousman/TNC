@@ -163,6 +163,8 @@ map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
 map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
 
 
+var empty = ee.Image().byte();
+
 //above dataset subset to grab only those iGDE with well data that meets the following conditions
 //var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
 var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
