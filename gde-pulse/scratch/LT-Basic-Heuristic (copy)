@@ -84,42 +84,6 @@ var sortByThis = endYear.multiply(-1);
 
 var segInfoSorted =all.arraySort(sortByThis); // sort the array by magnitude
 var distFinal = segInfoSorted.arraySlice(1, 0, 1).arrayProject([0]).arrayFlatten([['startYear','endYear','startVal','endVal','mag','dur','rate','dsnr']]); // get the first
-  
-// Map.addLayer(all) ;
-// Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
-// Map.addLayer(distArray,{},'distarray')
-var plotsPanelLabel = ui.Label('LandTrendr Time Series Plots', {fontWeight: 'bold', stretch: 'horizontal'});
-var plotPanel = ui.Panel(null, null, {stretch: 'horizontal'});
-var plotPanelParent = ui.Panel([plotsPanelLabel, plotPanel], null, {width: '480px'});
-
-var map = ui.Map();
-map.add(ui.Label({
-  value: 'Click a point to plot time series',
-  style: {position: 'top-center'}
-}));
-
-map.onClick(function(coords) {
-  plotPanel = plotPanel.clear();
-  var x = coords.lon;
-  var y = coords.lat;
-  var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'LANDTRENDR Fit',hAxis:{title: 'Year'}});
-  c
-  var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit',hAxis:{title: 'Year'}});
-  // var chart = chartPoint(lt, pixel, name[0], name[1]);
-    plotPanel.add(chart2);
-    plotPanel.add(chart1);
-    
-});
-map.style().set({cursor:'crosshair'});
-
-// map.addLayer(joined,{},'Time Series',false);
-map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'0B0,BBB,B00','bands':'rate'},'Recent Trend',false);
-map.addLayer(distFinal,{min:-0.4,max:0.4,palette:'0B0,BBB,B00','bands':'mag'},'Recent Magnitude',true);
-map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NDMI Value',false);
-// map.addLayer(predicted,{},'Fitted Time Series',false);
-
-map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'RMSE of linear fit between Depth to GW and NDMI',false);
-map.addLayer(r2,{min:0.2,max:0.8,palette:'F00,00F'},'R-squared of linear fit between Depth to GW and NDMI',true);
 
 // Grabbing all NAIP images with NIR bands within the study area
 var collection1 = ee.ImageCollection('USDA/NAIP/DOQQ')
@@ -147,20 +111,58 @@ var end_date = ee.Date(end_image.get('system:time_start'));
 //print('NAIP Start Date Timestamp: ', start_date); 
 //print('NAIP End Date Timestamp: ', end_date); 
 
-/////////////////////////////////////////////////////////////////////////////////////////
-
 // NAIP Image, bands added create annual mosaics
 var naip2009 = ee.Image(naip_collect.filterDate('2009-01-01','2010-12-31').mosaic()).clip(igdes);
 var naip2014 = ee.Image(naip_collect.filterDate('2014-01-01','2014-12-31').mosaic()).clip(igdes);
 var naip2016 = ee.Image(naip_collect.filterDate('2016-01-01','2016-12-31').mosaic()).clip(igdes);
 
-///////////////////////////
-//Visualize Base Imageries
-////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
+// Map.addLayer(all) ;
+// Map.addLayer(segInfoSorted,{},'segInfoSorted',false);
+// Map.addLayer(distArray,{},'distarray')
+var plotsPanelLabel = ui.Label('LandTrendr Time Series Plots', {fontWeight: 'bold', stretch: 'horizontal'});
+var plotPanel = ui.Panel(null, null, {stretch: 'horizontal'});
+var plotPanelParent = ui.Panel([plotsPanelLabel, plotPanel], null, {width: '480px'});
+
+var map = ui.Map();
+map.add(ui.Label({
+  value: 'Click a point to plot time series',
+  style: {position: 'top-center'}
+}));
+
+map.onClick(function(coords) {
+  plotPanel = plotPanel.clear();
+  var x = coords.lon;
+  var y = coords.lat;
+  var chart1 = ui.Chart.image.series(joined, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'LANDTRENDR Fit',hAxis:{title: 'Year'}});
+  c
+  var chart2 = ui.Chart.image.series(predicted, ee.Geometry.Point([x,y]), ee.Reducer.first(), 30).setOptions({title:'Depth to GW Relationship to LANDTRENDR Fit',hAxis:{title: 'Year'}});
+  // var chart = chartPoint(lt, pixel, name[0], name[1]);
+    plotPanel.add(chart2);
+    plotPanel.add(chart1);
+    
+});
+map.style().set({cursor:'crosshair'});
 map.addLayer(naip2009, {bands:["R","G","B"]}, 'NAIP (2009)', false);
 map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
 map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
+
+
+// map.addLayer(joined,{},'Time Series',false);
+map.addLayer(distFinal,{min:-0.05,max:0.05,palette:'0B0,BBB,B00','bands':'rate'},'Recent Trend',false);
+map.addLayer(distFinal,{min:-0.4,max:0.4,palette:'0B0,BBB,B00','bands':'mag'},'Recent Magnitude',true);
+map.addLayer(distFinal,{min:-0.1,max:-0.8,palette:'B00,0B0','bands':'endVal'},'End NDMI Value',false);
+// map.addLayer(predicted,{},'Fitted Time Series',false);
+
+map.addLayer(error.abs(),{min:0,max:10,'palette':'00F,F00'},'RMSE of linear fit between Depth to GW and NDMI',false);
+map.addLayer(r2,{min:0.2,max:0.8,palette:'F00,00F'},'R-squared of linear fit between Depth to GW and NDMI',true);
+
+
+
+///////////////////////////
+//Visualize Base Imageries
+////////////////////////////
 
 
 var empty = ee.Image().byte();
