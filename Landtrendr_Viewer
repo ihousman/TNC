@@ -1,24 +1,71 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var iGDE_v053 = ee.FeatureCollection("projects/igde-work/igde-data/i02_IndicatorsofGDE_Vegetation_v0_5_3_updated_macroclasses"),
     table = ee.FeatureCollection("projects/igde-work/igde-data/iGDEveg053_Landsat_dissolved_join_well_8022018_closest_ecoregion_macro_veg_final"),
-    imageVisParam = {"opacity":1,"bands":["constant"],"palette":["81be0b"]};
+    imageVisParam = {"opacity":1,"bands":["constant"],"palette":["81be0b"]},
+    geometry = /* color: #d63000 */ee.Geometry.Point([-120.91140711272953, 37.198641132170515]);
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
+var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
+var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
+var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
+
+///////////////////////////////////////////////
+// Grabbing all NAIP images with NIR bands within the study area
+var collection1 = ee.ImageCollection('USDA/NAIP/DOQQ')
+  .filter(ee.Filter.listContains('system:band_names', 'N')) 
+  .filterBounds(igdes);
+  collection1 = collection1.map(function(img){
+  var bns = img.bandNames();
+  var bnsL = bns.length();
+  return img.set('bnsL',bnsL)
+});
+
+
+// Sort NAIP Collection within study area by year
+var naip_collect = collection1.sort('system:time_start');  
+naip_collect = naip_collect.select([0,1,2,3]);
+//print('NAIP Imagery within study area', naip_collect);
+
+var get_projection = ee.Image(naip_collect.first()).select([0]).projection(); //properties(('date_range',[0])); //select([0]).pr('system:time_start'());
+
+//Get the dates of First and Last images
+var start_image = ee.Image(naip_collect.sort('system:time_start',true).first());
+var end_image = ee.Image(naip_collect.sort('system:time_start',false).first());
+var start_date = ee.Date(start_image.get('system:time_start'));
+var end_date = ee.Date(end_image.get('system:time_start'));
+//print('NAIP Start Date Timestamp: ', start_date); 
+//print('NAIP End Date Timestamp: ', end_date); 
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// NAIP Image, bands added create annual mosaics
+var naip2009 = ee.Image(naip_collect.filterDate('2009-01-01','2010-12-31').mosaic()).clip(igdes);
+var naip2014 = ee.Image(naip_collect.filterDate('2014-01-01','2014-12-31').mosaic()).clip(igdes);
+var naip2016 = ee.Image(naip_collect.filterDate('2016-01-01','2016-12-31').mosaic()).clip(igdes);
+
+///////////////////////////
+//Visualize Base Imageries
+////////////////////////////
+
+Map.addLayer(naip2009, {bands:["R","G","B"]}, 'NAIP (2009)', false);
+Map.addLayer(naip2014, {bands:["R","G","B"]}, 'NAIP (2014)', false);
+Map.addLayer(naip2016, {bands:["R","G","B"]}, 'NAIP (2016)', false);
+
+
+/////////////////////////////////////////////////////////////////
 //Map.addLayer(table,{}, 'iGDE Layer')
 // iGDE_v053: original iGDE database polygons with vegetation and macrovegetation class
 var empty = ee.Image().byte();
 var outline = empty.paint({featureCollection: iGDE_v053, color: 2, width: 1});
 Map.addLayer(outline, {palette: '0bbe00'}, "iGDE_polygons_5_03_2018", false)
 
-var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
-var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
-
-var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
 //above dataset subset to grab only those iGDE with well data that meets the following conditions
 //var outline = empty.paint({featureCollection: iGDE_landsat1000m_subset, color: 2, width: 3});
 var outline = empty.paint({featureCollection: igdes, color: 3, width: 3});
 Map.addLayer(outline, {palette: '0F00FF'}, "iGDE within 1000m well, >5 years well data, larger than 1 landsat pixel", false)
 
+////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 var years = ee.List.sequence(1985,2018).getInfo();
 // var fields = years.map(function(yr){return 'Depth'+yr.toString()});
