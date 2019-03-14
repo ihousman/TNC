@@ -123,6 +123,7 @@ map.onClick(function(coords) {
   // var chart = chartPoint(lt, pixel, name[0], name[1]);
     plotPanel.add(chart2);
     plotPanel.add(chart1);
+    plotPanel.add('1,2,3')
     
 });
 map.style().set({cursor:'crosshair'});
