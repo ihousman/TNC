@@ -1,6 +1,7 @@
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 
 var selectFields = ee.List.sequence(1985,2018).getInfo().map(function(i){return 'Depth'+ i.toString()});
+var allIDs = ee.Dictionary(igdes.aggregate_histogram('POLYGON_ID')).keys();
 
 print('Total igdes:',igdes.size());
 
