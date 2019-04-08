@@ -1,7 +1,15 @@
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
+print(igdes.first())
 
+igdes = igdes.map(function(i){
+  var i = ee.Feature(i)
+  var lat = i.get('LATITUDE');
+  var lng = i.get('LONGITUDE');
+  return i.set('latLng',ee.String(lat).cat(ee.String(lng)))
+})
+print(igdes.first())
 var selectFields = ee.List.sequence(1985,2018).getInfo().map(function(i){return 'Depth'+ i.toString()});
-var allIDs = ee.Dictionary(igdes.aggregate_histogram('POLYGON_ID')).keys();
+var allIDs = ee.Dictionary(igdes.aggregate_histogram('latLng')).keys();
 
 print('Total igdes:',igdes.size());
 print('Total unique POLYGON_IDs:',allIDs.size());
