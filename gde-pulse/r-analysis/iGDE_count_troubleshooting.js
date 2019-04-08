@@ -4,7 +4,7 @@ var selectFields = ee.List.sequence(1985,2018).getInfo().map(function(i){return 
 var allIDs = ee.Dictionary(igdes.aggregate_histogram('POLYGON_ID')).keys();
 
 print('Total igdes:',igdes.size());
-
+print('Total unique POLYGON_IDs:',allIDs.size());
 //Filter out no data values for each year to only retain igdes with obs for each year
 var out = selectFields.map(function(i){
   var t = igdes.filter(ee.Filter.neq(i,-999));
@@ -22,4 +22,4 @@ var badIds = allIDs.map(function(i){
   return ee.List([i,isGood]);
 });
 
-print(badIds.slice(0,5))
+print(badIds)
