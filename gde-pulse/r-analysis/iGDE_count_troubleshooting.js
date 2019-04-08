@@ -22,4 +22,3 @@ var badIds = allIDs.map(function(i){
   return ee.List([i,isGood]);
 });
 
-print(badIds)
