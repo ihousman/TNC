@@ -14,4 +14,12 @@ out = ee.FeatureCollection(out).flatten();
 
 //Find the count of unique polygons that ever had DGW
 var hist = ee.Dictionary(out.aggregate_histogram('POLYGON_ID'));
+var idsWithValues = hist.keys();
 print('Total igdes that ever had data',hist.keys().length());
+
+var badIds = allIDs.map(function(i){
+  var isGood = idsWithValues.indexOf(i);
+  return ee.List([i,isGood]);
+});
+
+print(badIds.slice(0,5))
