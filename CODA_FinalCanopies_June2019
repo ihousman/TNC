@@ -1,0 +1,171 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var image13 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Los-Angeles--Long-Beach--Anaheim--CA"),
+    image14 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Riverside--San-Bernardino--CA"),
+    image16 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Portland--OR--WA"),
+    image15 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Sacramento--CA"),
+    image17 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_San-Diego--CA"),
+    image18 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_San-Francisco--Oakland--CA"),
+    image19 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_San-Jose--CA"),
+    image20 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Seattle--WA"),
+    image21 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Concord--CA"),
+    image = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Asheville--NC"),
+    image2 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Birmingham--AL"),
+    image3 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Chattanooga--TN--GA"),
+    image4 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Cincinnati--OH--KY--IN"),
+    image5 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Harrisburg--PA"),
+    image6 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Huntsville--AL"),
+    image7 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Knoxville--TN"),
+    image8 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Louisville--KY--IN"),
+    image9 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Memphis--TN--MS--AR"),
+    image10 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Nashville-Davidson--TN"),
+    naip_collection = ee.ImageCollection("USDA/NAIP/DOQQ"),
+    table = ee.FeatureCollection("users/Shree1175/MSA_UrbanCities_USA2018_biome2"),
+    image11 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Concord--CA"),
+    image12 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Concord--CA"),
+    image22 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Akron--OH"),
+    image23 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Buffalo--NY"),
+    image24 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Cleveland--OH"),
+    image25 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Columbus--OH"),
+    image26 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Dayton--OH"),
+    image27 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Flint--MI"),
+    image28 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Grand-Rapids--MI"),
+    image29 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Indianapolis--IN"),
+    image30 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Milwaukee--WI"),
+    image31 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Minneapolis"),
+    image32 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Rochester--NY"),
+    image33 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Syracuse--NY"),
+    image34 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Toledo"),
+    image35 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Youngstown"),
+    viz_canopy = {"opacity":1,"bands":["classification"],"palette":["4dbc15"]},
+    image36 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Allentown--PA--NJ"),
+    image37 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Bridgeport--Stamford--CT--NY"),
+    image38 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Lancaster--PA"),
+    image39 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Philadelphia--PA--NJ--DE--MD"),
+    image40 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Poughkeepsie--Newburgh--NY--NJ");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+
+//var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCanopy');
+//Map.addLayer(c)
+
+
+var cities = ee.FeatureCollection('users/Shree1175/MSA_UrbanCities_USA2018_biome2')
+var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,8,12,31]));
+var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
+print('Urban Canopy mapped for following cities', city_list)
+Map.centerObject(sa, 10);
+//var cityNames = ee.Dictionary(sa.aggregate_histogram('Name')).keys().getInfo();
+
+
+
+/////////////////////////////////////////
+//Select NAIP imagery
+/////////////////////////////////////////
+
+//Map.setCenter(-104.911966,39.799758);
+var collection1 = ee.ImageCollection(naip_collection)
+  .filter(ee.Filter.listContains('system:band_names', 'N')) 
+  .filterBounds(sa);
+  collection1 = collection1.map(function(img){
+  var bns = img.bandNames();
+  var bnsL = bns.length();
+  return img.set('bnsL',bnsL)
+});
+
+
+// Sort NAIP Collection within study area by year
+var naip_collect = collection1.sort('system:time_start');  
+naip_collect = naip_collect.select([0,1,2,3]);
+//print('NAIP Imagery within study area', naip_collect);
+
+var proj = ee.Image(naip_collect.first()).select([0]).projection()
+var naip2016 = ee.Image(naip_collect.filterDate('2014-01-01','2016-12-31').mosaic());
+print('NAIP 2016', naip2016)
+
+var naip2010 = ee.Image(naip_collect.filterDate('2009-01-01','2010-12-31').mosaic());
+print('NAIP 2010', naip2010)
+
+////////////////////////////////
+//view training data on NAIP 
+////////////////////////////////
+
+Map.addLayer(naip2016, {'bands': ['R', 'G', 'B']}, 'naip 2016');
+Map.addLayer(naip2010, {'bands': ['R', 'G', 'B']}, 'naip 2010', false);
+
+//image13 - 21 zone12 - western Biome 
+
+Map.addLayer(image13,viz_canopy,'LosAngles_canopy', true)
+Map.addLayer(image14,viz_canopy, 'Riverside_canopy', false)
+Map.addLayer(image15,viz_canopy, 'Portland_canopy', false)
+Map.addLayer(image16,viz_canopy, 'Sacramento_canopy', true)
+Map.addLayer(image17,viz_canopy, 'SanDiego_canopy', false)
+Map.addLayer(image18,viz_canopy, 'SanFrancisco_canopy', false)
+Map.addLayer(image19,viz_canopy, 'SanJose_canopy', false)
+Map.addLayer(image20,viz_canopy, 'Seattle_canopy', false)
+Map.addLayer(image21,viz_canopy, 'Concord_canopy', false)
+
+//image 1 - 10 : Zone 1 Temperate Broadleaf Mid Forest
+Map.addLayer(image,viz_canopy, 'Ashville_canopy', false)
+Map.addLayer(image2,viz_canopy, 'Birmingham_canopy', false)
+Map.addLayer(image3, viz_canopy, 'Chattanooga_canopy', true)
+Map.addLayer(image4,viz_canopy, 'Cincinnati_canopy', false)
+Map.addLayer(image5,viz_canopy, 'Harrisburg_canopy', false)
+Map.addLayer(image6,viz_canopy, 'Huntsville_canopy', false)
+Map.addLayer(image7,viz_canopy, 'Knoxville_canopy', false)
+Map.addLayer(image8,viz_canopy, 'Louisville_canopy', true)
+Map.addLayer(image9,viz_canopy, 'Memphis_canopy', false)
+Map.addLayer(image10,viz_canopy, 'Nashville_canopy', false)
+//Map.addLayer(image33,viz_canopy, 'Pittsburgh_canopy', false)
+
+
+//image22 - 35 : Zone 2 Temperate Broadleaf Mid Forest
+Map.addLayer(image22,viz_canopy, 'Akron_canopy', false)
+Map.addLayer(image23,viz_canopy, 'Buffalo_canopy', false)
+Map.addLayer(image24, viz_canopy, 'Cleveland_canopy', true)
+Map.addLayer(image25,viz_canopy, 'Columbus_canopy', false)
+Map.addLayer(image26,viz_canopy, 'Dayton_canopy', false)
+Map.addLayer(image27,viz_canopy, 'Flint_canopy', false)
+Map.addLayer(image28,viz_canopy, 'Grand Rapids_canopy', false)
+Map.addLayer(image29,viz_canopy, 'Indianpolis_canopy', true)
+Map.addLayer(image30,viz_canopy, 'Milwuakee_canopy', false)
+Map.addLayer(image31,viz_canopy, 'Minneapolis_canopy', false)
+Map.addLayer(image32,viz_canopy, 'Rochester_canopy', false)
+Map.addLayer(image33,viz_canopy, 'Syracuse_Canopy', false)
+Map.addLayer(image34,viz_canopy, 'Toledo_canopy', false)
+Map.addLayer(image35,viz_canopy, 'Youngstown_canopy', false)
+
+//image36 - 40 : Zone 3 Temperate MIxed Broadleaf Northeast Forest
+Map.addLayer(image36,viz_canopy, 'Allentown_canopy', false)
+Map.addLayer(image37,viz_canopy, 'Bridgeport_canopy', false)
+Map.addLayer(image38, viz_canopy, 'Lancaster_canopy', true)
+Map.addLayer(image39,viz_canopy, 'Philadelphia_canopy', true)
+Map.addLayer(image40,viz_canopy, 'Poughkeepsie_canopy', false)
+//Map.addLayer(image25,viz_canopy, 'NewYork_canopy', false)
+
+/*
+//image36 - 40 : Zone 31 Temperate Mixed Broadleaf Upper Northeast Forest
+Map.addLayer(image36,viz_canopy, 'Albany_canopy', false)
+Map.addLayer(image37,viz_canopy, 'Barnstable_canopy', false)
+Map.addLayer(image38, viz_canopy, 'Boston_canopy', true)
+Map.addLayer(image25,viz_canopy, 'Hartford_canopy', false)
+Map.addLayer(image39,viz_canopy, 'New Haven_canopy', true)
+Map.addLayer(image40,viz_canopy, 'Providence_canopy', false)
+Map.addLayer(image40,viz_canopy, 'Springfield_canopy', false)
+Map.addLayer(image40,viz_canopy, 'Worcester_canopy', false)
+
+//canopy zone4
+Map.addLayer(image,viz_canopy, 'Austin_canopy', false)
+Map.addLayer(image2,viz_canopy, 'Chicago_canopy', true)
+Map.addLayer(image3,viz_canopy, 'Dallas_canopy', false)
+Map.addLayer(image4,viz_canopy, 'Denver_canopy', false)
+Map.addLayer(image5,viz_canopy, 'DesMoines_canopy', false)
+Map.addLayer(image6,viz_canopy, 'Houston_canopy', false)
+Map.addLayer(image7,viz_canopy, 'Kansas_canopy', false)
+Map.addLayer(image8,viz_canopy, 'Oklahama_canopy', false)
+Map.addLayer(image9,viz_canopy, 'Omaha_canopy', false)
+Map.addLayer(image10,viz_canopy, 'SanAntonio_canopy', false)
+Map.addLayer(image11,viz_canopy, 'StLouis_canopy', false)
+Map.addLayer(image12,viz_canopy, 'Tulsa_canopy', false)
+Map.addLayer(image13,viz_canopy, 'Wichita_canopy', true)
+*/
+
+Map.addLayer(sa, {}, 'Cities mapped')
