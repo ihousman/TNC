@@ -41,18 +41,20 @@ var image13 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Los
     image37 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Bridgeport--Stamford--CT--NY"),
     image38 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Lancaster--PA"),
     image39 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Philadelphia--PA--NJ--DE--MD"),
-    image40 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Poughkeepsie--Newburgh--NY--NJ");
+    image40 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Poughkeepsie--Newburgh--NY--NJ"),
+    imageCollection = ee.ImageCollection("users/Shree1175/CODA_Canopy/FinalCollection"),
+    city_bnd = {"opacity":1,"bands":["constant"],"palette":["be1c0b"]};
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 
-//var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCanopy');
-//Map.addLayer(c)
+var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection');
 
 
-var cities = ee.FeatureCollection('users/Shree1175/MSA_UrbanCities_USA2018_biome2')
+var cities = ee.FeatureCollection('users/Shree1175/CODA_Canopy/MSA_UrbanCities_USA2018_biome2')
 var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,8,12,31]));
 var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
 print('Urban Canopy mapped for following cities', city_list)
-Map.centerObject(sa, 10);
+
+//Map.centerObject(sa, 10);
 //var cityNames = ee.Dictionary(sa.aggregate_histogram('Name')).keys().getInfo();
 
 
@@ -91,6 +93,26 @@ print('NAIP 2010', naip2010)
 Map.addLayer(naip2016, {'bands': ['R', 'G', 'B']}, 'naip 2016');
 Map.addLayer(naip2010, {'bands': ['R', 'G', 'B']}, 'naip 2010', false);
 
+Map.addLayer(c, viz_canopy, 'Urban Canopies Mapped within US')
+//Zoom into the study area
+Map.centerObject(sa, 5);
+//load all the updated assests Aug 2018
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: sa, color: 2, width: 1});
+Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
+
+
+
+/*
+
+from geeViz.getImagesLib 
+pip install geeViz;
+import *
+Map.addLayer(ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection',{'min':1,'max':1,'palette':'0F0'},'Trees')
+Map.view()
+
+
+/*
 //image13 - 21 zone12 - western Biome 
 
 Map.addLayer(image13,viz_canopy,'LosAngles_canopy', true)
@@ -168,4 +190,3 @@ Map.addLayer(image12,viz_canopy, 'Tulsa_canopy', false)
 Map.addLayer(image13,viz_canopy, 'Wichita_canopy', true)
 */
 
-Map.addLayer(sa, {}, 'Cities mapped')
