@@ -101,6 +101,17 @@ var empty = ee.Image().byte();
 var outline = empty.paint({featureCollection: sa, color: 2, width: 1});
 Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
 
+/*
+//Zonal Summary
+var Table_v1 = ImageStack_NDVI.reduceRegions({
+  //collection:feature2,
+  collection:igde_v1, 
+  reducer: ee.Reducer.mean().combine({
+    reducer2: ee.Reducer.stdDev(), 
+    sharedInputs: true}), 
+  scale: 2,
+});
+
 
 
 /*
