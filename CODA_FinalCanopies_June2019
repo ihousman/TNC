@@ -110,19 +110,21 @@ var outline = empty.paint({featureCollection: blocks_msa, color: 1, width: 1});
 Map.addLayer(outline,block_viz, 'census blocks')
 
 //print(blocks_msa.limit(5))
+var mosaic_canopy=c.mosaic()
+Map.addLayer(mosaic_canopy)
 
-var results = c.map(function(image) {
+//create mean canopy raster - within each city boundary
+//Create mean canoy raster - by census block using blocks_msa
+//var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
+var results = mosaic_canopy.map(function(image) {
   return image.reduceRegions({
     collection: sa,
     reducer: ee.Reducer.mean(),
     scale: 2
-  }).map(function(f) {
-    // Add a date property to each output feature.
-    return f //.set('date', image.date().format("YYYY-MM-dd"))
   })
 })
 
-print(ee.FeatureCollection(results).flatten())
+//print(ee.FeatureCollection(results).flatten())
 Map.addLayer(results)
 
 /*
