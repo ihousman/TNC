@@ -44,7 +44,7 @@ var image13 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Los
     imageCollection = ee.ImageCollection("users/Shree1175/CODA_Canopy/FinalCollection"),
     city_bnd = {"opacity":1,"bands":["constant"],"palette":["be1c0b"]},
     tiger = ee.FeatureCollection("TIGER/2010/Blocks"),
-    block_viz = {"opacity":1,"bands":["constant"],"palette":["c4c4c4"]},
+    block_bnd = {"opacity":1,"bands":["constant"],"palette":["c4c4c4"]},
     table2 = ee.FeatureCollection("users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome2");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 
@@ -107,7 +107,7 @@ Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
 
 var empty = ee.Image().byte();
 var outline = empty.paint({featureCollection: blocks_msa, color: 1, width: 1});
-Map.addLayer(outline,block_viz, 'census blocks')
+Map.addLayer(outline,block_bnd, 'census blocks')
 
 //print(blocks_msa.limit(5))
 var mosaic_canopy=c.mosaic()
