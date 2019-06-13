@@ -43,7 +43,9 @@ var image13 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Los
     image39 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Philadelphia--PA--NJ--DE--MD"),
     image40 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Poughkeepsie--Newburgh--NY--NJ"),
     imageCollection = ee.ImageCollection("users/Shree1175/CODA_Canopy/FinalCollection"),
-    city_bnd = {"opacity":1,"bands":["constant"],"palette":["be1c0b"]};
+    city_bnd = {"opacity":1,"bands":["constant"],"palette":["be1c0b"]},
+    tiger = ee.FeatureCollection("TIGER/2010/Blocks"),
+    block_viz = {"opacity":1,"bands":["constant"],"palette":["c4c4c4"]};
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 
 var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection');
@@ -54,6 +56,8 @@ var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,8,12,31]));
 var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
 print('Urban Canopy mapped for following cities', city_list)
 
+var blocks_msa =ee.FeatureCollection(tiger).filterBounds(sa);
+//Map.addLayer(blocks_msa, {}, 'block')
 //Map.centerObject(sa, 10);
 //var cityNames = ee.Dictionary(sa.aggregate_histogram('Name')).keys().getInfo();
 
@@ -98,23 +102,34 @@ Map.addLayer(c, viz_canopy, 'Urban Canopies Mapped within US')
 Map.centerObject(sa, 5);
 //load all the updated assests Aug 2018
 var empty = ee.Image().byte();
-var outline = empty.paint({featureCollection: sa, color: 2, width: 1});
+var outline = empty.paint({featureCollection: sa, color: 2, width: 2});
 Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
 
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: blocks_msa, color: 1, width: 1});
+Map.addLayer(outline,block_viz, 'census blocks')
 
+//print(blocks_msa.limit(5))
 
-/*
-from geeViz.getImagesLib 
+var results = c.map(function(image) {
+  return image.reduceRegions({
+    collection: sa,
+    reducer: ee.Reducer.mean(),
+    scale: 2
+  }).map(function(f) {
+    // Add a date property to each output feature.
+    return f //.set('date', image.date().format("YYYY-MM-dd"))
+  })
+})
 
-import *
-Map.addLayer(ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection',{'min':1,'max':1,'palette':'0F0'},'Trees')
-Map.view()
+print(ee.FeatureCollection(results).flatten())
+Map.addLayer(results)
 
 /*
 //Zonal Summary
-var Table_v1 = ImageStack_NDVI.reduceRegions({
+var Table_v1 = c.reduceRegions({
   //collection:feature2,
-  collection:igde_v1, 
+  collection:sa.select('Name'), 
   reducer: ee.Reducer.mean().combine({
     reducer2: ee.Reducer.stdDev(), 
     sharedInputs: true}), 
