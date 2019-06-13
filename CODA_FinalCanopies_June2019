@@ -49,7 +49,7 @@ var image13 = ee.Image("users/Shree1175/CODA_Canopy/FinalCanopy/nowak_canopy_Los
 var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection');
 
 
-var cities = ee.FeatureCollection('users/Shree1175/CODA_Canopy/MSA_UrbanCities_USA2018_biome2')
+var cities = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome2')
 var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,8,12,31]));
 var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
 print('Urban Canopy mapped for following cities', city_list)
