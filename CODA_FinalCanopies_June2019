@@ -94,7 +94,7 @@ print('NAIP 2010', naip2010)
 //view training data on NAIP 
 ////////////////////////////////
 
-Map.addLayer(naip2016, {'bands': ['R', 'G', 'B']}, 'naip 2016');
+Map.addLayer(naip2016, {'bands': ['R', 'G', 'B'], 'opacity': 0.7}, 'naip 2016');
 Map.addLayer(naip2010, {'bands': ['R', 'G', 'B']}, 'naip 2010', false);
 
 Map.addLayer(c, viz_canopy, 'Urban Canopies Mapped within US')
