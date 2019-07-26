@@ -1,0 +1,32 @@
+var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
+
+
+var whichIndex = 'NBR';
+
+var lt = ee.Image(ee.ImageCollection('projects/LCMS/LT')
+        .filter(ee.Filter.eq('version','2019.07.10'))
+        .filter(ee.Filter.stringContains('system:index',whichIndex))
+         .first());
+
+var ltYrs = lt.select(['doy.*']);
+var ltFit = lt.select(['ftv.*']).multiply(0.001);
+
+var ltYrsBnsIn = ltYrs.bandNames();
+var ltYrsBnsOut = ltYrsBnsIn.map(function(bn){return ee.String('yrs').cat(ee.String(bn).slice(3,null))});
+
+var ltYrsFitIn = ltFit.bandNames();
+var ltYrsFitOut = ltYrsFitIn.map(function(bn){return ee.String('fit').cat(ee.String(bn).slice(3,null))});
+
+print(ltYrsBnsOut,ltYrsFitOut);
+lt = ltYrs.rename(ltYrsBnsOut).addBands(ltFit.rename(ltYrsFitOut));
+
+// Map.addLayer(lt)
+var out = dLib.convertToLossGain(lt, 'vertStack');
+var loss = out.lossStack;
+var gain = out.gainStack;
+
+var lossYr = loss.select([0]);
+var gainYr = gain.select([0]);
+
+Map.addLayer(lossYr,{min:1985,max:2018,palette:'FF0,F00'},'Loss Year');
+
