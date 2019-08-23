@@ -159,10 +159,11 @@ var scale = 1;
 function summarizeAreas(areas,image){
   Map.addLayer(areas);
   Map.addLayer(image);
-  var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), null, crs, transform, 1) 
-  ee.Reducer.fixedHistogram(0, 2, 2), region, scale,'EPSG:5070',null,true,1e13
+  var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, null, 1) ;
+  
+  print(stats)
 }
 
 
-summarizeAreas(sa,mosaic_canopy.unmask())
+summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
