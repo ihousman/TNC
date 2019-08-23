@@ -158,13 +158,13 @@ var scale = 1;
 
 function summarizeAreas(areas,image,scale,propertyName){
   var props = ee.Feature(areas.first()).propertyNames();
-  print(props)
+  print(props);
   Map.addLayer(areas);
   Map.addLayer(image);
   var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, null, 1) ;
   stats = stats.map(function(f){
     var hist = f.get('histogram');
-    f  = f.select(props)
+    f  = f.select(props);
     return f.set(propertyName,hist)});
   print(stats)
 }
