@@ -97,14 +97,14 @@ var zn12 = cities.filter(ee.Filter.inList('zone',[12]));
 var city_list = ee.Dictionary(zn12.aggregate_histogram('Name'))
 var blocks12 =blocks.filterBounds(zn12);
 
-print(blocks12.limit(5), 'Load Census block for western biome(12)')
-print('Summarize Temperature and Block level canopy for following cities', city_list)
+// print(blocks12.limit(5), 'Load Census block for western biome(12)')
+// print('Summarize Temperature and Block level canopy for following cities', city_list)
 
 ///////////////////////////////////////////////////////
 //load landsat L8 for surface temperature withn zone 12 
 ///////////////////////////////////////////////////////
 
-print('Filter Landsat 8 surface temperate for cities withn zone 12')
+// print('Filter Landsat 8 surface temperate for cities withn zone 12')
 ///Module imports
 var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 
@@ -112,12 +112,12 @@ var startYear = 2010;
 var endYear = 2019;
 
 
-var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1);
-var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1);
+var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
+var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
 var ls = getImagesLib.getProcessedLandsatScenes(zn12,startYear,endYear,startJulian,endJulian).select(['temp']).median();
 var ls_msa =  ls.clip(zn12)
 
-Map.addLayer(ls_msa,{min:280,max:330,palette:'00F,888,F00'});
+// Map.addLayer(ls_msa,{min:280,max:330,palette:'00F,888,F00'});
 
 
 ///////////////////////////////////////////////////////////////
@@ -131,10 +131,10 @@ var canopy12 =mosaic_canopy.clip(zn12)
 var empty = ee.Image().byte();
 var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
-Map.addLayer(canopy12, canopyviz, 'Canopy wihtin zone12', false)
-Map.addLayer(outline,{palette: 'c4c4c4'}, 'census blocks within Western Biome')
+// Map.addLayer(canopy12, canopyviz, 'Canopy wihtin zone12', false)
+// Map.addLayer(outline,{palette: 'c4c4c4'}, 'census blocks within Western Biome')
 
-print(blocks12.limit(5))
+// print(blocks12.limit(5))
 
 //////////////////////////////////////////////////////////////////////////////////
 // Create Map and zonal summary of Tree NonTree pixles by Block10 id for all cities withn Western Biome
@@ -153,5 +153,5 @@ function summarizeArea(area,c){
   
 }
 
- summarizeArea(area,c)
+ summarizeArea(sa,c)
 
