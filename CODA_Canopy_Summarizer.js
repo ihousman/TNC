@@ -37,8 +37,9 @@ print(c)
 var c_unmask = c.map(function(img){return img.unmask()});
 var proj = ee.Image(c_unmask.first()).projection()
 var scale = proj.nominalScale();
+var transform = proj.transform()
 var crs = proj.crs();
-print(scale,crs);
+print(scale,crs,transform);
 var footprints = c.geometry();
 //print(footprints);
 
@@ -158,10 +159,10 @@ var scale = 1;
 function summarizeAreas(areas,image){
   Map.addLayer(areas);
   Map.addLayer(image);
-  var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, crsTransform, tileScale) 
+  var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), null, crs, transform, 1) 
   ee.Reducer.fixedHistogram(0, 2, 2), region, scale,'EPSG:5070',null,true,1e13
 }
 
-mosaic_canopy
- summarizeAreas(sa,mosaic_canopy.unmask())
+
+summarizeAreas(sa,mosaic_canopy.unmask())
 
