@@ -150,6 +150,7 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 
 function summarizeAreas(areas,image){
+  Map.addLayer(areas);
   var stats = image.reduceRegions(areas) 
 }
 
