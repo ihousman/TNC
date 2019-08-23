@@ -9,7 +9,7 @@ var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2
 var cities =ee.FeatureCollection(table)
 
 //check the column attributes
-print(cities.limit(10), 'Load Cities shapefile')
+// print(cities.limit(10), 'Load Cities shapefile')
 //Name = City Name, Zone = zone no., zone Name 
 
 //////////////////////////////////////////////////////
@@ -149,9 +149,9 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 //Create Mean Annual Temperature by block
 
 
-function summarizeArea(area,c){
-  
+function summarizeAreas(areas,image){
+  var stats = image.reduceRegions(areas) 
 }
 
- summarizeArea(sa,c)
+ summarizeAreas(sa,mosaic_canopy)
 
