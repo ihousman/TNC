@@ -149,6 +149,9 @@ print(cities)
 //Create Mean Annual Temperature by block
 
 
+function summarizeArea(area){
+  
+}
 
 
 
