@@ -156,12 +156,13 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 var scale = 1;
 
-function summarizeAreas(areas,image,scale,propertyName){
+function summarizeAreas(areas,image,scale,propertyNameOut){
   var props = ee.Feature(areas.first()).propertyNames();
   print(props);
   Map.addLayer(areas);
   Map.addLayer(image);
   var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, null, 1) ;
+  var propsNew = ee.Feature(stats.first()).propertyNames();
   stats = stats.map(function(f){
     var hist = f.get('histogram');
     f  = f.select(props);
@@ -171,6 +172,6 @@ function summarizeAreas(areas,image,scale,propertyName){
 
 
 blocks12 = summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'canopyHist');
-blocks12 = summarizeAreas(blocks12,ls,2,'canopyHist');
+blocks12 = summarizeAreas(blocks12,ls,30,'canopyHist');
 // summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
