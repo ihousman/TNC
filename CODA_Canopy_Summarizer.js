@@ -166,10 +166,11 @@ function summarizeAreas(areas,image,scale,propertyName){
     var hist = f.get('histogram');
     f  = f.select(props);
     return f.set(propertyName,hist)});
-  print(stats)
+  return stats
 }
 
 
-summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'test')
+blocks12 = summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'canopyHist');
+blocks12 = summarizeAreas(blocks12,ls,2,'canopyHist');
 // summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
