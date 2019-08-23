@@ -6,6 +6,7 @@ var table = ee.FeatureCollection("users/Shree1175/CODA_assets/MSA_UrbanCities_US
 //////////////////////////////////////////////////////////////////////////////
 
 var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
+
 var cities =ee.FeatureCollection(table)
 
 //check the column attributes
@@ -32,8 +33,12 @@ var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,5,10,12,13,19,31]));
 /////////////////////////////////////////////////////////////////////////////////
 
 var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection');
+print(c)
 var c_unmask = c.map(function(img){return img.unmask()});
-var scale = ee.Image(c_unmask.first()).projection().nominalScale();
+var proj = ee.Image(c_unmask.first()).projection()
+var scale = proj.nominalScale();
+var crs = proj.crs();
+print(scale,crs);
 var footprints = c.geometry();
 //print(footprints);
 
@@ -148,12 +153,15 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 //Create Mean Annual Temperature by block
 
+var scale = 1;
 
 function summarizeAreas(areas,image){
   Map.addLayer(areas);
   Map.addLayer(image);
-  var stats = image.reduceRegions(areas) 
+  var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, crsTransform, tileScale) 
+  ee.Reducer.fixedHistogram(0, 2, 2), region, scale,'EPSG:5070',null,true,1e13
 }
 
- summarizeAreas(sa,mosaic_canopy)
+mosaic_canopy
+ summarizeAreas(sa,mosaic_canopy.unmask())
 
