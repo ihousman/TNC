@@ -175,5 +175,5 @@ blocks12 = summarizeAreas(blocks12.limit(10),mosaic_canopy.unmask(),2,'canopyHis
 blocks12 = summarizeAreas(blocks12,ls,30,'meanTemp',ee.Reducer.mean());
 
 // Map.addLayer(stats)
-// // print(stats);
+print(blocks12)
 Export.table.toAsset(blocks12, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
