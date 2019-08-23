@@ -162,10 +162,7 @@ function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
   Map.addLayer(areas);
   Map.addLayer(image);
   var stats = image.reduceRegions(areas, reducer, scale, crs, null, 1) ;
-  var propsNew = ee.Feature(stats.first()).propertyNames();
-  
-  var statProp = propsNew.filter(ee.Filter.inList(null, props));
-  print('s[statProp)
+ 
   stats = stats.map(function(f){
     var hist = f.get('histogram');
     f  = f.select(props);
