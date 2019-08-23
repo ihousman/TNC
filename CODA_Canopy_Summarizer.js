@@ -156,7 +156,7 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 var scale = 1;
 
-function summarizeAreas(areas,image){
+function summarizeAreas(areas,image,scale){
   Map.addLayer(areas);
   Map.addLayer(image);
   var stats = image.reduceRegions(areas, ee.Reducer.fixedHistogram(0, 2, 2), scale, crs, null, 1) ;
@@ -165,6 +165,6 @@ function summarizeAreas(areas,image){
 }
 
 
-summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask())
+summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2)
 // summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
