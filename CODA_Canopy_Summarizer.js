@@ -171,8 +171,8 @@ function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
 }
 
 
-blocks12 = summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
+blocks12 = summarizeAreas(blocks12.limit(100),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
 blocks12 = summarizeAreas(blocks12,ls,30,'canopyHist',ee.Reducer.mean());
-print(blocks12)
+
 // summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
