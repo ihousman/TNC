@@ -165,5 +165,6 @@ function summarizeAreas(areas,image){
 }
 
 
-summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
+summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask())
+// summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
