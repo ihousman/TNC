@@ -18,14 +18,14 @@ print(cities.limit(10), 'Load Cities shapefile')
 ///////////////////////////////////////////////////////
 
 var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,5,10,12,13,19,31]));
-var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
-print('Urban Canopy mapped for following cities', city_list)
+// var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
+// print('Urban Canopy mapped for following cities', city_list)
 
-var zone_list = ee.Dictionary(sa.aggregate_histogram('zone'))
-print('Urban Canopy mapped in following zones', zone_list)
+// var zone_list = ee.Dictionary(sa.aggregate_histogram('zone'))
+// print('Urban Canopy mapped in following zones', zone_list)
 
-var zone_names = ee.Dictionary(sa.aggregate_histogram('zone_names'))
-print('Zone Names', zone_names)
+// var zone_names = ee.Dictionary(sa.aggregate_histogram('zone_names'))
+// print('Zone Names', zone_names)
 
 /////////////////////////////////////////////////////////////////////////////////
 //Load the final collection with Canopy mapped from NAIP2016 to show on the viewer
@@ -141,17 +141,17 @@ print(blocks12.limit(5))
 /////////////////////////////////////////////////////////////////////////////////
 
 //new collection with only canopy for zone 12
-var cities =ee.Dictionary(c.aggregate_histogram('system:index')).keys()//.map(function(s){return ee.String(s).split('nowak_canopy_').get(1)})
-print(cities)
+// var cities =ee.Dictionary(c.aggregate_histogram('system:index')).keys()//.map(function(s){return ee.String(s).split('nowak_canopy_').get(1)})
+// print(cities)
 
 //function to create block level summarries 
 
 //Create Mean Annual Temperature by block
 
 
-function summarizeArea(area){
+function summarizeArea(area,c){
   
 }
 
-
+ summarizeArea(area,c)
 
