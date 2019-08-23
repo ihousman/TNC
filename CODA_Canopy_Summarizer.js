@@ -172,7 +172,7 @@ function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
 
 
 blocks12 = summarizeAreas(blocks12.limit(100),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
-blocks12 = summarizeAreas(blocks12,ls,30,'canopyHist',ee.Reducer.mean());
+blocks12 = summarizeAreas(blocks12,ls,30,'meanTemp',ee.Reducer.mean());
 
 // Map.addLayer(stats)
 // // print(stats);
