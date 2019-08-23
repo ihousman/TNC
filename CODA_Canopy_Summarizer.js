@@ -163,15 +163,16 @@ function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
   Map.addLayer(image);
   var stats = image.reduceRegions(areas, reducer, scale, crs, null, 1) ;
  
-  stats = stats.map(function(f){
-    var hist = f.get('histogram');
-    f  = f.select(props);
-    return f.set(propertyName,hist)});
+  // stats = stats.map(function(f){
+  //   var hist = f.get('histogram');
+  //   f  = f.select(props);
+  //   return f.set(propertyName,hist)});
   return stats
 }
 
 
-blocks12 = summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'canopyHist');
-blocks12 = summarizeAreas(blocks12,ls,30,'canopyHist');
+blocks12 = summarizeAreas(blocks12.limit(2),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
+blocks12 = summarizeAreas(blocks12,ls,30,'canopyHist',ee.Reducer.mean());
+print(blocks12)
 // summarizeAreas(sa.limit(2),mosaic_canopy.unmask())
 
