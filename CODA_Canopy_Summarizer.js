@@ -1,13 +1,37 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
 var table = ee.FeatureCollection("users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
+//Params
+
+var zoneList = [1,2,3,4,5,10,12,13,19,31];
+var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
+
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
 
-var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
+// var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
 
-var cities =ee.FeatureCollection(table)
+var cities =ee.FeatureCollection(table);
+
+var c = ee.ImageCollection(canopyCollection);
+
+var sa = cities.filter(ee.Filter.inList('zone',zoneList));
+
+var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(sa);
+
+//subset only for zone12 - 9 cities
+var zn12 = cities.filter(ee.Filter.inList('zone',[12]));
+var city_list = ee.Dictionary(zn12.aggregate_histogram('Name'))
+var blocks12 =blocks.filterBounds(zn12);
+
+
+var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection').filterBounds(zn12);
+var c_unmask = c.map(function(img){return img.unmask()});
+var canopy12 =mosaic_canopy.clip(zn12)
+
+var empty = ee.Image().byte();
+var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 //check the column attributes
 // print(cities.limit(10), 'Load Cities shapefile')
@@ -18,7 +42,7 @@ var cities =ee.FeatureCollection(table)
 //zone no grabs all the cities within each zone. Western or California Biome is 12
 ///////////////////////////////////////////////////////
 
-var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,5,10,12,13,19,31]));
+
 // var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
 // print('Urban Canopy mapped for following cities', city_list)
 
@@ -32,25 +56,25 @@ var sa = cities.filter(ee.Filter.inList('zone',[1,2,3,4,5,10,12,13,19,31]));
 //Load the final collection with Canopy mapped from NAIP2016 to show on the viewer
 /////////////////////////////////////////////////////////////////////////////////
 
-var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection');
-print(c)
-var c_unmask = c.map(function(img){return img.unmask()});
-var proj = ee.Image(c_unmask.first()).projection()
-var scale = proj.nominalScale();
-var transform = proj.transform()
-var crs = proj.crs();
-print(scale,crs,transform);
-var footprints = c.geometry();
-//print(footprints);
 
-//Map.addLayer(c, viz_canopy, 'Urban Canopy within US cities')
-var mosaic_canopy=c.mosaic()
-var canopyviz = {bands: ["classification"], opacity: 1,palette: ["84da66"]}
-Map.addLayer(mosaic_canopy, canopyviz, 'Mosaic canopy across US cities')
+// print(c)
+// var c_unmask = c.map(function(img){return img.unmask()});
+// var proj = ee.Image(c_unmask.first()).projection()
+// var scale = proj.nominalScale();
+// var transform = proj.transform()
+// var crs = proj.crs();
+// print(scale,crs,transform);
+// var footprints = c.geometry();
+// //print(footprints);
 
-var empty = ee.Image().byte();
-var outline = empty.paint({featureCollection: sa, color: 2, width: 2});
-Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
+// //Map.addLayer(c, viz_canopy, 'Urban Canopy within US cities')
+// var mosaic_canopy=c.mosaic()
+// var canopyviz = {bands: ["classification"], opacity: 1,palette: ["84da66"]}
+// Map.addLayer(mosaic_canopy, canopyviz, 'Mosaic canopy across US cities')
+
+// var empty = ee.Image().byte();
+// var outline = empty.paint({featureCollection: sa, color: 2, width: 2});
+// Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
 
 
 /*
@@ -96,12 +120,6 @@ Export.table.toAsset(stats, 'canopy-cover-stats', 'users/ianhousman/urban-canopy
 /////////////////////////////////////////
 //load block level data from GEE for all msa
 /////////////////////////////////////////
-var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(sa);
-
-//subset only for zone12 - 9 cities
-var zn12 = cities.filter(ee.Filter.inList('zone',[12]));
-var city_list = ee.Dictionary(zn12.aggregate_histogram('Name'))
-var blocks12 =blocks.filterBounds(zn12);
 
 // print(blocks12.limit(5), 'Load Census block for western biome(12)')
 // print('Summarize Temperature and Block level canopy for following cities', city_list)
@@ -130,12 +148,7 @@ var ls_msa =  ls.clip(zn12)
 //limit the canopy collection for only cities within zone12
 ///////////////////////////////////////////////////////////////
 
-var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection').filterBounds(zn12);
-var c_unmask = c.map(function(img){return img.unmask()});
-var canopy12 =mosaic_canopy.clip(zn12)
 
-var empty = ee.Image().byte();
-var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 // Map.addLayer(canopy12, canopyviz, 'Canopy wihtin zone12', false)
 // Map.addLayer(outline,{palette: 'c4c4c4'}, 'census blocks within Western Biome')
@@ -154,26 +167,26 @@ var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
 //Create Mean Annual Temperature by block
 
-var scale = 1;
+// var scale = 1;
 
-function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
-  var props = ee.Feature(areas.first()).propertyNames();
-  print(props);
-  Map.addLayer(areas);
-  Map.addLayer(image);
-  var stats = image.reduceRegions(areas, reducer, scale, crs, null, 1) ;
+// function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
+//   var props = ee.Feature(areas.first()).propertyNames();
+//   print(props);
+//   Map.addLayer(areas);
+//   Map.addLayer(image);
+//   var stats = image.reduceRegions(areas, reducer, scale, crs, null, 1) ;
  
-  // stats = stats.map(function(f){
-  //   var hist = f.get('histogram');
-  //   f  = f.select(props);
-  //   return f.set(propertyName,hist)});
-  return stats
-}
+//   // stats = stats.map(function(f){
+//   //   var hist = f.get('histogram');
+//   //   f  = f.select(props);
+//   //   return f.set(propertyName,hist)});
+//   return stats
+// }
 
 
-blocks12 = summarizeAreas(blocks12.limit(10),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
-blocks12 = summarizeAreas(blocks12,ls,30,'meanTemp',ee.Reducer.mean());
+// // blocks12 = summarizeAreas(blocks12.limit(10),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
+// blocks12 = summarizeAreas(blocks12.limit(10),ls,30,'meanTemp',ee.Reducer.mean());
 
-// Map.addLayer(stats)
-print(blocks12)
-Export.table.toAsset(blocks12, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
+// // Map.addLayer(stats)
+// print(blocks12)
+// Export.table.toAsset(blocks12, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
