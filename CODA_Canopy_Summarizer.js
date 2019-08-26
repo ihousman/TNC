@@ -20,14 +20,15 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
 
-var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(cities);
+var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().clip(msas);
 
 var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 
-Map.addLayer(canopy)
+Map.addLayer(canopy,{min:0,max:1,palette:'000,0F0'},'Canopy',false);
+Map.addLayer(blocks,{},'Blocks',false)
 //////////////////////////////////////////////////////
 //select all the cities we have mapped to decide the study area boundary
 //zone no grabs all the cities within each zone. Western or California Biome is 12
