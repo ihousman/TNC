@@ -41,7 +41,7 @@ var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = canopy.reduceRegions(blocks, canopyReducer, 2, 'EPSG:5070', null, 1) ;
+summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 
 print(summaries)
 // function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
