@@ -1,29 +1,26 @@
-/**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var table = ee.FeatureCollection("users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated");
-/***** End of imports. If edited, may not auto-convert in the playground. *****/
 //Params
 
-var zoneList = [1,2,3,4,5,10,12,13,19,31];
+// var zoneList = [1,2,3,4,5,10,12,13,19,31];
+var zoneList = [12];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
-
+var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
 
 // var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
 
-var cities =ee.FeatureCollection(table);
+var cities =ee.FeatureCollection(msaOutlines);
 
 var c = ee.ImageCollection(canopyCollection);
 
-var sa = cities.filter(ee.Filter.inList('zone',zoneList));
+var cities = cities.filter(ee.Filter.inList('zone',zoneList));
 
-var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(sa);
+var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(cities);
 
-//subset only for zone12 - 9 cities
-var zn12 = cities.filter(ee.Filter.inList('zone',[12]));
-var city_list = ee.Dictionary(zn12.aggregate_histogram('Name'))
-var blocks12 =blocks.filterBounds(zn12);
+Map.addLayer(cities)
+
+
 
 
 var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection').filterBounds(zn12);
