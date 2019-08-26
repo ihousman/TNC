@@ -42,26 +42,9 @@ var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
-
+propsOld = ee.Feature(summaries.first()).propertyNames();
+propsNew = propsOld.replace('histogram','histogram_canopy');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 print(summaries)
-// function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
-//   var props = ee.Feature(areas.first()).propertyNames();
-//   print(props);
-//   Map.addLayer(areas);
-//   Map.addLayer(image);
-//   var stats = image.reduceRegions(areas, reducer, scale, crs, null, 1) ;
- 
-//   // stats = stats.map(function(f){
-//   //   var hist = f.get('histogram');
-//   //   f  = f.select(props);
-//   //   return f.set(propertyName,hist)});
-//   return stats
-// }
 
-
-// // blocks12 = summarizeAreas(blocks12.limit(10),mosaic_canopy.unmask(),2,'canopyHist',ee.Reducer.fixedHistogram(0, 2, 2));
-// blocks12 = summarizeAreas(blocks12.limit(10),ls,30,'meanTemp',ee.Reducer.mean());
-
-// // Map.addLayer(stats)
-// print(blocks12)
 // Export.table.toAsset(blocks12, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
