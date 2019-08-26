@@ -44,16 +44,17 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('histogram','histogram_canopy');
-summaries = summaries.map(function(f){
-  f =f.select(propsOld, propsNew);
-  // var hist = f.get('histogram_canopy');
-  // hist = 
-  return f;
-});
-var f = ee.Feature(summaries.first());
-var counts = f.get('histogram_canopy').toArray().slice(1,1,null).project([0]);;
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+// summaries = summaries.map(function(f){
+//   f =f.select(propsOld, propsNew);
+//   // var hist = f.get('histogram_canopy');
+//   // hist = 
+//   return f;
+// });
+// var f = ee.Feature(summaries.first());
+// var counts = f.get('histogram_canopy')//.map(function(i){return ee.List(i)})//.toArray().slice(1,1,null).project([0]);;
 
-print(counts)
+// print(counts)
 
 print(summaries)
 
