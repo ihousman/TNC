@@ -36,7 +36,8 @@ Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',f
 Map.addLayer(blocks,{},'Blocks',false);
 Map.addLayer(msas,{},'MSAs',false);
 
-
+blocks = blocks.limit(10);
+var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', null, 1) ;
 
 
 // function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
