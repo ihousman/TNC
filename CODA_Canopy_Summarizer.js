@@ -34,79 +34,8 @@ var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJuli
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(blocks,{},'Blocks',false)
 
-function getStats(city){
-  
-
-  //Get the image for the city, and reduce it
-  var cityC = ee.Image(c_unmask.filter(ee.Filter.eq('system:index',city)).first());
-  var region = cityC.geometry();
-  var counts = cityC.reduceRegion(ee.Reducer.fixedHistogram(0, 2, 2), region, scale,'EPSG:5070',null,true,1e13);
-  
-  //Convert to client for charting
-  var out = counts.toArray().slice(1,1,null).project([0]);
-  var total = ee.Array(out).reduce(ee.Reducer.sum(),[0]).get([0]);
-  var pcts = out.divide(total);
-  var tree = out.get([1])
-  var nontree = out.get([0])
-  //var sum = 
-  pcts = {'name':ee.String(city).split('nowak_canopy_').get(1),'Non Tree':pcts.get([0]),'Tree':pcts.get([1])};
-  var count = {'name':ee.String(city).split('nowak_canopy_').get(1),'Non Tree':out.get([0]),'Tree':out.get([1])};
-  return ee.Feature(region).setMulti(pcts).setMulti(count);
-
-};
-// var blocks = ee.FeatureCollection('TIGER/2010/Blocks');
-// Map.addLayer(blocks)
-var stats = ee.FeatureCollection(cities.map(getStats));
-// Map.addLayer(stats)
-// // print(stats);
-Export.table.toAsset(stats, 'canopy-cover-stats', 'users/ianhousman/urban-canopy/canopy-cover-stats')
-*/
 
 
-//STEP 2 : Create Block level summary of Canopy for zone 12 - testing before applying to all US cities
-
-
-/////////////////////////////////////////
-//load block level data from GEE for all msa
-/////////////////////////////////////////
-
-// print(blocks12.limit(5), 'Load Census block for western biome(12)')
-// print('Summarize Temperature and Block level canopy for following cities', city_list)
-
-///////////////////////////////////////////////////////
-//load landsat L8 for surface temperature withn zone 12 
-///////////////////////////////////////////////////////
-
-// print('Filter Landsat 8 surface temperate for cities withn zone 12')
-
-
-// Map.addLayer(ls_msa,{min:280,max:330,palette:'00F,888,F00'});
-
-
-///////////////////////////////////////////////////////////////
-//limit the canopy collection for only cities within zone12
-///////////////////////////////////////////////////////////////
-
-
-
-// Map.addLayer(canopy12, canopyviz, 'Canopy wihtin zone12', false)
-// Map.addLayer(outline,{palette: 'c4c4c4'}, 'census blocks within Western Biome')
-
-// print(blocks12.limit(5))
-
-//////////////////////////////////////////////////////////////////////////////////
-// Create Map and zonal summary of Tree NonTree pixles by Block10 id for all cities withn Western Biome
-/////////////////////////////////////////////////////////////////////////////////
-
-//new collection with only canopy for zone 12
-// var cities =ee.Dictionary(c.aggregate_histogram('system:index')).keys()//.map(function(s){return ee.String(s).split('nowak_canopy_').get(1)})
-// print(cities)
-
-//function to create block level summarries 
-
-//Create Mean Annual Temperature by block
-
-// var scale = 1;
 
 // function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
 //   var props = ee.Feature(areas.first()).propertyNames();
