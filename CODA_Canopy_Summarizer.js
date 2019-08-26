@@ -10,17 +10,13 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 
 // var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
 
-var cities =ee.FeatureCollection(msaOutlines);
+var msas =ee.FeatureCollection(msaOutlines);
 
 var c = ee.ImageCollection(canopyCollection);
 
-var cities = cities.filter(ee.Filter.inList('zone',zoneList));
+var msas = msas.filter(ee.Filter.inList('zone',zoneList));
 
 var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(cities);
-
-Map.addLayer(cities)
-
-
 
 
 var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection').filterBounds(zn12);
