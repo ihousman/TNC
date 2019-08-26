@@ -51,8 +51,9 @@ summaries = summaries.map(function(f){
   return f;
 });
 var f = ee.Feature(summaries.first());
-var hist = f.get('histogram_canopy');
-print(hist)
+var counts = f.get('histogram_canopy').toArray().slice(1,1,null).project([0]);;
+
+print(counts)
 
 print(summaries)
 
