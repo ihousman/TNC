@@ -79,4 +79,4 @@ summaries = summaries.set({'canopy_res':2,'temperature_res':30});
 
 // print(summaries)
 
-Export.table.toAsset(summaries, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats');
+Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
