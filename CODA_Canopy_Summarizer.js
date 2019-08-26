@@ -77,6 +77,6 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 summaries = summaries.set({'canopy_res':2,'temperature_res':30});
 
-// print(summaries)
+print(summaries.size())
 
 Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
