@@ -44,7 +44,7 @@ isCanopy = isCanopy.mask(isCanopy);
 
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
-Map.addLayer(isNull)
+Map.addLayer(isCanopy)
 var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', null, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
