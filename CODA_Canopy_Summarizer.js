@@ -29,9 +29,10 @@ var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
-var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
+var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
+Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
 Map.addLayer(blocks,{},'Blocks',false);
 Map.addLayer(msas,{},'MSAs',false);
 
