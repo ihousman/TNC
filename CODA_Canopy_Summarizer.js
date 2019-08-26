@@ -44,7 +44,16 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('histogram','histogram_canopy');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+summaries = summaries.map(function(f){
+  f =f.select(propsOld, propsNew);
+  // var hist = f.get('histogram_canopy');
+  // hist = 
+  return f;
+});
+var f = ee.Feature(summaries.first());
+var hist = f.get('histogram_canopy');
+print(hist)
+
 print(summaries)
 
 // Export.table.toAsset(blocks12, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
