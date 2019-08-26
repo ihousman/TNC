@@ -74,4 +74,4 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 print(summaries)
 
-Export.table.toAsset(summaries, 'blocks-canopy-cover-stats2', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats2')
+Export.table.toAsset(summaries, 'blocks-canopy-cover-stats', 'users/ianhousman/urban-canopy/blocks-canopy-cover-stats')
