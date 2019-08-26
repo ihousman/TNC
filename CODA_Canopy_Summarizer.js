@@ -15,7 +15,7 @@ var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
 var tempReducer = ee.Reducer.mean();
-var canopyReducer = 
+var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3)
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
