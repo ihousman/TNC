@@ -49,10 +49,11 @@ isCanopy = isCanopy.mask(isCanopy);
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
-var summaries =temperature.reduceRegions(blocks, tempReducer, null, 'EPSG:5070', transform30, 1) ;
-var propsOld = ee.Feature(summaries.first()).propertyNames();
-var propsNew = propsOld.replace('mean','mean_temperature');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+var summaries = blocks;
+// var summaries =temperature.reduceRegions(blocks, tempReducer, null, 'EPSG:5070', transform30, 1) ;
+// var propsOld = ee.Feature(summaries.first()).propertyNames();
+// var propsNew = propsOld.replace('mean','mean_temperature');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 // summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 // propsOld = ee.Feature(summaries.first()).propertyNames();
