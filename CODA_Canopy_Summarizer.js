@@ -5,6 +5,9 @@ var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 var startYear = 2010;
 var endYear = 2019;
 
+var crs = 'EPSG:5070';
+var transform30 = [30,0,-2361915.0,0,-30,3177735.0];
+var transform2 = [2,0,-2361915.0,0,-2,3177735.0];
 
 var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
 var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
@@ -45,7 +48,7 @@ isCanopy = isCanopy.mask(isCanopy);
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
-var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', null, 1) ;
+var summaries =temperature.reduceRegions(blocks, tempReducer, null, 'EPSG:5070', transform30, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
@@ -55,18 +58,18 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 // propsNew = propsOld.replace('histogram','histogram_canopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), 2, 'EPSG:5070', null, 1) ;
+summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('count','count_nonCanopy');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), 2, 'EPSG:5070', null, 1) ;
+summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('count','count_canopy');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 
-summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), 2, 'EPSG:5070', null, 1) ;
+summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('count','count_null');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
