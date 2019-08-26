@@ -60,21 +60,21 @@ var summaries = blocks;
 // propsNew = propsOld.replace('histogram','histogram_canopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-// summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('count','count_nonCanopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+propsOld = ee.Feature(summaries.first()).propertyNames();
+propsNew = propsOld.replace('count','count_nonCanopy');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-// summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('count','count_canopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+propsOld = ee.Feature(summaries.first()).propertyNames();
+propsNew = propsOld.replace('count','count_canopy');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 
-// summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('count','count_null');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+propsOld = ee.Feature(summaries.first()).propertyNames();
+propsNew = propsOld.replace('count','count_null');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 summaries = summaries.set({'canopy_res':2,'temperature_res':30});
 
