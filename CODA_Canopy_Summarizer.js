@@ -23,7 +23,8 @@ var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneL
 var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 
-var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().clip(msas);
+var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask()
+canopy = getImagesLib.setNoData(canopy.clip(msas),100);
 
 var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 
