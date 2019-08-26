@@ -19,16 +19,9 @@ var msas = msas.filter(ee.Filter.inList('zone',zoneList));
 var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(cities);
 
 
-var c = ee.ImageCollection('users/Shree1175/CODA_Canopy/FinalCollection').filterBounds(zn12);
-var c_unmask = c.map(function(img){return img.unmask()});
-var canopy12 =mosaic_canopy.clip(zn12)
+var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().clip(msas);
 
-var empty = ee.Image().byte();
-var outline = empty.paint({featureCollection: blocks12, color: 1, width: 1});
 
-//check the column attributes
-// print(cities.limit(10), 'Load Cities shapefile')
-//Name = City Name, Zone = zone no., zone Name 
 
 //////////////////////////////////////////////////////
 //select all the cities we have mapped to decide the study area boundary
