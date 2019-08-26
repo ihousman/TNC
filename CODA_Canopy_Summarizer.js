@@ -12,8 +12,8 @@ var transform2 = [2,0,-2361915.0,0,-2,3177735.0];
 var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
 var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
 
-// var zoneList = [1,2,3,4,5,10,12,13,19,31];
-var zoneList = [12];
+var zoneList = [1,2,3,4,5,10,12,13,19,31];
+// var zoneList = [12];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
@@ -25,7 +25,7 @@ var tempReducer = ee.Reducer.mean();
 //Get data
 var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
-var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
+var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
@@ -36,6 +36,7 @@ Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
 Map.addLayer(blocks,{},'Blocks',false);
 Map.addLayer(msas,{},'MSAs',false);
+print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
 // blocks = blocks.limit(10);
 
