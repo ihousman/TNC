@@ -36,6 +36,15 @@ Map.addLayer(msas,{},'MSAs',false);
 ///////////////////////////////////////////////////////////////////////////////
 blocks = blocks.limit(10);
 
+var nonCanopy = canopy.eq(0);
+nonCanopy = nonCanopy.mask(nonCanopy);
+
+var isCanopy = canopy.eq(1);
+isCanopy = isCanopy.mask(isCanopy);
+
+var isNull = canopy.eq(2);
+isNull = isNull.mask(isNull);
+Map.addLayer(nonCanopy)
 var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', null, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
