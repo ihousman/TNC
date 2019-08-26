@@ -37,7 +37,7 @@ Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',f
 Map.addLayer(blocks,{},'Blocks',false);
 Map.addLayer(msas,{},'MSAs',false);
 ///////////////////////////////////////////////////////////////////////////////
-blocks = blocks.limit(10);
+// blocks = blocks.limit(10);
 
 var nonCanopy = canopy.eq(0);
 nonCanopy = nonCanopy.mask(nonCanopy);
