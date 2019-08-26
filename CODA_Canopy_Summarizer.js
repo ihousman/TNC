@@ -39,7 +39,7 @@ var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', n
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
 
-summaries = summaries.map(function(f){return f.select('mean_temperature',f.get('mean'))})
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 print(summaries)
 // function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
 //   var props = ee.Feature(areas.first()).propertyNames();
