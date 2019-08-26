@@ -1,4 +1,13 @@
 //Params
+///Module imports
+var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+
+var startYear = 2010;
+var endYear = 2019;
+
+
+var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
+var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
 
 // var zoneList = [1,2,3,4,5,10,12,13,19,31];
 var zoneList = [12];
@@ -8,8 +17,6 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
 
-// var msa = ee.FeatureCollection('users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated');
-
 var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
 
@@ -18,6 +25,7 @@ var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(cities);
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().clip(msas);
 
+var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 
 Map.addLayer(canopy)
 //////////////////////////////////////////////////////
@@ -112,17 +120,7 @@ Export.table.toAsset(stats, 'canopy-cover-stats', 'users/ianhousman/urban-canopy
 ///////////////////////////////////////////////////////
 
 // print('Filter Landsat 8 surface temperate for cities withn zone 12')
-///Module imports
-var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 
-var startYear = 2010;
-var endYear = 2019;
-
-
-var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
-var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
-var ls = getImagesLib.getProcessedLandsatScenes(zn12,startYear,endYear,startJulian,endJulian).select(['temp']).median();
-var ls_msa =  ls.clip(zn12)
 
 // Map.addLayer(ls_msa,{min:280,max:330,palette:'00F,888,F00'});
 
