@@ -35,11 +35,14 @@ Map.addLayer(blocks,{},'Blocks',false);
 Map.addLayer(msas,{},'MSAs',false);
 ///////////////////////////////////////////////////////////////////////////////
 blocks = blocks.limit(10);
+
 var summaries =temperature.reduceRegions(blocks, tempReducer, 30, 'EPSG:5070', null, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
-
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+
+summaries = canopy.reduceRegions(blocks, canopyReducer, 2, 'EPSG:5070', null, 1) ;
+
 print(summaries)
 // function summarizeAreas(areas,image,scale,propertyNameOut,reducer){
 //   var props = ee.Feature(areas.first()).propertyNames();
