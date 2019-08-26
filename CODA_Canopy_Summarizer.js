@@ -54,6 +54,13 @@ summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null,
 propsOld = ee.Feature(summaries.first()).propertyNames();
 propsNew = propsOld.replace('histogram','histogram_canopy');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+
+summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), 2, 'EPSG:5070', null, 1) ;
+// propsOld = ee.Feature(summaries.first()).propertyNames();
+// propsNew = propsOld.replace('histogram','histogram_canopy');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+
+
 // summaries = summaries.map(function(f){
 //   f =f.select(propsOld, propsNew);
 //   // var hist = f.get('histogram_canopy');
