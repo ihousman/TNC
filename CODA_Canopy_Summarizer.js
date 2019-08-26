@@ -13,6 +13,9 @@ var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).get
 var zoneList = [12];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
+
+var tempReducer = ee.Reducer.mean();
+var canopyReducer = 
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
@@ -24,59 +27,12 @@ var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask()
-canopy = getImagesLib.setNoData(canopy.clip(msas),100);
+canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
 var ls = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 
-Map.addLayer(canopy,{min:0,max:1,palette:'000,0F0'},'Canopy',false);
+Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(blocks,{},'Blocks',false)
-//////////////////////////////////////////////////////
-//select all the cities we have mapped to decide the study area boundary
-//zone no grabs all the cities within each zone. Western or California Biome is 12
-///////////////////////////////////////////////////////
-
-
-// var city_list = ee.Dictionary(sa.aggregate_histogram('Name'))
-// print('Urban Canopy mapped for following cities', city_list)
-
-// var zone_list = ee.Dictionary(sa.aggregate_histogram('zone'))
-// print('Urban Canopy mapped in following zones', zone_list)
-
-// var zone_names = ee.Dictionary(sa.aggregate_histogram('zone_names'))
-// print('Zone Names', zone_names)
-
-/////////////////////////////////////////////////////////////////////////////////
-//Load the final collection with Canopy mapped from NAIP2016 to show on the viewer
-/////////////////////////////////////////////////////////////////////////////////
-
-
-// print(c)
-// var c_unmask = c.map(function(img){return img.unmask()});
-// var proj = ee.Image(c_unmask.first()).projection()
-// var scale = proj.nominalScale();
-// var transform = proj.transform()
-// var crs = proj.crs();
-// print(scale,crs,transform);
-// var footprints = c.geometry();
-// //print(footprints);
-
-// //Map.addLayer(c, viz_canopy, 'Urban Canopy within US cities')
-// var mosaic_canopy=c.mosaic()
-// var canopyviz = {bands: ["classification"], opacity: 1,palette: ["84da66"]}
-// Map.addLayer(mosaic_canopy, canopyviz, 'Mosaic canopy across US cities')
-
-// var empty = ee.Image().byte();
-// var outline = empty.paint({featureCollection: sa, color: 2, width: 2});
-// Map.addLayer(outline, {palette: 'be1c0b'}, "Cities Mapped", true)
-
-
-/*
-////////////////////////////////////////////////////////
-// STEP 1 Export count of Tree - NonTree Pixel for all 1000 cities mapped
-///////////////////////////////////////////////////
-var cities =ee.Dictionary(c.aggregate_histogram('system:index')).keys()//.map(function(s){return ee.String(s).split('nowak_canopy_').get(1)})
-print(cities)
-
 
 function getStats(city){
   
