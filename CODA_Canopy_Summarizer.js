@@ -18,7 +18,7 @@ var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
 var tempReducer = ee.Reducer.mean();
-var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
+// var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
@@ -30,9 +30,7 @@ var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
-var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian);
-print(temperature.first())
-temperature = temperature.select(['temp']).median().clip(msas);
+var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
 ///////////////////////////////////////////////////////////////////////////////
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
