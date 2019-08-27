@@ -19,6 +19,7 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 
 var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
+
 var tempReducer = ee.Reducer.mean();
 // var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,7 +34,7 @@ var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().un
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
 var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
-Export.image.toAsset(temperature, description, assetId, pyramidingPolicy, dimensions, region, scale, crs, crsTransform, maxPixels)
+Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13)
 ///////////////////////////////////////////////////////////////////////////////
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
