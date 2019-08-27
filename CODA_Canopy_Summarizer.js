@@ -17,7 +17,7 @@ var zoneList = [1,2,3,4,5,10,12,13,19,31];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
-var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/';
+var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures/';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean();
@@ -26,16 +26,22 @@ var tempReducer = ee.Reducer.mean();
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
 //Get data
-var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList)).limit(1);
+var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList)).limit(5);
 
 var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
-var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
-print(ee.Dictionary(msas.aggregate_histogram('Name')).keys())
-// Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
+var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
+ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
+  print(nm)
+  var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first());
+  var temperatureT = temperature.clip(outline.bounds().buffer(5000,1000));
+  Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm)
+  Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
+})
+// 
 ///////////////////////////////////////////////////////////////////////////////
 // Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 // Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
