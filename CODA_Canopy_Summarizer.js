@@ -44,6 +44,8 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   nm = nm.replace('----','_');
   nm = nm.replace('---','_');
   nm = nm.replace('--','_');
+  nm = nm.replace('--','_');
+  nm = nm.replace('--','_');
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
