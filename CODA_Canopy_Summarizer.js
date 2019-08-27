@@ -34,13 +34,14 @@ var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().un
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
 var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
-Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
+print(ee.Dictionary(msas.aggregate_histogram('Name')).keys())
+// Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
 ///////////////////////////////////////////////////////////////////////////////
-Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
-Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
-Map.addLayer(blocks,{},'Blocks',false);
-Map.addLayer(msas,{},'MSAs',false);
-print(blocks.size())
+// Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
+// Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
+// Map.addLayer(blocks,{},'Blocks',false);
+// Map.addLayer(msas,{},'MSAs',false);
+// print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
 // blocks = blocks.limit(10);
 
