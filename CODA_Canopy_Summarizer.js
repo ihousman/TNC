@@ -26,7 +26,7 @@ var tempReducer = ee.Reducer.mean();
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
 //Get data
-var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList)).limit(5);
+var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
 var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
