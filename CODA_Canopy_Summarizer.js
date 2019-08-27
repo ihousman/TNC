@@ -38,8 +38,9 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   print(nm)
   var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first());
   var temperatureT = temperature.clip(outline.bounds().buffer(5000,1000));
-  Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm)
-  Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
+  Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
+  var nameT = nm + '_' + temperatureName
+  Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, msas, null, crs, transform30, 1e13);
 })
 // 
 ///////////////////////////////////////////////////////////////////////////////
