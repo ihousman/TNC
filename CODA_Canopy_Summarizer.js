@@ -17,7 +17,8 @@ var zoneList = [1,2,3,4,5,10,12,13,19,31];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
-var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/'
+var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/';
+var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 var tempReducer = ee.Reducer.mean();
 // var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
