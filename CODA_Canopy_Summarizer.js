@@ -34,7 +34,7 @@ var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().un
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
 var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median().clip(msas);
-Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13)
+Export.image.toAsset(temperature, temperatureName, assetFolder + temperatureName, null, null, msas, null, crs, transform30, 1e13);
 ///////////////////////////////////////////////////////////////////////////////
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
@@ -64,24 +64,24 @@ var summaries = blocks;
 // propsNew = propsOld.replace('histogram','histogram_canopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-var propsOld = ee.Feature(summaries.first()).propertyNames();
-var propsNew = propsOld.replace('count','count_nonCanopy');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+// summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+// var propsOld = ee.Feature(summaries.first()).propertyNames();
+// var propsNew = propsOld.replace('count','count_nonCanopy');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-propsOld = ee.Feature(summaries.first()).propertyNames();
-propsNew = propsOld.replace('count','count_canopy');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+// summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+// propsOld = ee.Feature(summaries.first()).propertyNames();
+// propsNew = propsOld.replace('count','count_canopy');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 
-summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-propsOld = ee.Feature(summaries.first()).propertyNames();
-propsNew = propsOld.replace('count','count_null');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+// summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
+// propsOld = ee.Feature(summaries.first()).propertyNames();
+// propsNew = propsOld.replace('count','count_null');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = summaries.set({'canopy_res':2,'temperature_res':30});
+// summaries = summaries.set({'canopy_res':2,'temperature_res':30});
 
-print(summaries.size())
+// print(summaries.size())
 
-Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
+// Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
