@@ -40,7 +40,7 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   var temperatureT = temperature.clip(outline);
   Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
   var nameT = nm + '_' + temperatureName
-  Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, msas, null, crs, transform30, 1e13);
+  Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
 })
 // 
 ///////////////////////////////////////////////////////////////////////////////
