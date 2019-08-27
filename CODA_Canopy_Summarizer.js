@@ -38,8 +38,10 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
   nm = nm.replace(' ','_');
   nm = nm.replace(',','_');
-  nm = nm.replace('-','_');
-  nm = nm.replace('-','_');
+  nm = nm.replace('-----','_');
+  nm = nm.replace('----','_');
+  nm = nm.replace('---','_');
+  nm = nm.replace('--','_');
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
