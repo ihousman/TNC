@@ -38,6 +38,11 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
   print(nm)
   nm = nm.replace(', ','_');
+  nm = nm.replace('.','');
+  nm = nm.replace(' ','_');
+  nm = nm.replace(' ','_');
+  nm = nm.replace(' ','_');
+  nm = nm.replace(' ','_');
   nm = nm.replace(' ','_');
   nm = nm.replace(',','_');
   nm = nm.replace('-----','_');
@@ -49,10 +54,11 @@ ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
   nm = nm.replace('-','_');
+  nm = nm.replace('/','_');
   print(nm)
   
   var temperatureT = temperature.clip(outline);
-  Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
+  // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
   var nameT = nm + '_' + temperatureName
   Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
 })
@@ -107,3 +113,50 @@ var summaries = blocks;
 // print(summaries.size())
 
 // Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
+// Run the function a second time for non-standard rasters 
+// var asset = 'projects/USFS/LCMS-NFS/R4/Base-Learners/LANDTRENDR-Collection';
+// var years = ee.List.sequence(1984,2018).getInfo();
+// var studyAreaAsset = 'projects/USFS/LCMS-NFS/R4/BT/GTNP_admin_bndy_5km_buffer_GTNP_Merge';
+// var crs = 'EPSG:5070';
+// var transform = [30,0,-2361915.0,0,-30,3177735.0];
+// var exportBands = ['LT_Fitted_NBR']
+// var exportNameDict = {'LT_Fitted_NBR': 'LandTrendr_Fitted_NBR'};
+// var outputDriveFolder = 'lcms_exports';
+// var outputNamePrefix = 'LCMS_BTNF_v2019-1'
+// exportLTAssetsToDrive(asset, exportBands, exportNameDict, outputDriveFolder, outputNamePrefix, studyAreaAsset)
+
+
+
+//Function for exporting CONUS LCMS
+//Code for starting all tasks once this script has ran
+//Press f12, then paste functions into console
+//Then paste function calls into console
+
+
+// function runTaskList() {
+
+//     //1. task local type-EXPORT_FEATURES awaiting-user-config
+
+//     //2. task local type-EXPORT_IMAGE awaiting-user-config
+
+//     var tasklist = document.getElementsByClassName('awaiting-user-config');
+
+//     for (var i = 0; i < tasklist.length; i++)
+
+//         tasklist[i].children[2].click();
+
+// }
+
+// // confirmAll();
+
+// function confirmAll() {
+
+//     var ok = document.getElementsByClassName('goog-buttonset-default goog-buttonset-action');
+
+//     for (var i = 0; i < ok.length; i++)
+
+//         ok[i].click();
+
+// }
+// runTaskList()
+// confirmAll()
