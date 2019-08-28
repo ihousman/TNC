@@ -141,7 +141,7 @@ print(summaries2)
 
 // print(summaries.size())
 
-Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
+Export.table.toAsset(summaries, 'msas-canopy-cover-stats', tableAssetFolder);
 // Run the function a second time for non-standard rasters 
 // var asset = 'projects/USFS/LCMS-NFS/R4/Base-Learners/LANDTRENDR-Collection';
 // var years = ee.List.sequence(1984,2018).getInfo();
