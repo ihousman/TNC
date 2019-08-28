@@ -102,21 +102,6 @@ var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(tempe
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
 summaries =temperatureStack.reduceRegions(summaries, ee.Reducer.mean().combine(ee.Reducer.percentile([0,5,25,50,75,95,100]),'',true), null, 'EPSG:5070', transform30, 1) ;
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('mean','mean_temperature_all');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
-
-// summaries =temperatureCanopy.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('mean','mean_temperature_canopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
-// summaries =temperatureNotCanopy.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('mean','mean_temperature_nonCanopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
 
 // summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 10) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
