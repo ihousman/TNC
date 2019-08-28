@@ -47,7 +47,7 @@ function exportTemp(){
   var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
   ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
     var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
-    print(nm)
+    
     nm = nm.replace(', ','_');
     nm = nm.replace('.','');
     nm = nm.replace(' ','_');
@@ -66,12 +66,12 @@ function exportTemp(){
     nm = nm.replace('-','_');
     nm = nm.replace('-','_');
     nm = nm.replace('/','_');
-    print(nm)
+   
     
     var temperatureT = temperature.clip(outline);
     // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
-    var nameT = nm + '_' + temperatureName
-    Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
+    var nameT = nm + '_' + temperatureName;
+    Export.image.toAsset(temperatureT, nameT, assetFolder +'/'+ nameT, null, null, outline, null, crs, transform30, 1e13);
   })
 }
 ///////////////////////////////////////////////////////////////////////////////
