@@ -106,55 +106,16 @@ summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:50
 
 
 var summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 1) ;
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('count','mean_temperature_nonCanopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 Map.addLayer(temperatureCanopy,tempViz,'temp Canopy',false)
 Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 
 
-// summaries = canopy.reduceRegions(summaries, canopyReducer, null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('histogram','histogram_canopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
 print(summaries)
 
-// summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('count','count_nonCanopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-// summaries = isCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('count','count_canopy');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
-
-// summaries = isNull.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
-// propsOld = ee.Feature(summaries.first()).propertyNames();
-// propsNew = propsOld.replace('count','count_null');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-
-// summaries = summaries.set({'canopy_res':2,'temperature_res':30});
-
-// print(summaries.size())
 var tableName = 'msas-canopy-cover-stats';
 Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
-// Run the function a second time for non-standard rasters 
-// var asset = 'projects/USFS/LCMS-NFS/R4/Base-Learners/LANDTRENDR-Collection';
-// var years = ee.List.sequence(1984,2018).getInfo();
-// var studyAreaAsset = 'projects/USFS/LCMS-NFS/R4/BT/GTNP_admin_bndy_5km_buffer_GTNP_Merge';
-// var crs = 'EPSG:5070';
-// var transform = [30,0,-2361915.0,0,-30,3177735.0];
-// var exportBands = ['LT_Fitted_NBR']
-// var exportNameDict = {'LT_Fitted_NBR': 'LandTrendr_Fitted_NBR'};
-// var outputDriveFolder = 'lcms_exports';
-// var outputNamePrefix = 'LCMS_BTNF_v2019-1'
-// exportLTAssetsToDrive(asset, exportBands, exportNameDict, outputDriveFolder, outputNamePrefix, studyAreaAsset)
-
-
 
 //Function for exporting CONUS LCMS
 //Code for starting all tasks once this script has ran
