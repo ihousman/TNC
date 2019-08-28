@@ -84,15 +84,16 @@ Map.addLayer(temperature,tempViz,'Temperature',false);
 ///////////////////////////////////////////////////////////////////////////////
 blocks = blocks.limit(1);
 
-// var nonCanopy = canopy.eq(0);
-// nonCanopy = nonCanopy.mask(nonCanopy);
+var nonCanopy = canopy.eq(0);
+nonCanopy = nonCanopy.mask(nonCanopy);
 
-// var isCanopy = canopy.eq(1);
-// isCanopy = isCanopy.mask(isCanopy);
+var isCanopy = canopy.eq(1);
+isCanopy = isCanopy.mask(isCanopy);
 
-// var isNull = canopy.eq(2);
-// isNull = isNull.mask(isNull);
+var isNull = canopy.eq(2);
+isNull = isNull.mask(isNull);
 
+var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['canopy','nonCanopy','null'])
 var summaries = blocks;
 summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
@@ -109,7 +110,7 @@ summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 summaries =temperatureNotCanopy.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
-var propsNew = propsOld.replace('mean','mean_temperature_not_canopy');
+var propsNew = propsOld.replace('mean','mean_temperature_nonCanopy');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 Map.addLayer(temperatureCanopy,tempViz,'temp Canopy')
 Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy')
