@@ -97,11 +97,11 @@ var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCano
 
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
-var temperatureStack = temperatureNotCanopy.addBands(temperatureCanopy).rename(['mean_temperature_nonCanopy','mean_temperature_canopy']);
+var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).rename(['temperature_all','temperature_nonCanopy','temperature_canopy']);
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
-summaries =temperatureStack.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
+summaries =temperatureStack.reduceRegions(summaries, ee.Reducer.mean().combine(ee.Reducer.median(),'',true), null, 'EPSG:5070', transform30, 1) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('mean','mean_temperature_all');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
