@@ -27,7 +27,7 @@ var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean();
-// var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
+var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',f
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
-// blocks = blocks.limit(10);
+blocks = blocks.limit(10);
 
 // var nonCanopy = canopy.eq(0);
 // nonCanopy = nonCanopy.mask(nonCanopy);
@@ -98,12 +98,13 @@ var summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:507
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
-print(summaries)
-// summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
+
+summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 // propsOld = ee.Feature(summaries.first()).propertyNames();
 // propsNew = propsOld.replace('histogram','histogram_canopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
+print(summaries)
 // summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('count','count_nonCanopy');
