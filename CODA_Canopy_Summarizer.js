@@ -26,7 +26,7 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
-var tempReducer = ee.Reducer.mean();
+var tempReducer = ee.Reducer.mean().combine(ee.Reducer.percentile([0,5,25,50,75,95,100]),null,true);
 var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
@@ -101,7 +101,7 @@ var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(tempe
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
-summaries =temperatureStack.reduceRegions(summaries, ee.Reducer.mean().combine(ee.Reducer.percentile([0,5,25,50,75,95,100]),'',true), null, 'EPSG:5070', transform30, 1) ;
+summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:5070', transform30, 1) ;
 
 // summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 10) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
