@@ -101,7 +101,7 @@ var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(tempe
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
-summaries =temperatureStack.reduceRegions(summaries, ee.Reducer.mean().combine(ee.Reducer.median(),'',true), null, 'EPSG:5070', transform30, 1) ;
+summaries =temperatureStack.reduceRegions(summaries, ee.Reducer.mean().combine(ee.Reducer.percentile([0,5,25,50,75,95,100]),'',true), null, 'EPSG:5070', transform30, 1) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('mean','mean_temperature_all');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
