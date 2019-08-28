@@ -75,8 +75,9 @@ function exportTemp(){
   });
 }
 ///////////////////////////////////////////////////////////////////////////////
+var tempViz = {min:280,max:320,palette:'00F,888,F00'};
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
-Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
+Map.addLayer(temperature,tempViz,'Temperature',false);
 // Map.addLayer(blocks,{},'Blocks',false);
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
@@ -94,12 +95,15 @@ blocks = blocks.limit(1);
 
 var summaries = blocks;
 var summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
-
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-summaries = canopy.reduceRegions(summaries, canopyReducer, null, 'EPSG:5070', transform2, 1) ;
+var temperatureCanopy = temperature.updateMask(canopy.eq(1));
+var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
+Map.addLayer(temperatureCanopy,tempViz,'temp Canopy')
+Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy')
+// summaries = canopy.reduceRegions(summaries, canopyReducer, null, 'EPSG:5070', transform2, 1) ;
 // propsOld = ee.Feature(summaries.first()).propertyNames();
 // propsNew = propsOld.replace('histogram','histogram_canopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
