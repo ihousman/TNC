@@ -72,7 +72,7 @@ function exportTemp(){
     // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
     var nameT = nm + '_' + temperatureName;
     Export.image.toAsset(temperatureT, nameT, assetFolder +'/'+ nameT, null, null, outline, null, crs, transform30, 1e13);
-  })
+  });
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
