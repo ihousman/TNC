@@ -120,7 +120,7 @@ Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 print(summaries)
-print(summaries2)
+
 // summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('count','count_nonCanopy');
