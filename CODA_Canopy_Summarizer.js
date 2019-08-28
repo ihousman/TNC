@@ -33,7 +33,7 @@ var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas)
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
-var temperature = ee.ImageCollection('assetFolder');
+var temperature = ee.ImageCollection(assetFolder);
 
 // var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
 // ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
@@ -72,19 +72,20 @@ Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',f
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
-// blocks = blocks.limit(10);
+blocks = blocks.limit(10);
 
-var nonCanopy = canopy.eq(0);
-nonCanopy = nonCanopy.mask(nonCanopy);
+// var nonCanopy = canopy.eq(0);
+// nonCanopy = nonCanopy.mask(nonCanopy);
 
-var isCanopy = canopy.eq(1);
-isCanopy = isCanopy.mask(isCanopy);
+// var isCanopy = canopy.eq(1);
+// isCanopy = isCanopy.mask(isCanopy);
 
-var isNull = canopy.eq(2);
-isNull = isNull.mask(isNull);
+// var isNull = canopy.eq(2);
+// isNull = isNull.mask(isNull);
 
 var summaries = blocks;
-// var summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
+var summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
+print(summaries)
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('mean','mean_temperature');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
