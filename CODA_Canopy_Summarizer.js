@@ -82,7 +82,7 @@ Map.addLayer(temperature,tempViz,'Temperature',false);
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
-blocks = blocks.limit(1);
+// blocks = blocks.limit(1);
 
 var nonCanopy = canopy.eq(0);
 nonCanopy = nonCanopy.mask(nonCanopy);
@@ -93,7 +93,7 @@ isCanopy = isCanopy.mask(isCanopy);
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
-var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy_count','canopy_count','null_count']);
+var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy_count','canopy_count','nullCanopy_count']);
 
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
@@ -140,7 +140,7 @@ print(summaries2)
 
 // print(summaries.size())
 
-// Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
+Export.table.toAsset(summaries, 'msas-canopy-cover-stats', 'users/ianhousman/urban-canopy/msas-canopy-cover-stats');
 // Run the function a second time for non-standard rasters 
 // var asset = 'projects/USFS/LCMS-NFS/R4/Base-Learners/LANDTRENDR-Collection';
 // var years = ee.List.sequence(1984,2018).getInfo();
