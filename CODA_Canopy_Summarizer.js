@@ -94,11 +94,11 @@ Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',f
 
 var summaries = blocks;
 var summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
-print(summaries)
-// var propsOld = ee.Feature(summaries.first()).propertyNames();
-// var propsNew = propsOld.replace('mean','mean_temperature');
-// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
+var propsOld = ee.Feature(summaries.first()).propertyNames();
+var propsNew = propsOld.replace('mean','mean_temperature');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+print(summaries)
 // summaries = canopy.reduceRegions(summaries, canopyReducer, 2, 'EPSG:5070', null, 1) ;
 // propsOld = ee.Feature(summaries.first()).propertyNames();
 // propsNew = propsOld.replace('histogram','histogram_canopy');
