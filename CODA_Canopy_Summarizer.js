@@ -94,6 +94,11 @@ var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
 var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy','canopy','null']);
+
+var temperatureCanopy = temperature.updateMask(canopy.eq(1));
+var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
+var temperatureStack = temperatureNotCanopy.addBands(temperatureCanopy);
+
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
 summaries =temperature.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
@@ -101,8 +106,6 @@ var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature_all');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
-var temperatureCanopy = temperature.updateMask(canopy.eq(1));
-var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
 
 summaries =temperatureCanopy.reduceRegions(summaries, tempReducer, null, 'EPSG:5070', transform30, 1) ;
 var propsOld = ee.Feature(summaries.first()).propertyNames();
