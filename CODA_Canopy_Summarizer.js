@@ -24,7 +24,7 @@ var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
 var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
-var tableAssetFolder = 'projects/igde-work/CODA_UrbanCanopy/';
+var tableAssetFolder = 'projects/igde-work/CODA_UrbanCanopy';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean().combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
@@ -140,8 +140,8 @@ print(summaries2)
 // summaries = summaries.set({'canopy_res':2,'temperature_res':30});
 
 // print(summaries.size())
-
-Export.table.toAsset(summaries, 'msas-canopy-cover-stats', tableAssetFolder);
+var tableName = 'msas-canopy-cover-stats';
+Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 // Run the function a second time for non-standard rasters 
 // var asset = 'projects/USFS/LCMS-NFS/R4/Base-Learners/LANDTRENDR-Collection';
 // var years = ee.List.sequence(1984,2018).getInfo();
