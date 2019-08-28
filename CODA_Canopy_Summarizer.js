@@ -26,7 +26,7 @@ var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_fin
 var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
-var tempReducer = ee.Reducer.mean().combine(ee.Reducer.percentile([0,5,25,50,75,95,100]),null,true);
+var tempReducer = ee.Reducer.mean().combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
 var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
