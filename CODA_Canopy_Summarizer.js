@@ -113,6 +113,13 @@ summaries =temperatureNotCanopy.reduceRegions(summaries, tempReducer, null, 'EPS
 var propsOld = ee.Feature(summaries.first()).propertyNames();
 var propsNew = propsOld.replace('mean','mean_temperature_nonCanopy');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+
+
+summaries =canopyStack.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 10) ;
+var propsOld = ee.Feature(summaries.first()).propertyNames();
+var propsNew = propsOld.replace('mean','mean_temperature_nonCanopy');
+summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+
 Map.addLayer(temperatureCanopy,tempViz,'temp Canopy',false)
 Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 
