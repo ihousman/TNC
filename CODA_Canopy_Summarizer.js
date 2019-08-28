@@ -1,7 +1,13 @@
 //Params
-///Module imports
-var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
 
+//Function to set null value for export or conversion to arrays
+function setNoData(image,noDataValue){
+  var m = image.mask();
+  image = image.mask(ee.Image(1));
+  image = image.where(m.not(),noDataValue);
+  return image;
+}
+/////////////////////////////////////////////////////
 var startYear = 2010;
 var endYear = 2019;
 
@@ -31,40 +37,43 @@ var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneL
 var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);
 
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
-canopy = getImagesLib.setNoData(canopy.clip(msas),2);
+canopy = setNoData(canopy.clip(msas),2);
 
-var temperature = ee.ImageCollection(assetFolder);
+var temperature = ee.ImageCollection(assetFolder).mosaic();
 
-// var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
-// ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
-//   var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
-//   print(nm)
-//   nm = nm.replace(', ','_');
-//   nm = nm.replace('.','');
-//   nm = nm.replace(' ','_');
-//   nm = nm.replace(' ','_');
-//   nm = nm.replace(' ','_');
-//   nm = nm.replace(' ','_');
-//   nm = nm.replace(' ','_');
-//   nm = nm.replace(',','_');
-//   nm = nm.replace('-----','_');
-//   nm = nm.replace('----','_');
-//   nm = nm.replace('---','_');
-//   nm = nm.replace('--','_');
-//   nm = nm.replace('--','_');
-//   nm = nm.replace('--','_');
-//   nm = nm.replace('-','_');
-//   nm = nm.replace('-','_');
-//   nm = nm.replace('-','_');
-//   nm = nm.replace('/','_');
-//   print(nm)
-  
-//   var temperatureT = temperature.clip(outline);
-//   // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
-//   var nameT = nm + '_' + temperatureName
-//   Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
-// })
-// 
+function exportTemp(){
+  //Module imports
+  var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+  var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
+  ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
+    var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
+    print(nm)
+    nm = nm.replace(', ','_');
+    nm = nm.replace('.','');
+    nm = nm.replace(' ','_');
+    nm = nm.replace(' ','_');
+    nm = nm.replace(' ','_');
+    nm = nm.replace(' ','_');
+    nm = nm.replace(' ','_');
+    nm = nm.replace(',','_');
+    nm = nm.replace('-----','_');
+    nm = nm.replace('----','_');
+    nm = nm.replace('---','_');
+    nm = nm.replace('--','_');
+    nm = nm.replace('--','_');
+    nm = nm.replace('--','_');
+    nm = nm.replace('-','_');
+    nm = nm.replace('-','_');
+    nm = nm.replace('-','_');
+    nm = nm.replace('/','_');
+    print(nm)
+    
+    var temperatureT = temperature.clip(outline);
+    // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
+    var nameT = nm + '_' + temperatureName
+    Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
+  })
+}
 ///////////////////////////////////////////////////////////////////////////////
 // Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
