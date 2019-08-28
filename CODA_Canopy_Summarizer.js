@@ -93,7 +93,7 @@ isCanopy = isCanopy.mask(isCanopy);
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
-var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy','canopy','null']);
+var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy_count','canopy_count','null_count']);
 
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
