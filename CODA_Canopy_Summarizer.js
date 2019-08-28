@@ -17,7 +17,7 @@ var zoneList = [1,2,3,4,5,10,12,13,19,31];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
-var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures/';
+var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean();
@@ -33,39 +33,41 @@ var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas)
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = getImagesLib.setNoData(canopy.clip(msas),2);
 
-var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
-ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
-  var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
-  print(nm)
-  nm = nm.replace(', ','_');
-  nm = nm.replace('.','');
-  nm = nm.replace(' ','_');
-  nm = nm.replace(' ','_');
-  nm = nm.replace(' ','_');
-  nm = nm.replace(' ','_');
-  nm = nm.replace(' ','_');
-  nm = nm.replace(',','_');
-  nm = nm.replace('-----','_');
-  nm = nm.replace('----','_');
-  nm = nm.replace('---','_');
-  nm = nm.replace('--','_');
-  nm = nm.replace('--','_');
-  nm = nm.replace('--','_');
-  nm = nm.replace('-','_');
-  nm = nm.replace('-','_');
-  nm = nm.replace('-','_');
-  nm = nm.replace('/','_');
-  print(nm)
+var temperature = ee.ImageCollection('assetFolder');
+
+// var temperature = getImagesLib.getProcessedLandsatScenes(msas,startYear,endYear,startJulian,endJulian).select(['temp']).median();
+// ee.Dictionary(msas.aggregate_histogram('Name')).keys().getInfo().map(function(nm){
+//   var outline = ee.Feature(msas.filter(ee.Filter.eq('Name',nm)).first()).bounds().buffer(5000,1000);
+//   print(nm)
+//   nm = nm.replace(', ','_');
+//   nm = nm.replace('.','');
+//   nm = nm.replace(' ','_');
+//   nm = nm.replace(' ','_');
+//   nm = nm.replace(' ','_');
+//   nm = nm.replace(' ','_');
+//   nm = nm.replace(' ','_');
+//   nm = nm.replace(',','_');
+//   nm = nm.replace('-----','_');
+//   nm = nm.replace('----','_');
+//   nm = nm.replace('---','_');
+//   nm = nm.replace('--','_');
+//   nm = nm.replace('--','_');
+//   nm = nm.replace('--','_');
+//   nm = nm.replace('-','_');
+//   nm = nm.replace('-','_');
+//   nm = nm.replace('-','_');
+//   nm = nm.replace('/','_');
+//   print(nm)
   
-  var temperatureT = temperature.clip(outline);
-  // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
-  var nameT = nm + '_' + temperatureName
-  Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
-})
+//   var temperatureT = temperature.clip(outline);
+//   // Map.addLayer(temperatureT,{min:280,max:320,palette:'00F,888,F00'},nm);
+//   var nameT = nm + '_' + temperatureName
+//   Export.image.toAsset(temperatureT, nameT, assetFolder + nameT, null, null, outline, null, crs, transform30, 1e13);
+// })
 // 
 ///////////////////////////////////////////////////////////////////////////////
 // Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
-// Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
+Map.addLayer(temperature,{min:280,max:320,palette:'00F,888,F00'},'Temperature',false);
 // Map.addLayer(blocks,{},'Blocks',false);
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
