@@ -100,9 +100,9 @@ var propsNew = propsOld.replace('mean','mean_temperature');
 summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 summaries = canopy.reduceRegions(summaries, canopyReducer, null, 'EPSG:5070', transform2, 1) ;
-propsOld = ee.Feature(summaries.first()).propertyNames();
-propsNew = propsOld.replace('histogram','histogram_canopy');
-summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
+// propsOld = ee.Feature(summaries.first()).propertyNames();
+// propsNew = propsOld.replace('histogram','histogram_canopy');
+// summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
 
 print(summaries)
 // summaries = nonCanopy.reduceRegions(summaries, ee.Reducer.count(), null, 'EPSG:5070', transform2, 1) ;
