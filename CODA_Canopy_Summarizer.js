@@ -103,7 +103,7 @@ Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks;
 summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:5070', transform30, 1) ;
 
-summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), 2, 'EPSG:5070', null, 1) ;
+summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 1) ;
 // var propsOld = ee.Feature(summaries.first()).propertyNames();
 // var propsNew = propsOld.replace('count','mean_temperature_nonCanopy');
 // summaries = summaries.map(function(f){return f.select(propsOld, propsNew)});
