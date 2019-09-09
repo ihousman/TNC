@@ -114,7 +114,7 @@ Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 print(summaries)
 
 
-var tableName = 'msas-canopy-cover-stats';
+var tableName = 'blocks-z12-canopy-cover-stats';
 Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 
 //Function for exporting CONUS LCMS
