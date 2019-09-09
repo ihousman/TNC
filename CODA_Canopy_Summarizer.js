@@ -76,7 +76,7 @@ function exportTemp(){
   });
 }
 ///////////////////////////////////////////////////////////////////////////////
-var tempViz = {min:7,max:40,palette:'00F,888,F00'};
+var tempViz = {min:10,max:40,palette:'00F,888,F00'};
 Map.addLayer(canopy,{min:0,max:2,palette:'000,0F0,F00'},'Canopy',false);
 Map.addLayer(temperature,tempViz,'Temperature',false);
 // Map.addLayer(blocks,{},'Blocks',false);
