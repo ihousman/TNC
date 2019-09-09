@@ -28,8 +28,8 @@ var tableAssetFolder = 'projects/igde-work/CODA_UrbanCanopy';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean()
-                .combine(ee.Reducer.stdDev())
-                .combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
+                .combine(ee.Reducer.stdDev()
+                .combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true));
 var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
