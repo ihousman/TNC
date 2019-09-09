@@ -105,7 +105,7 @@ var temperatureStack = temperature;//.addBands(temperatureNotCanopy).addBands(te
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks.limit(3);
-// summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:5070', transform30, 1) ;
+summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:5070', transform30, 1) ;
 
 
 var summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 1) ;
