@@ -40,7 +40,7 @@ Map.addLayer(blocks)
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = setNoData(canopy.clip(msas),2);
 
-var temperature = ee.ImageCollection(assetFolder).mosaic().clip(msas).subtract(-273.15);
+var temperature = ee.ImageCollection(assetFolder).mosaic().clip(msas).subtract(273.15);
 
 function exportTemp(){
   //Module imports
