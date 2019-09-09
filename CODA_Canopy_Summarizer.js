@@ -36,7 +36,7 @@ var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
 var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);//msas;//
-
+Map.addLayer(blocks)
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = setNoData(canopy.clip(msas),2);
 
