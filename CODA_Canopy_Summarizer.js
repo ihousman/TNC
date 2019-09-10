@@ -128,7 +128,7 @@ function summarize(f){
   print(outDict)
   
 }
-summarize(ee.Feature(ee.List(summaries.toList(100)).get(10))
+summarize(ee.Feature(ee.List(summaries.toList(100)).get(10)))
 // summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
 
