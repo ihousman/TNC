@@ -120,7 +120,7 @@ function summarize(f){
   var countTemp = ee.Dictionary(addBandPrefix(temperatureStack,'count_').reduceRegion(ee.Reducer.count(), g, null, crs, transform30, true, 1e13, 1));
   
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
-  var canopyCounts2 = canopy.reduceRegions(canopyReducer,g,null,crs,transform2,true,1e13,1);
+  var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
   print(canopyCounts2)
   var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
   print(outDict)
