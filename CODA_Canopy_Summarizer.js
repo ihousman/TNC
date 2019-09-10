@@ -105,20 +105,25 @@ var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(tempe
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks.limit(3);
-summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, 'EPSG:5070', transform30, 1) ;
+
+function summarize(f){
+  
+  var tempSummary = temperatureStack.reduceRegion(tempReducer, f, null, crs, transform30, true, 1e13, 1);
+}
+// summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
 
-var summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 1) ;
+// var summaries =canopyStack.reduceRegions(summaries, ee.Reducer.sum(), null, 'EPSG:5070', transform2, 1) ;
 
-Map.addLayer(temperatureCanopy,tempViz,'temp Canopy',false)
-Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
-
-
-print(summaries)
+// Map.addLayer(temperatureCanopy,tempViz,'temp Canopy',false)
+// Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 
 
-var tableName = 'blocks-z12-canopy-cover-stats';
-Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
+// print(summaries)
+
+
+// var tableName = 'blocks-z12-canopy-cover-stats';
+// Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 
 //Function for exporting CONUS LCMS
 //Code for starting all tasks once this script has ran
