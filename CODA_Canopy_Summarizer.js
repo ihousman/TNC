@@ -144,7 +144,7 @@ print(summaries)
 // print(summaries)
 
 
-// var tableName = 'blocks-z12-canopy-cover-stats';
+var tableName = 'blocks-z12-canopy-cover-stats';
 Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 
 //Function for exporting CONUS LCMS
