@@ -119,9 +119,11 @@ function summarize(f){
   var stdDevTemp = ee.Dictionary(addBandPrefix(temperatureStack,'stdDev_').reduceRegion(ee.Reducer.stdDev(), g, null, crs, transform30, true, 1e13, 1));
   var countTemp = ee.Dictionary(addBandPrefix(temperatureStack,'count_').reduceRegion(ee.Reducer.count(), g, null, crs, transform30, true, 1e13, 1));
   
+  var tempHist = ee.Dictionary(addBandPrefix(temperature,'histogram_').reduceRegion(ee.Reducer.fixedHistogram(0, 100, 100), g, null, crs, transform30, true, 1e13, 1));
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
   var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
-  print(canopyCounts2)
+  print(canopyCounts2);
+  print(tempHist)
   var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
   print(outDict)
   
