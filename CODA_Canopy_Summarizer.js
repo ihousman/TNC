@@ -87,7 +87,7 @@ Map.addLayer(temperature,tempViz,'Temperature',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
 // blocks = blocks.limit(1);
-
+var allCanopy = canopy.eq(0).or(canopy.eq(1));
 var nonCanopy = canopy.eq(0);
 nonCanopy = nonCanopy.mask(nonCanopy);
 
@@ -97,12 +97,13 @@ isCanopy = isCanopy.mask(isCanopy);
 var isNull = canopy.eq(2);
 isNull = isNull.mask(isNull);
 
-var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy_count','canopy_count','nullCanopy_count']);
+var canopyStack = allCanopy.addBands(nonCanopy).addBands(isCanopy).addBands(isNull).rename(['all_count','nonCanopy_count','canopy_count','nullCanopy_count']);
 
-var temperatureNull = setNoData(temperature.clip(msas),-32768);
+// temperature = setNoData(temperature.clip(msas),-32768);
+var temperatureNull = temperature.updateMask(canopy.eq(2))
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
-var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).rename(['temperature_all','temperature_nonCanopy','temperature_canopy']);
+var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).addBands(temperatureNull).rename(['temperature_all','temperature_nonCanopy','temperature_canopy']);
 
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks.limit(3);
