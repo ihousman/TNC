@@ -106,7 +106,8 @@ var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
 var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).addBands(temperatureNull).rename(['temperature_all','temperature_nonCanopy','temperature_canopy','temperature_null']);
 Map.addLayer(temperatureStack,{},'temp stack',false);
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
-var summaries = blocks.limit(10);
+print(blocks.size())
+var summaries = blocks;//.limit(10);
 function addBandPrefix(image,prefix){
   var bns = image.bandNames();
   bns = bns.map(function(bn){return ee.String(prefix).cat(bn)});
