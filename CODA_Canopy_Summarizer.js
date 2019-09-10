@@ -28,8 +28,8 @@ var tableAssetFolder = 'projects/igde-work/CODA_UrbanCanopy';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
 var tempReducer = ee.Reducer.mean()
-                .combine(ee.Reducer.median()
-                .combine(ee.Reducer.variance()))
+                // .combine(ee.Reducer.median()
+                // .combine(ee.Reducer.variance()))
                 // .combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
 var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
