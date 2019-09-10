@@ -99,6 +99,7 @@ isNull = isNull.mask(isNull);
 
 var canopyStack = nonCanopy.addBands(isCanopy).addBands(isNull).rename(['nonCanopy_count','canopy_count','nullCanopy_count']);
 
+var temperatureNull = setNoData(temperature.clip(msas),-32768);
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
 var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).rename(['temperature_all','temperature_nonCanopy','temperature_canopy']);
@@ -111,7 +112,7 @@ function addBandPrefix(image,prefix){
   return image.rename(bns);
 }
 function summarize(f){
-  var g = f.geometry()
+  var g = f.geometry();
   var meanTemp = ee.Dictionary(addBandPrefix(temperatureStack,'mean_').reduceRegion(ee.Reducer.mean(), g, null, crs, transform30, true, 1e13, 1));
   var medianTemp = ee.Dictionary(addBandPrefix(temperatureStack,'median_').reduceRegion(ee.Reducer.median(), g, null, crs, transform30, true, 1e13, 1));
   var stdDevTemp = ee.Dictionary(addBandPrefix(temperatureStack,'stdDev_').reduceRegion(ee.Reducer.stdDev(), g, null, crs, transform30, true, 1e13, 1));
