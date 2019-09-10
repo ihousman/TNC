@@ -121,16 +121,16 @@ function summarize(f){
   
   var tempHist = ee.Dictionary(addBandPrefix(temperatureStack,'histogram_').reduceRegion(ee.Reducer.fixedHistogram(0, 100, 20), g, null, crs, transform30, true, 1e13, 1));
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
-  var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
-  
+  // var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
+  print(tempHist)
   var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
   return f.set(outDict)
   
 }
-summaries = summaries.map(summarize);
-print(summaries)
-// summarize(ee.Feature(ee.List(summaries.toList(100)).get(10)));
+// summaries = summaries.map(summarize);
+// print(summaries)
+summarize(ee.Feature(ee.List(summaries.toList(100)).get(5)));
 // summarize(ee.Feature(ee.List(summaries.toList(100)).get(20)))
 // summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
