@@ -125,7 +125,7 @@ function summarize(f){
   
   var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
-  return f.set(outDict)
+  return f.set(outDict).getInfo()
   
 }
 var out = summaries.map(summarize);
