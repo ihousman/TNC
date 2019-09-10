@@ -27,11 +27,11 @@ var assetFolder = 'projects/igde-work/CODA_UrbanCanopy/CODA-MSA-Temperatures';
 var tableAssetFolder = 'projects/igde-work/CODA_UrbanCanopy';
 var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYear.toString()+ '_'+ startJulian.toString() + '_' + endJulian.toString();
 
-var tempReducer = ee.Reducer.mean()
-                // .combine(ee.Reducer.median()
+// var tempReducer = ee.Reducer.mean()
+                // .combine(ee.Reducer.median())
                 // .combine(ee.Reducer.variance()))
                 // .combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
-var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
+// var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
@@ -108,8 +108,12 @@ var summaries = blocks.limit(3);
 
 function summarize(f){
   var g = f.geometry()
-  var tempSummary = temperatureStack.reduceRegion(tempReducer, g, null, crs, transform30, true, 1e13, 1);
-  print(tempSummary)
+  var meanTemp = ee.Dictionary(temperatureStack.reduceRegion(ee.Reducer.mean(), g, null, crs, transform30, true, 1e13, 1));
+  var medianTemp = ee.Dictionary(temperatureStack.reduceRegion(ee.Reducer.median(), g, null, crs, transform30, true, 1e13, 1));
+  
+  // var tempSummary = temperatureStack.reduceRegion(tempReducer, g, null, crs, transform30, true, 1e13, 1);
+  
+  print(meanTemp.combine(medianTemp))
   
 }
 summarize(ee.Feature(summaries.first()))
