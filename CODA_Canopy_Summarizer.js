@@ -107,8 +107,8 @@ Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks.limit(3);
 
 function summarize(f){
-  
-  var tempSummary = temperatureStack.reduceRegion(tempReducer, f, null, crs, transform30, true, 1e13, 1);
+  var g = f.geometry()
+  var tempSummary = temperatureStack.reduceRegion(tempReducer, g, null, crs, transform30, true, 1e13, 1);
   print(tempSummary)
   
 }
