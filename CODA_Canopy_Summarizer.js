@@ -125,10 +125,10 @@ function summarize(f){
   
   var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
-  return f.set(outDict).getInfo()
+  return f.set(outDict)
   
 }
-var out = summaries.map(summarize);
+summaries = summaries.map(summarize);
 print(out)
 // summarize(ee.Feature(ee.List(summaries.toList(100)).get(10)));
 // summarize(ee.Feature(ee.List(summaries.toList(100)).get(20)))
@@ -145,7 +145,7 @@ print(out)
 
 
 // var tableName = 'blocks-z12-canopy-cover-stats';
-// Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
+Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 
 //Function for exporting CONUS LCMS
 //Code for starting all tasks once this script has ran
