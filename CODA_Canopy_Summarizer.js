@@ -125,8 +125,8 @@ function summarize(f){
   var tempHistK = ee.List(tempHist.keys());
   var tempHistOut= ee.List(tempHist.values()).map(function(k){
     k = ee.List(k);
-    var tk = ee.Array(k).slice(1,0,1).project([1]).toList();
-    var tv = ee.Array(k).slice(1,1,2).project([1]).toList();
+    var tk = ee.Array(k).slice(1,0,1).project([0]).toList();
+    var tv = ee.Array(k).slice(1,1,2).project([0]).toList();
     return ee.Dictionary.fromLists(tk,tv)
     
   });
