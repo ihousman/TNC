@@ -137,9 +137,9 @@ function summarize(f){
   return f.set(outDict)
   
 }
-// summaries = summaries.map(summarize);
+summaries = summaries.map(summarize);
 // print(summaries)
-summarize(ee.Feature(ee.List(summaries.toList(100)).get(5)));
+// summarize(ee.Feature(ee.List(summaries.toList(100)).get(5)));
 // summarize(ee.Feature(ee.List(summaries.toList(100)).get(20)))
 // summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
