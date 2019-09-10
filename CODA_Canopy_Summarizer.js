@@ -124,6 +124,7 @@ function summarize(f){
   // var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
   var tempHistK = ee.List(tempHist.keys());
   var tempHistOut= ee.List(tempHist.values()).map(function(k){
+    k = ee.List(k);
     var tk = ee.Array(k).slice(1,0,1);
     var tv = ee.Array(k).slice(1,1,2);
     return ee.Dictionary.fromLists(tk,tv)
