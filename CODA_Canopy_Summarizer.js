@@ -123,7 +123,9 @@ function summarize(f){
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
   // var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
   var tempHistK = ee.List(tempHist.keys());
-  var tempHistV = ee.List(tempHist.values());
+  var tempHistOut= ee.List(tempHist.values()).map(function(k){
+    var tk = ee.Array(k).slice(1,1,2)
+  })
   print(ee.Array(tempHistV.get(0)).slice(1,1,2))
   var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
