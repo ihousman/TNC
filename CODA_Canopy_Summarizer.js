@@ -99,7 +99,7 @@ isNull = isNull.mask(isNull);
 
 var canopyStack = allCanopy.addBands(nonCanopy).addBands(isCanopy).addBands(isNull).rename(['all_count','nonCanopy_count','canopy_count','nullCanopy_count']);
 
-// temperature = setNoData(temperature.clip(msas),-32768);
+temperature = temperature.mask(canopy.neq(2));
 var temperatureNull = temperature.updateMask(canopy.eq(2))
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
