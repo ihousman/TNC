@@ -118,7 +118,7 @@ function summarize(f){
   var countTemp = ee.Dictionary(addBandPrefix(temperatureStack,'count_').reduceRegion(ee.Reducer.count(), g, null, crs, transform30, true, 1e13, 1));
   
   
-  var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp);
+  var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp);
   print(outDict)
   
 }
