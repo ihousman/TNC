@@ -103,7 +103,7 @@ temperature = temperature.mask(canopy.neq(2));
 var temperatureNull = temperature.updateMask(canopy.eq(2))
 var temperatureCanopy = temperature.updateMask(canopy.eq(1));
 var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
-var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).rename(['temperature_all','temperature_nonCanopy','temperature_canopy']);
+var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).addBands(temperatureNull).rename(['temperature_all','temperature_nonCanopy','temperature_canopy','temperature_null']);
 Map.addLayer(temperatureStack,{},'temp stack',false);
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
 var summaries = blocks.limit(10);
@@ -119,20 +119,20 @@ function summarize(f){
   var stdDevTemp = ee.Dictionary(addBandPrefix(temperatureStack,'stdDev_').reduceRegion(ee.Reducer.stdDev(), g, null, crs, transform30, true, 1e13, 1));
   var countTemp = ee.Dictionary(addBandPrefix(temperatureStack,'count_').reduceRegion(ee.Reducer.count(), g, null, crs, transform30, true, 1e13, 1));
   
-  var tempHist = ee.Dictionary(addBandPrefix(temperatureStack,'histogram_').reduceRegion(ee.Reducer.fixedHistogram(0, 60, 20), g, null, crs, transform30, true, 1e13, 1));
+  // var tempHist = ee.Dictionary(addBandPrefix(temperatureStack,'histogram_').reduceRegion(ee.Reducer.fixedHistogram(0, 60, 20), g, null, crs, transform30, true, 1e13, 1));
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
   // var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
-  var tempHistK = ee.List(tempHist.keys());
-  var tempHistOut= ee.List(tempHist.values()).map(function(k){
-    k = ee.List(k);
-    var tk = ee.Array(k).slice(1,0,1).project([0]).toList();
-    var tv = ee.Array(k).slice(1,1,2).project([0]).toList();
-    return ee.Dictionary.fromLists(tk,tv)
+  // var tempHistK = ee.List(tempHist.keys());
+  // var tempHistOut= ee.List(tempHist.values()).map(function(k){
+  //   k = ee.List(k);
+  //   // var tk = ee.Array(k).slice(1,0,1);
+  //   // var tv = ee.Array(k).slice(1,1,2);
+  //   return k;//ee.Dictionary.fromLists(tk,tv)
     
-  });
-  print(tempHistOut);
+  // });
+  // print(tempHistOut);
   // print(ee.Array(tempHistV.get(0)).slice(1,1,2))
-  var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
+  var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
   return f.set(outDict)
   
