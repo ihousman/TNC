@@ -109,7 +109,10 @@ var summaries = blocks.limit(3);
 function summarize(f){
   
   var tempSummary = temperatureStack.reduceRegion(tempReducer, f, null, crs, transform30, true, 1e13, 1);
+  print(tempSummary)
+  
 }
+summarize(ee.Feature(summaries.first()))
 // summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
 
