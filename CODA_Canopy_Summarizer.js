@@ -124,7 +124,7 @@ function summarize(f){
   // var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
   var tempHistK = ee.List(tempHist.keys());
   var tempHistV = ee.List(tempHist.values());
-  print(ee.Array(tempHistV.get(0)))
+  print(ee.Array(tempHistV.get(0)).slice(1,1,2))
   var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
  
   return f.set(outDict)
