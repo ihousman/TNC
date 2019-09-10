@@ -31,7 +31,7 @@ var temperatureName = 'Landsat_Temperature_'+startYear.toString() + '_' + endYea
                 // .combine(ee.Reducer.median())
                 // .combine(ee.Reducer.variance()))
                 // .combine(ee.Reducer.percentile(ee.List.sequence(0,100,5).getInfo()),null,true);
-// var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
+var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 ///////////////////////////////////////////////////////////////////////////////
 //Load asset with City Boundaries with 102 records, but we are mapping forest for only for 100 dropped 2 cities in PR
 //////////////////////////////////////////////////////////////////////////////
@@ -120,7 +120,8 @@ function summarize(f){
   var countTemp = ee.Dictionary(addBandPrefix(temperatureStack,'count_').reduceRegion(ee.Reducer.count(), g, null, crs, transform30, true, 1e13, 1));
   
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
-  
+  var canopyCounts2 = canopy.reduceRegions(canopyReducer,g,null,crs,transform2,true,1e13,1);
+  print(canopyCounts2)
   var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
   print(outDict)
   
