@@ -106,7 +106,7 @@ var temperatureNotCanopy = temperature.updateMask(canopy.eq(0));
 var temperatureStack = temperature.addBands(temperatureNotCanopy).addBands(temperatureCanopy).addBands(temperatureNull).rename(['temperature_all','temperature_nonCanopy','temperature_canopy','temperature_null']);
 Map.addLayer(temperatureStack,{},'temp stack',false);
 Map.addLayer(canopyStack,{},'Canopy Stack',false);
-var summaries = blocks.limit(30);
+var summaries = blocks.limit(10);
 function addBandPrefix(image,prefix){
   var bns = image.bandNames();
   bns = bns.map(function(bn){return ee.String(prefix).cat(bn)});
@@ -122,14 +122,16 @@ function summarize(f){
   var tempHist = ee.Dictionary(addBandPrefix(temperatureStack,'histogram_').reduceRegion(ee.Reducer.fixedHistogram(0, 100, 20), g, null, crs, transform30, true, 1e13, 1));
   var canopyCounts = ee.Dictionary(canopyStack.reduceRegion(ee.Reducer.count(), g, null, crs, transform2, true, 1e13, 1));
   var canopyCounts2 = canopy.reduceRegion(canopyReducer,g,null,crs,transform2,true,1e13,1);
-  print(canopyCounts2);
-  print(tempHist)
-  var outDict = meanTemp.combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
-  print(outDict)
+  
+  var outDict = tempHist.combine(meanTemp) .combine(medianTemp).combine(stdDevTemp).combine(countTemp).combine(canopyCounts);
+ 
+  return f.set(outDict)
   
 }
-summarize(ee.Feature(ee.List(summaries.toList(100)).get(10)));
-summarize(ee.Feature(ee.List(summaries.toList(100)).get(20)))
+var out = summaries.map(summarize);
+print(out)
+// summarize(ee.Feature(ee.List(summaries.toList(100)).get(10)));
+// summarize(ee.Feature(ee.List(summaries.toList(100)).get(20)))
 // summaries =temperatureStack.reduceRegions(summaries,tempReducer , null, crs, transform30, 1) ;
 
 
