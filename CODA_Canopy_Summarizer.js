@@ -116,9 +116,7 @@ function summarize(f){
   var medianTemp = ee.Dictionary(addBandPrefix(temperatureStack,'median').reduceRegion(ee.Reducer.median(), g, null, crs, transform30, true, 1e13, 1));
   var medianStDDev = ee.Dictionary(addBandPrefix(temperatureStack,'stdDev').reduceRegion(ee.Reducer.stdDev(), g, null, crs, transform30, true, 1e13, 1));
   
-  meanTemp = meanTemp
-  // var tempSummary = temperatureStack.reduceRegion(tempReducer, g, null, crs, transform30, true, 1e13, 1);
-  
+  var outDict = meanTemp.combine(medianTemp);
   print(meanTemp,medianTemp)
   
 }
