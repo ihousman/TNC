@@ -18,8 +18,8 @@ var transform2 = [2,0,-2361915.0,0,-2,3177735.0];
 var startJulian = ee.Date.fromYMD(1900,6,21).getRelative('day','year').add(1).getInfo();
 var endJulian  = ee.Date.fromYMD(1900,9,22).getRelative('day','year').add(1).getInfo();
 
-// var zoneList = [1,2,3,4,5,10,12,13,19,31];
-var zoneList = [12];
+var zoneList = [1,2,3,4,5,10,12,13,19,31];
+// var zoneList = [12];
 var canopyCollection = 'users/Shree1175/CODA_Canopy/FinalCollection';
 var msaOutlines = 'users/Shree1175/CODA_assets/MSA_UrbanCities_USA2018_biome_final2019_updated';
 
@@ -38,7 +38,7 @@ var canopyReducer = ee.Reducer.fixedHistogram(0, 3, 3);
 //Get data
 var msas =ee.FeatureCollection(msaOutlines).filter(ee.Filter.inList('zone',zoneList));
 
-var blocks = ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);//msas;//
+var blocks = msas;//ee.FeatureCollection('TIGER/2010/Blocks').filterBounds(msas);//msas;//
 Map.addLayer(blocks)
 var canopy = ee.ImageCollection(canopyCollection).filterBounds(msas).mosaic().unmask();
 canopy = setNoData(canopy.clip(msas),2);
