@@ -86,7 +86,7 @@ Map.addLayer(temperature,tempViz,'Temperature',false);
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
-// blocks = blocks.limit(1);
+blocks = blocks.limit(2);
 var allCanopy = canopy.eq(0).or(canopy.eq(1));
 var nonCanopy = canopy.eq(0);
 nonCanopy = nonCanopy.mask(nonCanopy);
@@ -154,7 +154,8 @@ summaries = summaries.map(summarize);
 // print(summaries)
 
 
-var tableName = 'blocks-z12-canopy-cover-stats';
+// var tableName = 'blocks-z12-canopy-cover-stats';
+var tableName = 'msas-canopy-cover-stats2';
 Export.table.toAsset(summaries, tableName, tableAssetFolder + '/'+tableName);
 
 //Function for exporting CONUS LCMS
