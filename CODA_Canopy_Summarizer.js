@@ -86,7 +86,7 @@ Map.addLayer(temperature,tempViz,'Temperature',false);
 // Map.addLayer(msas,{},'MSAs',false);
 // print(blocks.size())
 ///////////////////////////////////////////////////////////////////////////////
-blocks = blocks.limit(1);
+// blocks = blocks.limit(1);
 var allCanopy = canopy.eq(0).or(canopy.eq(1));
 var nonCanopy = canopy.eq(0);
 nonCanopy = nonCanopy.mask(nonCanopy);
