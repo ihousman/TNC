@@ -151,7 +151,7 @@ summaries = summaries.map(summarize);
 // Map.addLayer(temperatureNotCanopy,tempViz,'temp not Canopy',false)
 
 
-// print(summaries)
+print(summaries)
 
 
 // var tableName = 'blocks-z12-canopy-cover-stats';
