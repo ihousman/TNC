@@ -1,5 +1,6 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var table = ee.FeatureCollection("users/Shree1175/GDEpulse/iGDE_AnnualDepth_renamed_oct2018");
+var table = ee.FeatureCollection("users/Shree1175/GDEpulse/iGDE_AnnualDepth_renamed_oct2018"),
+    table3 = ee.FeatureCollection("projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 print(igdes.size());
@@ -8,7 +9,7 @@ print(igdes.limit(1));
 var igdesT = igdes.filter(ee.Filter.eq('POLYGON_ID',2954));
 print(igdesT.aggregate_array('Depth2012'))
 
-var igde_v0 = ee.FeatureCollection(table)
+var igde_v0 = ee.FeatureCollection(table3)
 print(igde_v0.limit(1));
 var igdesT0 = igde_v0.filter(ee.Filter.eq('POLYGON_ID',2954));
 print(igdesT0.aggregate_array('Depth2012'))
