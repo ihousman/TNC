@@ -1,6 +1,5 @@
 /**** Start of imports. If edited, may not auto-convert in the playground. ****/
-var table = ee.FeatureCollection("users/Shree1175/GDEpulse/iGDE_AnnualDepth_renamed_oct2018"),
-    table3 = ee.FeatureCollection("projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018");
+var table3 = ee.FeatureCollection("projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 var igdes = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018_v2');
 print(igdes.size());
