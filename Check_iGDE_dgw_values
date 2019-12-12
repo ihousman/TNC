@@ -8,6 +8,7 @@ print(igdes.limit(1));
 var igdesT = igdes.filter(ee.Filter.eq('POLYGON_ID',2954));
 print(igdesT.aggregate_array('Depth2012'))
 
+var old_iGDE= ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018')
 var igde_v0 = ee.FeatureCollection(table3)
 print(igde_v0.limit(1));
 var igdesT0 = igde_v0.filter(ee.Filter.eq('POLYGON_ID',2954));
