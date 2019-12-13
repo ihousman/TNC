@@ -206,7 +206,7 @@ var out = exportYears.getInfo().map(function(yr){
     // if(failedExports.indexOf(outName)>-1){
       var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.mean(), scale, crs, transform, 2);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)});
-    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables');
+    Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables-Dec-Debugging');
     
     //For phase 2- export to asset as well
     var outAsset = 'projects/igde-work/tables/' + outName;
