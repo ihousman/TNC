@@ -56,7 +56,7 @@ print(igdes.size());
 // var igdesL = igdes.toList(10000000,0);
 
 //Define how many igdes to extract at once- reduce to increase stability
-var howMany = 20000;
+var howMany = 1000;
 
 //////////////////////////////////////////////////////////////////////////////////////
 //Bring in composites
