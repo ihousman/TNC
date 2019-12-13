@@ -56,7 +56,7 @@ print(igdes.size());
 // var igdesL = igdes.toList(10000000,0);
 
 //Define how many igdes to extract at once- reduce to increase stability
-var howMany = 200000;
+var howMany = 20000;
 
 //////////////////////////////////////////////////////////////////////////////////////
 //Bring in composites
@@ -203,7 +203,7 @@ var out = exportYears.getInfo().map(function(yr){
     var igdesTLT = igdesTL.slice(startI,endI);
     var outName = 'Export-Full-Dataset-'+yro.toString() + '_'+startI.toString() + '_' + (endI-1).toString();
     // print(outName)
-    if(failedExports.indexOf(outName)>-1){
+    // if(failedExports.indexOf(outName)>-1){
       var outTable = forExtraction.reduceRegions(ee.FeatureCollection(igdesTLT), ee.Reducer.first(), scale, crs, transform, 2);
     outTable = outTable.map(function(f){return f.set('A_Year',yr)});
     Export.table.toDrive(outTable, outName, 'TNC-GDEPulse-GEE-Export-Tables');
@@ -212,7 +212,7 @@ var out = exportYears.getInfo().map(function(yr){
     var outAsset = 'projects/igde-work/tables/' + outName;
     // Export.table.toAsset(outTable, outName, outAsset)
 
-    }
+    // }
     
   });
  
