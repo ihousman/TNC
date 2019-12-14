@@ -1,0 +1,21 @@
+//check DGW data from old GDE file
+print('Check total no records from old dataset with correct measurement of DGW from multiple wells')
+var old_iGDE= ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018')
+print(old_iGDE.size());
+
+var igde_v0 = ee.FeatureCollection(old_iGDE)
+print(igde_v0.limit(1));
+var igdesT0 = igde_v0.filter(ee.Filter.eq('POLYGON_ID',2954));
+print('check data from a iGDE joined to multiple wells')
+print(igdesT0.aggregate_array('Depth2012'))
+
+//load only the iGDE analysed by Ian in the first roung
+//n = 2980 unique iGDE polygons with measures from multiple wells
+print('Load iGDE analyzed by Ian in 2019 (unique iGDE = 2980')
+var iGDE2980 = ee.FeatureCollection('projects/igde-work/igde-data/iGDE_annualdepth_renamed_oct2018_analysed')
+print('Total no of records', iGDE2980.size())
+print(iGDE2980.limit(10))
+Map.addLayer(iGDE2980,{},'iGDE analysed 2019')
+Map.centerObject(iGDE2980, 8);
+
+ 
