@@ -23,8 +23,7 @@ function addSuffixToCollectionBandNames(c,suffix){
 }
 
 // Define user parameters:
-var failedExports =['Export-Full-Dataset-1985_0_999', 'Export-Full-Dataset-1985_1000_1999', 'Export-Full-Dataset-1985_2000_2999', 'Export-Full-Dataset-1985_3000_3999', 'Export-Full-Dataset-1985_4000_4033', 'Export-Full-Dataset-1987_3000_3999', 'Export-Full-Dataset-1990_4000_4803', 'Export-Full-Dataset-1992_4000_4999', 'Export-Full-Dataset-1994_4000_4999', 'Export-Full-Dataset-1997_4000_4999', 'Export-Full-Dataset-1998_4000_4999', 'Export-Full-Dataset-2006_5000_5999', 'Export-Full-Dataset-2008_5000_5999', 'Export-Full-Dataset-2015_6000_6999'];
-
+var failedExports =['Export-Full-Dataset-1985_0_999', 'Export-Full-Dataset-1985_1000_1999', 'Export-Full-Dataset-1985_2000_2999', 'Export-Full-Dataset-1985_3000_3999', 'Export-Full-Dataset-1985_4000_4033']
 // 1. Specify study area: Study area
 // Can specify a country, provide a fusion table  or asset table (must add 
 // .geometry() after it), or draw a polygon and make studyArea = drawnPolygon
