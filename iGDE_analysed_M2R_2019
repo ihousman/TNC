@@ -1,3 +1,8 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var table = ee.FeatureCollection("users/Shree1175/GDEpulse/iGDE_annualdepth_renamed_oct2018_analysed");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+print(table.limit(5))
+
 //check DGW data from old GDE file
 print('Check total no records from old dataset with correct measurement of DGW from multiple wells')
 var old_iGDE= ee.FeatureCollection('projects/igde-work/igde-data/iGDE_AnnualDepth_renamed_oct2018')
