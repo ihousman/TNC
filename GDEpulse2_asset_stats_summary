@@ -1,0 +1,5 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var table = ee.FeatureCollection("projects/igde-work/igde-data/iGDE_unique_VM_analyzed_all_Jan2020");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+//link to GDE asset with states summary
+print(table.limit(2))
