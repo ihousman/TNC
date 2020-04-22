@@ -34,8 +34,8 @@ var endJulian = 121+(64*2)
 // More than a 3 year span should be provided for time series methods to work 
 // well. If using Fmask as the cloud/cloud shadow masking method, this does not 
 // matter
-var startYear = 1984;
-var endYear = 1993;
+var startYear = 2005;
+var endYear = 2019;
 
 
 
