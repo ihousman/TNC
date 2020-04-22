@@ -142,7 +142,7 @@ indexList.map(function(indexName){
   // Convert to durFitMagSlope format for plotting
   var durFitMagSlope = dLib.convertStack_To_DurFitMagSlope(ltStack, 'LT');
   durFitMagSlope = durFitMagSlope.map(function(img){return dLib.LT_VT_multBands(img, 0.0001)});
-  Map.addLayer(durFitMagSlope, {}, 'durFitMagSlope', false)
+  Map.addLayer(durFitMagSlope, {}, 'durFitMagSlope', false);
   
   // Add to Map
   var newImage = durFitMagSlope.select(indexName+'_LT_fitted').map(function(img){return img.reproject(crs, transform, scale)});
