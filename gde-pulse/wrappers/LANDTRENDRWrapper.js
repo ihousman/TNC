@@ -31,7 +31,7 @@ var outputName = 'LT_';
 
 //Provide location composites will be exported to
 //This should be an asset folder, or more ideally, an asset imageCollection
-var exportPathRoot = 'projects/igde-work/raster-data/LANDTRENDR-collection';
+var exportPathRoot = 'projects/igde-work/raster-data/LANDTRENDR-collection-stack-format';
 
 // var exportPathRoot = 'projects/USFS/LCMS-NFS/R4/BT/Base-Learners/Base-Learners-Collection';
 //CRS- must be provided.  
@@ -95,7 +95,7 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImagesLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
 var startYear = 1984;
-var endYear = 2018;
+var endYear = 2019;
 
 Map.addLayer(ee.Image(composites.first()),getImagesLib.vizParamsFalse,'comp')
 ////////////////////////////////////////////////////////////
