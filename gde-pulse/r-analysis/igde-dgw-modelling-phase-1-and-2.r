@@ -1,5 +1,5 @@
 #Install packages if not already done
-# install.packages(c('corrplot','randomForest','stringr' , 'caret','ranger','doParallel'))
+#install.packages(c('corrplot','randomForest','stringr' , 'caret','ranger','doParallel','lmodel2'))
 #Bring in packages
 library(corrplot)
 library(randomForest)
@@ -8,15 +8,16 @@ library(caret)
 library(doParallel)
 # library(egg)
 library(ranger)
+library(lmodel2)
 ######################################
 #Set up workspace
 # load("C:/TNC-analysis/RData")
-wd = 'C:/TNC/analysis/outputs_boot2'
-wdAnalysis =  'C:/TNC/analysis'
-# setwd(wdAnalysis)
-# load("C:/scratch/_RData.gz")
+wd = 'C:/TNC/tables_dec_rework'
+wdAnalysis =  'C:/TNC/analysis3_dec_rework/'
+setwd(wdAnalysis)
+load("C:/TNC/test.RData")
 # wd = 'C:/scratch'
-setwd(wd)
+# setwd(wd)
 
 #Set parameters
 ntree = 500#Number of trees in the RF models
@@ -57,11 +58,11 @@ lmp <- function (modelobject) {
 # tables = list.files(wd,pattern = '*.csv$',include.dirs = TRUE)
 # allData = mclapply(tables,function(table){print(table);read.csv(table)})
 # allData = do.call(rbind,allData)
-# allData = na.omit(allData)
+allData = na.omit(allData)
 
 #If data are already read in, load saved .RData file
 # save.image("analysis_data.RData")
-load("C:/TNC/analysis/analysis_data.RData")
+# load("C:/TNC/tables/analysis_data.RData")
 
 #Set up some of the strata fields that are not already in the tables
 #Add strata field constant for all covers
@@ -80,6 +81,9 @@ allData$iGDE_distQuantiles = qfun(allData$iGDE_dist_,4)
 #Get rid of dgw outliers and values < minDGW
 nsd = 4
 minDGW = -20
+
+#Set the number of times the model 2 regression is run. This is useful if using non-parametric approach for confidence/t test, but slows things down a lot
+nperm = 1
 
 #Find the mean and sdd of the dgw
 m = mean(allData$D0_Depth.To.Groundwater)
@@ -111,8 +115,299 @@ independents =  predictors[grep('D0_Depth.To.Groundwater|D1_Depth.To.Groundwater
 dep0 = predictorsTable$D0_Depth.To.Groundwater
 dep1 = predictorsTable$D1_Depth.To.Groundwater
 ind = predictorsTable[independents]
+
+#Find unique polygon ids
+ids = unique(allDataWOOutliers$POLYGON_ID)
 ######################################
+#Functions for Phase II
+#Calculate rmse with a given linear model
+getRMSE = function(lm,coeffs){
+  coeffs = as.numeric(coeffs)
+  predicted = (lm$x - coeffs[2])/coeffs[1] 
+  rmse = (sqrt(mean(lm$x - predicted)^2))
+  return(rmse)
+}
+#Extract rmses at various confidence intervals and different linear models 
+getRMSES = function(lm){
+  ols_coeffs = lm$regression.results[1,][c(2,3)]
+  ma_coeffs = lm$regression.results[2,][c(2,3)]
+  sma_coeffs = lm$regression.results[3,][c(2,3)]
+  
+  ols_25_coeffs = lm$confidence.intervals[1,][c(2,4)]
+  ols_975_coeffs = lm$confidence.intervals[1,][c(3,5)]
+  
+  ma_25_coeffs = lm$confidence.intervals[2,][c(2,4)]
+  ma_975_coeffs = lm$confidence.intervals[2,][c(3,5)]
+  
+  sma_25_coeffs = lm$confidence.intervals[3,][c(2,4)]
+  sma_975_coeffs = lm$confidence.intervals[3,][c(3,5)]
+  
+  ols_rmse = getRMSE(lm,ols_coeffs)
+  ma_rmse = getRMSE(lm,ma_coeffs)
+  sma_rmse = getRMSE(lm,sma_coeffs)
+  
+  
+  ols_25_rmse = getRMSE(lm,ols_25_coeffs)
+  ma_25_rmse = getRMSE(lm,ma_25_coeffs)
+  sma_25_rmse = getRMSE(lm,sma_25_coeffs)
+  
+  ols_975_rmse = getRMSE(lm,ols_975_coeffs)
+  ma_975_rmse = getRMSE(lm,ma_975_coeffs)
+  sma_975_rmse = getRMSE(lm,sma_975_coeffs)
+  
+    
+  return(c(ols_rmse,ma_rmse,sma_rmse,ols_25_rmse,ma_25_rmse,sma_25_rmse,ols_975_rmse,ma_975_rmse,sma_975_rmse))
+  
+}
+#Fit model for a given set of variables
+applyBase = function(id,dep,ind,base,varName,whichD,nperm=1){
+  #Set up the independent
+  ind = eval(parse(text=paste0('ind$',varName)))
+  
+  #Compute the linear model using lmodel2
+  lm =  lmodel2(ind~dep, nperm=nperm,range.y = 'interval',range.x = 'interval')
+  
+  #Compute the number of observations (years for each well for a given polygon id)
+  n = length(ind)
+  
+  #Get the rmses
+  rmses = getRMSES(lm)
+  
+  #Create a xy scatter plot if R2 > 0.6
+  if(lm$rsquare > 0.6  ){
+    pngName = paste0(id,'_',varName,'_',base,'.png')
+    png(pngName)
+    plot(lm,'MA',xlab = 'Depth to GW',ylab = paste0(d0Var,'_',base),main =paste0('ID: ',id, ' n:',n,' R2:', format(round(lm$rsquare , 4), nsmall = 4),' P:', format(round(lm$P.param , 4), nsmall = 4)))
+    dev.off()
+  }
+  
+  
+  #Create the entry for the output table
+  outLine = c(id,varName,whichD,base, nperm,n,lm$rsquare,lm$P.param,rmses,lm$regression.results$Intercept,lm$regression.results$Slope,lm$regression.results$"P-perm (1-tailed)",lm$confidence.intervals$"2.5%-Intercept",lm$confidence.intervals$"97.5%-Intercept",lm$confidence.intervals$"2.5%-Slope",lm$confidence.intervals$"97.5%-Slope")
+  # t =  rbind(outTable,outLine)
+  # assign("outTable", t, envir = .GlobalEnv)
+  return(outLine)
+}
+
+#Wrapper function to process a polygon id
+processID = function(id){
+ outTable = c()
+  # registerDoParallel(cores=8)
+  # outTableFinal <- foreach(ids, .combine=rbind) %dopar% {
+  
+  #Pull out the rows for the given id
+  t = subset(allData, POLYGON_ID==id) 
+  
+  #Pull out Landtrendr, Depth to gw, and harmonic variables
+  t = t[,names(t)[grepl('D0_|D1_',names(t))]]
+  t = t[,names(t)[grepl('LT_Fitted|Depth|_AUC|_phase|_amplitude|peakJulianDay',names(t))]]
+  
+  #If there are >= 20 obs for the id, process it
+  if(length(t[,1]) >= 20){
+    print(id)
+    print(match(id,ids))
+    
+    #Separate out the depth to gw and the pairwise depth to gw
+    depD0T = t$D0_Depth.To.Groundwater
+    depD1T = t$D1_Depth.To.Groundwater
+    
+    
+    #Set up the independents and different transformations- many were not used
+    indT = t[,names(t)[grepl('D0_|D1_',names(t))]]
+    indT = predict(preProcess(indT,method = c('range')),indT)
+    
+    # indT_exp_pt1 = indT^0.1#predict(preProcess(indT^0.1,method = c('range')),indT^0.1)
+    
+    indT_exp_pt5 = predict(preProcess(indT^0.5,method = c('range')),indT^0.5)
+    
+    indT_exp_2 = predict(preProcess(indT^2,method = c('range')),indT^2)
+    
+    # indT_exp_3 = indT^3#predict(preProcess(indT^3,method = c('range')),indT^3)
+    
+    # indT_sin = sin(indT)#predict(preProcess(sin(indT),method = c('range')),sin(indT))
+    
+    # indT_cos = cos(indT)#predict(preProcess(cos(indT),method = c('range')),cos(indT))
+    
+    # indT_tan = tan(indT)#predict(preProcess(tan(indT),method = c('range')),tan(indT))
+    
+    # indT_log = predict(preProcess(log(indT),method = c('range')),log(indT*10))
+    
+    
+    
+    #In the end filtered down to only include Landtrendr for independents
+    dVars = names(t)[grepl('LT_Fitted',names(t))]#[grepl('LT_Fitted|_AUC|_phase|_amplitude|peakJulianDay',names(t))]
+    d0Vars = dVars[grepl('D0_',dVars)]
+    d1Vars = dVars[grepl('D1_',dVars)]
+    
+    #Iterate across each d0 variable transformation and get result
+    for(d0Var in d0Vars){
+      # print(d0Var)
+      
+      outTable = rbind(outTable,applyBase(id,depD0T,indT,'Raw',d0Var,'D0',nperm))
+      outTable = rbind(outTable,applyBase(id,depD0T,indT_exp_pt5,'exp_pt5',d0Var,'D0',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD0T,indT_exp_pt1,'exp_pt1',d0Var,'D0',nperm))
+      outTable = rbind(outTable,applyBase(id,depD0T,indT_exp_2,'exp_2',d0Var,'D0',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD0T,indT_exp_3,'exp_3',d0Var,'D0',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD0T,indT_sin,'sin',d0Var,'D0',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD0T,indT_cos,'cos',d0Var,'D0',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD0T,indT_tan,'tan',d0Var,'D0',nperm))
+      
+    }
+    #Iterate across each d1 variable transformation and get result
+    for(d1Var in d1Vars){
+      # print(d1Var)
+      
+      outTable = rbind(outTable,applyBase(id,depD1T,indT,'Raw',d1Var,'D1',nperm))
+      outTable = rbind(outTable,applyBase(id,depD1T,indT_exp_pt5,'exp_pt5',d1Var,'D1',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD1T,indT_exp_pt1,'exp_pt1',d1Var,'D1',nperm))
+      outTable = rbind(outTable,applyBase(id,depD1T,indT_exp_2,'exp_2',d1Var,'D1',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD1T,indT_exp_3,'exp_3',d1Var,'D1',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD1T,indT_sin,'sin',d1Var,'D1',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD1T,indT_cos,'cos',d1Var,'D1',nperm))
+      # outTable = rbind(outTable,applyBase(id,depD1T,indT_tan,'tan',d1Var,'D1',nperm))
+      
+    }
+  }
+  return(outTable)
+}
+#Higher level wrapper to batch process polygon ids that is used in the multi-threading method below
+processIDs = function(idsT){
+  startID = idsT[1]
+  endID = idsT[length(idsT)]
+
+  outName = paste0(startID,'_',endID,'_iGDE_LM_Results_Table.csv')
+  outTable = foreach(id= idsT,.combine =rbind)%dopar%{data.frame(processID(id))}
+  outTable = data.frame(outTable)
+  
+  outTableFactors = outTable[,1:6]
+  outTableNumbers = outTable[,7:45]
+  outTableNumbers <- lapply(outTableNumbers, function(x) as.numeric(as.character(x)))
+  
+  outTableFixed = data.frame(cbind(outTableFactors,outTableNumbers))
+  nms = c('ID','Variable_Name','WhichD','Base_Function','Nperm','N','Rsq','P','OLS_RMSE','MA_RMSE','SMA_RMSE','OLS_25_RMSE','MA_25_RMSE','SMA_25_RMSE','OLS_975_RMSE','MA_975_RMSE','SMA_975_RMSE','OLS_Intercept','MA_Intercept','SMA_Intercept','RMA_Intercept','OLS_Slope','MA_Slope','SMA_Slope','RMA_Slope','OLS_P','MA_P','SMA_P','RMA_P','OLS_Intercept_2.5','MA_Intercept_2.5','SMA_Intercept_2.5','RMA_Intercept_2.5','OLS_Intercept_97.5','MA_Intercept_97.5','SMA_Intercept_97.5','RMA_Intercept_97.5','OLS_Slope_2.5','MA_Slope_2.5','SMA_Slope_2.5','RMA_Slope_2.5','OLS_Slope_97.5','MA_Slope_97.5','SMA_Slope_97.5','RMA_Slope_97.5')
+  
+  names(outTableFixed) = nms
+  write.csv(outTableFixed,outName,row.names = F)
+  
+  
+  outTableGood = outTableFixed[outTableFixed$Rsq > 0.8,]
+  
+  
+  
+}
+#Method for summarizing
+summarizeByVB = function(vb){
+  print(vb)
+  var = as.character(vb[1])
+  b = as.character(vb[2])
+ 
+  # 
+  t = outTableFixed[outTableFixed$Variable_Name == var ,]
+  t = t[t$Base_Function == b ,]
+ 
+  qp = c(0,0.05,0.25,0.5,0.75,0.95,1)
+  rsqQ = quantile(t$Rsq,qp)
+  names(rsqQ) = sapply(names(rsqQ),function(i){paste0('Rsq ',i)})
+  
+  ols_rmseQ = quantile(t$OLS_RMSE,qp)
+  names(ols_rmseQ) = sapply(names(ols_rmseQ),function(i){paste0('OLS RMSE ',i)})
+  
+  ma_rmseQ = quantile(t$MA_RMSE,qp)
+  names(ma_rmseQ) = sapply(names(ma_rmseQ),function(i){paste0('MA RMSE ',i)})
+  
+  sma_rmseQ = quantile(t$SMA_RMSE,qp)
+  names(sma_rmseQ) = sapply(names(sma_rmseQ),function(i){paste0('SMA RMSE ',i)})
+  namesFirst = c('Variable_Name','Base_Function')
+  first = c(var,b)
+  names(first) = namesFirst
+  
+  
+  outHist = paste0(var,'_',b,'_R2_Hist.png')
+  png(outHist)
+  hist(t$Rsq,main = paste0(var, ' ',b, ' R2 Hist'),xlab = parse(text='R^2'))
+  abline(v = mean(t$Rsq),col = 'red')
+  abline(v = median(t$Rsq),col = 'blue')
+  # text(mean(t$Rsq),-0,"Mean",srt=0.2,pos=3)
+  # text(median(t$Rsq),500,"Median",srt=0.2,pos=3)
+  dev.off()
+  return(c(first,rsqQ,ols_rmseQ,ma_rmseQ,sma_rmseQ))
+  
+}
+#Function to summarize final table
+summarizeTable = function(outTableFixed){
+  vars = as.vector(unique(outTableFixed$Variable_Name))
+  bases =  as.vector(unique(outTableFixed$Base_Function))
+ 
+  vbs = t((expand.grid(vars,bases)))
+  
+  bestVars = foreach(vb = vbs,.combine = rbind)%do%{summarizeByVB(vb)}
+  write.csv(bestVars,'Best_Variables_Summary_iGDE_LM_Results_Table.csv',row.names = F)
+  
+}
+
+#Set up cluster for multi threading
+cl <- makeCluster(7)
+
+#Bring in packages
+clusterEvalQ(cl, library(corrplot))
+clusterEvalQ(cl,library(randomForest))
+clusterEvalQ(cl,library(stringr))
+clusterEvalQ(cl,library(caret))
+clusterEvalQ(cl,library(doParallel))
+
+clusterEvalQ(cl,library(ranger))
+clusterEvalQ(cl,library(lmodel2))
+registerDoParallel(cl)
+
+#Process all the ids
+outTable = foreach(id= ids,.combine =rbind)%dopar%{data.frame(processID(id))}
+
+stopCluster()
+
+#Write out complete results table
+outTable = data.frame(outTable)
+# c(id,varName,whichD,base, nperm,n,lm$rsquare,lm$P.param,rmses,lm$regression.results$Intercept,lm$regression.results$Slope,lm$regression.results$"P-perm (1-tailed)",lm$confidence.intervals$"2.5%-Intercept",lm$confidence.intervals$"97.5%-Intercept",lm$confidence.intervals$"2.5%-Slope",lm$confidence.intervals$"97.5%-Slope")
+# (ols_rmse,ma_rmse,sma_rmse,ols_25_rmse,ma_25_rmse,sma_25_rmse,ols_975_rmse,ma_975_rmse,sma_975_rmse))
+names(outTable) = c('ID','Variable_Name','WhichD','Base_Function','Nperm','N','Rsq','P','OLS_RMSE','MA_RMSE','SMA_RMSE','OLS_RMSE_25','MA_RMSE_25','SMA_RMSE_25','OLS_RMSE_975','MA_RMSE_975','SMA_RMSE_975','OLS_Intercept','MA_Intercept','SMA_Intercept','RMA_Intercept','OLS_Slope','MA_Slope','SMA_Slope','RMA_Slope','OLS_P','MA_P','SMA_P','RMA_P','OLS_Intercept_2.5','MA_Intercept_2.5','SMA_Intercept_2.5','RMA_Intercept_2.5','OLS_Intercept_97.5','MA_Intercept_97.5','SMA_Intercept_97.5','RMA_Intercept_97.5','OLS_Slope_2.5','MA_Slope_2.5','SMA_Slope_2.5','RMA_Slope_2.5','OLS_Slope_97.5','MA_Slope_97.5','SMA_Slope_97.5','RMA_Slope_97.5')
+write.csv(outTable,'iGDE_LM_Results_Table_Dec_2019_Rework.csv',row.names = F)
+# outTableFixed =outTable
+# summarizeTable(outTableFixed)
+
+#Do some post-processing
+#Apply 0.5 R2 threshold
+t =outTable[as.numeric(as.character(outTable$Rsq))>0.6,]
+#t =outTable[as.vector(outTable$Rsq)>0.6,]
+#Find how many were above the threshold
+n = length(as.vector(unique(t$ID)))
+
+#Look at obs count by id
+byID = t %>%group_by(ID) %>%summarize(n())
+names(byID) = c('Column_Name','Count')
+byID$Column = 'By_ID'
+#write.csv(byID,'iGDE_LM_Results_Table_Dec_2019_Rework_Summary_ID_Counts.csv',row.names = F)
+
+#Summarize by D0 vs D1 counts
+whichD = t %>%group_by(WhichD) %>%summarize(n())
+names(whichD) = c('Column_Name','Count')
+whichD$Column = 'whichD'
+
+
+#Summarize by the basis function counts
+base_function = t %>%group_by(Base_Function) %>%summarize(n())
+names(base_function) = c('Column_Name','Count')
+base_function$Column = 'Base_Function'
+
+#Summarize by variable counts
+variable_name = t %>%group_by(Variable_Name) %>%summarize(n())
+names(variable_name) = c('Column_Name','Count')
+variable_name$Column = 'VariableName'
+
+#Set up summary table and write it out
+summary_table = rbind(whichD,base_function,variable_name,byID)
+write.csv(summary_table,'iGDE_LM_Results_Table_Dec_2019_Rework_Summary_Counts.csv',row.names = F)
+counts = allDataWOOutliers %>%group_by(POLYGON_ID) %>%summarize(n())
 ######################################
+#Phase 1 code
 #Function for pulling stats from LM
 getLMStats = function(m){
   r2 = format(round(m$results$Rsquared , 4), nsmall = 4)
