@@ -11,8 +11,10 @@ var geometry = /* color: #d63000 */ee.Geometry.Polygon(
 //a thresholded year, magnitude, and duration of greatest disturbance
 
 //Module imports
-var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
-var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
+// var getImageLib = require('users/ianhousman/TNC:gde-pulse/modules/getImagesLib.js');
+// var dLib = require('users/ianhousman/TNC:gde-pulse/modules/changeDetectionLib.js');
+var getImagesLib = require('users/USFS_GTAC/modules:getImagesLib.js');
+var dLib = require('users/USFS_GTAC/modules:changeDetectionLib.js');
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 dLib.getExistingChangeData();
@@ -87,67 +89,67 @@ var distParams = {
 var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-collection')
         .sort('system:time_start')
         .map(function(img){return dLib.multBands(img,1,0.0001)})
-        .map(getImageLib.simpleAddIndices)
-        .map(getImageLib.getTasseledCap)
-        .map(getImageLib.simpleAddTCAngles)
-        .map(getImageLib.addSAVIandEVI)
+        .map(getImagesLib.simpleAddIndices)
+        .map(getImagesLib.getTasseledCap)
+        .map(getImagesLib.simpleAddTCAngles)
+        .map(getImagesLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
 var startYear = 1984;
 var endYear = 2018;
 
-Map.addLayer(ee.Image(composites.first()),getImageLib.vizParamsFalse,'comp')
+Map.addLayer(ee.Image(composites.first()),getImagesLib.vizParamsFalse,'comp')
 ////////////////////////////////////////////////////////////
 //Landtrendr code
-var indexListString = getImageLib.listToString(indexList,'_');
-var indexDirList = ee.List(indexList).zip(ee.List(ltDirection)).getInfo();
+// var indexListString = getImageLib.listToString(indexList,'_');
+// var indexDirList = ee.List(indexList).zip(ee.List(ltDirection)).getInfo();
 
-//Iterate across index and direction list
-var outputCollection;
-var outputStack;
-indexDirList.map(function(indexDir){
-  var indexName = indexDir[0];
-  var distDir = indexDir[1];
-  // print(indexName,distDir);
-  var tsIndex = composites.select([indexName]);
+// //Iterate across index and direction list
+// var outputCollection;
+// var outputStack;
+// indexDirList.map(function(indexDir){
+//   var indexName = indexDir[0];
+//   var distDir = indexDir[1];
+//   // print(indexName,distDir);
+//   var tsIndex = composites.select([indexName]);
   
-  //Run master LT wrapper
-  //Returns the raw, heuristic output, and fitted collection
-  var ltOutputs = dLib.landtrendrWrapper(tsIndex,startYear,endYear,indexName,distDir,run_params,distParams,mmu);
+//   //Run master LT wrapper
+//   //Returns the raw, heuristic output, and fitted collection
+//   var ltOutputs = dLib.landtrendrWrapper(tsIndex,startYear,endYear,indexName,distDir,run_params,distParams,mmu);
   
-  var ltRaw = ltOutputs[0];
-  var ltHeuristic = ltOutputs[1];
-  var ltAnnualFitted = ltOutputs[2];
+//   var ltRaw = ltOutputs[0];
+//   var ltHeuristic = ltOutputs[1];
+//   var ltAnnualFitted = ltOutputs[2];
   
-  //Stack the heuristic output and stack each image
-  //in fitted collection using join
-  if(outputCollection === undefined){
-    outputCollection = ltAnnualFitted;
-    outputStack = ltHeuristic;
-  }else{
-    outputCollection = getImageLib.joinCollections(outputCollection,ltAnnualFitted,false);
-    outputStack = outputStack.addBands(ltHeuristic);
+//   //Stack the heuristic output and stack each image
+//   //in fitted collection using join
+//   if(outputCollection === undefined){
+//     outputCollection = ltAnnualFitted;
+//     outputStack = ltHeuristic;
+//   }else{
+//     outputCollection = getImageLib.joinCollections(outputCollection,ltAnnualFitted,false);
+//     outputStack = outputStack.addBands(ltHeuristic);
     
-  }
+//   }
   
-});
-Map.addLayer(outputCollection,{},'LT Fitted IndexNames',false);
-Map.addLayer(outputStack.select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},indexList[0] + ' LT Change Year',false);
+// });
+// Map.addLayer(outputCollection,{},'LT Fitted IndexNames',false);
+// Map.addLayer(outputStack.select([0]),{'min':startYear,'max':endYear,'palette':'FF0,F00'},indexList[0] + ' LT Change Year',false);
   
-// Export each fitted year
-var years = ee.List.sequence(startYear,endYear).getInfo();
+// // Export each fitted year
+// var years = ee.List.sequence(startYear,endYear).getInfo();
 
-  years.map(function(year){
-    var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
-    .multiply(10000).int16()
-    .set('bandsUsed',indexListString)
-    .set('system:time_start',ee.Date.fromYMD(year,6,1).millis())
-    // .clip(sa)
-  var exportName = outputName + year.toString();
-    var exportPath = exportPathRoot + '/'+ exportName;
+//   years.map(function(year){
+//     var ltYr = ee.Image(outputCollection.filter(ee.Filter.calendarRange(year,year,'year')).first())
+//     .multiply(10000).int16()
+//     .set('bandsUsed',indexListString)
+//     .set('system:time_start',ee.Date.fromYMD(year,6,1).millis())
+//     // .clip(sa)
+//   var exportName = outputName + year.toString();
+//     var exportPath = exportPathRoot + '/'+ exportName;
     
-    getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
-      studyArea,null,crs,transform);
-  });
+//     getImageLib.exportToAssetWrapper(ltYr,exportName,exportPath,'mean',
+//       studyArea,null,crs,transform);
+//   });
   
 // //Export thresholded stack
 // var exportName = outputName + 'LT_Stack';
