@@ -50,7 +50,7 @@ var scale = null;
 //'NBR','NDVI','wetness','greenness','brightness','tcAngleBG'
 // var indexList = ee.List(['nir','swir1']);
 var indexList = ['blue','green','red','nir','swir1','swir2','NBR','NDMI','NDVI','SAVI','EVI','brightness','greenness','wetness','tcAngleBG'];
-
+indexList = ['NBR']
 //The corresponding direction of forest loss for the given band/index specified above in indexList
 var ltDirection =[1,-1,1,-1,1,1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
 
@@ -94,12 +94,68 @@ var composites = ee.ImageCollection('projects/igde-work/raster-data/composite-co
         .map(getImagesLib.simpleAddTCAngles)
         .map(getImagesLib.addSAVIandEVI)
         .map(function(img){return img.clip(sa)});
-var startYear = 1984;
-var endYear = 2019;
+var startYear = ee.Date(composites.first().get('system:time_start')).get('year');
+var endYear = ee.Date(composites.sort('system:time_start',false).first().get('system:time_start')).get('year');
+
 
 Map.addLayer(ee.Image(composites.first()),getImagesLib.vizParamsFalse,'comp')
 ////////////////////////////////////////////////////////////
 //Landtrendr code
+
+var exportNamePrefix = 'LT_Stack_' ;
+indexList.map(function(indexName){
+  print('Running LandTrendr for '+indexName)
+
+  var ltStack = ee.Image(dLib.LANDTRENDRVertStack(composites, indexName, run_params, startYear, endYear));
+  print('ltStack',ltStack)
+  ltStack = ee.Image(dLib.LT_VT_vertStack_multBands(ltStack, 'landtrendr', 10000));
+  ltStack = ltStack.int16();
+  Map.addLayer(ltStack, {}, indexName+' Stack', false);
+  
+  // Export as Image
+  var exportName = exportNamePrefix + indexName + '_' + startYear.getInfo() + '-' + endYear.getInfo();
+  var exportPath = exportPathRoot + '/'+ exportName;    
+
+  //Set up proper resampling for each band
+  //Be sure to change if the band names for the exported image change
+  var pyrObj = {'yrs_':'mode','fit_':'mean','rmse':'mean'};   
+  var outObj = {};
+  ltStack.bandNames().getInfo().map(function(bandName){
+    Object.keys(pyrObj).map(function(key){
+      if(key == bandName.substring(0,4)){
+        outObj[bandName] = pyrObj[key]; 
+      }
+    });
+  });
+  
+  getImagesLib.exportToAssetWrapper2(
+    ltStack,
+    exportName,
+    exportPath,
+    outObj,
+    studyArea,
+    scale,
+    crs,
+    transform
+  );
+  
+  // Convert to durFitMagSlope format for plotting
+  var durFitMagSlope = dLib.convertStack_To_DurFitMagSlope(ltStack, 'LT');
+  durFitMagSlope = durFitMagSlope.map(function(img){return dLib.LT_VT_multBands(img, 0.0001)});
+  Map.addLayer(durFitMagSlope, {}, 'durFitMagSlope', false)
+  
+  // Add to Map
+  var newImage = durFitMagSlope.select(indexName+'_LT_fitted').map(function(img){return img.reproject(crs, transform, scale)});
+  Map.addLayer(newImage, {'min': -0.35, 'max': 0.35}, indexName, false);
+ 
+  
+});
+
+
+
+
+
+
 // var indexListString = getImageLib.listToString(indexList,'_');
 // var indexDirList = ee.List(indexList).zip(ee.List(ltDirection)).getInfo();
 
